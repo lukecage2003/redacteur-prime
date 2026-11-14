@@ -36,7 +36,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | Élément | Statut |
 |---|---|
 | Monorepo uv + pnpm, conventions, CLAUDE.md | TESTED |
-| CI (python, migrations, web, docker), security, dependency-review | IMPLEMENTED (à confirmer au 1er passage GitHub) |
+| CI (python, migrations, web, docker), security | TESTED (11 jobs verts sur GitHub, run 43613994469 et 43613996873) ; dependency-review IMPLEMENTED |
 | Configuration typée (`primestone.config`) | TESTED |
 | Modèle de provenance (`primestone.provenance`) | TESTED |
 | Passerelle IA + fournisseur simulé + budget (`primestone.ai_gateway`) | TESTED |
