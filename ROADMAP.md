@@ -14,7 +14,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 3 | Comic Vision | TESTED (texte réel : BLOCKED, voir ci-dessous) | 2 |
 | 4 | Forensic Intelligence (coût nul) | TESTED | 3 |
 | 5 | Knowledge Intelligence (coût nul) | TESTED | 4 |
-| 6 | Editorial Director (+ banc d'essai voix) | NOT IMPLEMENTED | 5 |
+| 6 | Editorial Director (coût nul) | TESTED (banc voix : BLOCKED) | 5 |
 | 7 | Research et Theory Laboratory | NOT IMPLEMENTED | 6 |
 | 8 | Market Intelligence — analyse | NOT IMPLEMENTED | 2b, 6 |
 | 9 | Social Intelligence | NOT IMPLEMENTED | 8 |
@@ -151,13 +151,24 @@ Fiche : [docs/modules/knowledge.md](docs/modules/knowledge.md) · ADR-0012.
 **Critères** : relations toutes prouvées ; historique de corrections complet ; requêtes de
 graphe et de recherche dans les budgets de latence.
 
-## Phase 6 — Editorial Director
+## Phase 6 — Editorial Director (coût nul)
 
-Chief Editor (machine à états persistée), agents spécialisés à contrats typés, demandes
-d'approbation humaine. Banc d'essai STT/TTS.
+Fiche : [docs/modules/editorial.md](docs/modules/editorial.md) · ADR-0013.
 
-**Critères** : mission de bout en bout sur le corpus ; gestion des échecs d'agents ; aucune
-conclusion sans preuve.
+| Élément | Statut |
+|---|---|
+| Chief Editor : missions durables, reprise après interruption | TESTED |
+| Agents : Research Director, Comics Analyst, Continuity Editor, Character Researcher, Fact Checker | TESTED |
+| Gestion des échecs (2 tentatives, dégradé vs critique) | TESTED |
+| Confrontation des résultats et recommandation | TESTED |
+| Fact Checker bloquant (citations, âges contredits, références) | TESTED |
+| Approbation humaine (refusée si erreur majeure) | TESTED (y compris navigateur + vrai worker) |
+| Rédaction par modèle local gratuit, retenue seulement si vérifiée | IMPLEMENTED — testé avec modèle simulé |
+| Agents des phases 7 à 11 | NOT IMPLEMENTED (listés, jamais simulés) |
+| Banc d'essai STT/TTS | **BLOCKED** — gratuit possible en local (whisper.cpp, Piper) mais exige de télécharger des modèles : à faire sur la machine de l'utilisateur, phase 12 |
+
+**Critères** : mission de bout en bout ✅ ; gestion des échecs ✅ ; aucune conclusion sans
+preuve ✅ (Fact Checker sur chaque livrable).
 
 ## Phase 7 — Research et Theory Laboratory
 

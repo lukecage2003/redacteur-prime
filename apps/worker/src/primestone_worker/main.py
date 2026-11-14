@@ -11,8 +11,10 @@ from sqlalchemy import Engine
 from primestone.comic import library_service_from_settings
 from primestone.config import Settings, get_settings
 from primestone.db import create_db_engine
+from primestone.editorial import editorial_service_from_settings
 from primestone.jobs import ClaimedStep, PostgresJobQueue
 from primestone.vision import vision_service_from_settings
+from primestone_worker.editorial import register_editorial_handlers
 from primestone_worker.handlers import HandlerRegistry, PermanentError, default_registry
 from primestone_worker.library import register_library_handlers
 from primestone_worker.vision import register_vision_handlers
@@ -90,6 +92,7 @@ def build_registry(settings: Settings, engine: Engine) -> HandlerRegistry:
     registry = default_registry()
     register_library_handlers(registry, library_service_from_settings(settings, engine))
     register_vision_handlers(registry, vision_service_from_settings(settings, engine))
+    register_editorial_handlers(registry, editorial_service_from_settings(settings, engine))
     return registry
 
 

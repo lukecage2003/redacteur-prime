@@ -13,7 +13,7 @@ ajoutée ici au démarrage de la phase correspondante.
 | `vision` | 3 | cases, ordre de lecture, texte, locuteurs ([fiche](comic-vision.md)) | TESTED (banc réel BLOCKED) |
 | `forensic` | 4 | observations prouvées, contradictions, affirmations ([fiche](forensic.md)) | TESTED (coût nul) |
 | `knowledge` | 5 | entités, relations prouvées, corrections, graphe, recherche ([fiche](knowledge.md)) | TESTED (coût nul) |
-| `editorial` | 6–7 | Chief Editor, agents, théories, approbations | NOT IMPLEMENTED |
+| `editorial` | 6 | Chief Editor, agents, Fact Checker, approbations ([fiche](editorial.md)) | TESTED (coût nul) |
 | `market` | 2b, 8 | sources, signaux, écart EN→FR | NOT IMPLEMENTED |
 | `social` | 9 | stratégies et déclinaisons par plateforme | NOT IMPLEMENTED |
 | `storytelling` | 10 | scripts en 13 étapes, notation, veto factuel | NOT IMPLEMENTED |

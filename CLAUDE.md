@@ -37,6 +37,7 @@ uv run primestone-library import DOSSIER --process        # bibliothèque (phase
 uv run primestone-vision estimate|analyze|show|benchmark-panels  # vision (phase 3), budget explicite
 uv run primestone-forensic analyze|report|observations --documents ID…  # forensique (phase 4), gratuit
 uv run primestone-knowledge build|entities|entity|graph|path|search|merge|alias|rename|retract  # phase 5
+uv run primestone-editorial agents|dossier|audit|check|show|approve|reject  # phase 6
 ```
 
 ## Architecture (résumé — détails dans ARCHITECTURE.md)

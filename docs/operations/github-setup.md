@@ -1,6 +1,8 @@
 # Configuration GitHub (à faire par le propriétaire)
 
-1. **Branche par défaut** : `main`.
+0. **Constat du 2026-11-14** : le dépôt est **public** et sa branche par défaut est encore
+   `claude/sweet-feynman-b9933b` (première branche poussée). La PR #3 a été fusionnée dans `main`.
+1. **Branche par défaut** : `main` (Settings → General → Default branch → `main`).
 2. **Règles de protection de `main`** (Settings → Rules → Rulesets), après un premier passage
    vert réel de la CI :
    - PR obligatoire, 0 ou 1 approbation (projet personnel), résolution des conversations ;

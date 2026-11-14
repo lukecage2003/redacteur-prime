@@ -82,7 +82,7 @@ def test_negative_budget_rejected() -> None:
 
 def test_registry() -> None:
     registry = default_registry()
-    assert registry.names() == ["fake"]
+    assert registry.names() == ["fake", "ollama"]
     assert registry.create("fake").name == "fake"
     with pytest.raises(LookupError, match="inconnu"):
         registry.create("nope")
@@ -93,3 +93,50 @@ def test_registry() -> None:
 def test_empty_registry_message() -> None:
     with pytest.raises(LookupError, match="aucun"):
         ProviderRegistry().create("x")
+
+
+@pytest.mark.anyio
+async def test_zero_cost_gateway_refuses_paid_calls() -> None:
+    paid = AIGateway(
+        FakeLLMProvider(cost_per_call_usd=Decimal("0.01")), Decimal("10"), zero_cost=True
+    )
+    with pytest.raises(BudgetExceededError, match="zéro coût"):
+        await paid.complete(request())
+    free = AIGateway(FakeLLMProvider(), Decimal("0"), zero_cost=True)
+    assert (await free.complete(request())).usage.cost_usd == 0
+
+
+@pytest.mark.anyio
+async def test_ollama_llm_provider_free() -> None:
+    import json
+
+    import httpx
+
+    from primestone.ai_gateway.ollama import OllamaLLMProvider
+
+    seen: list[dict[str, object]] = []
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        seen.append(json.loads(req.content))
+        return httpx.Response(
+            200,
+            json={
+                "model": "qwen2.5:7b",
+                "message": {"content": "Bonjour."},
+                "prompt_eval_count": 12,
+                "eval_count": 3,
+            },
+        )
+
+    provider = OllamaLLMProvider(transport=httpx.MockTransport(handler))
+    result = await AIGateway(provider, Decimal("0"), zero_cost=True).complete(
+        CompletionRequest(
+            prompt_id="t",
+            prompt_version="1",
+            system="Sois bref.",
+            messages=[Message(role="user", content="Salut")],
+        )
+    )
+    assert (result.text, result.usage.cost_usd, result.usage.output_tokens) == ("Bonjour.", 0, 3)
+    assert seen[0]["messages"][0] == {"role": "system", "content": "Sois bref."}
+    assert seen[0]["stream"] is False

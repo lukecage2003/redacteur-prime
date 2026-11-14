@@ -86,7 +86,14 @@ Le graphe est stocké en PostgreSQL (`entity` + `relation`, requêtes récursive
 `theory` (titre, thèse, `level` THEORY/SPECULATION, confiance, `counter_evidence_searched`),
 `theory_alternative`, preuves et contre-preuves via `evidence_ref`.
 
-## Éditorial et agents 🔜 (phases 6, 10)
+## Éditorial ✅ (phase 6, migration 0006)
+
+Implémenté : `mission` (type, statut, documents, paramètres, résultat), `mission_task`
+(agent, critique, statut, entrées/sorties, tentatives, erreur), `approval_request` (résumé,
+recommandation, décision, auteur, commentaire), `agent_run` (fournisseur, modèle, prompt,
+jetons, coût, erreur).
+
+## Éditorial et agents — suite 🔜 (phases 7, 10)
 
 `mission`, `mission_task`, `agent_run` (agent, entrées/sorties JSON validées, `prompt_id`,
 `prompt_version`, fournisseur, modèle, jetons, coût, latence, erreur), `approval_request`,
