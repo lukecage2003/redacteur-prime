@@ -1,7 +1,7 @@
 # Image unique pour l'API et le worker (même code, point d'entrée différent).
 #   docker build -f docker/python.Dockerfile --build-arg APP=api .
 #   docker build -f docker/python.Dockerfile --build-arg APP=worker .
-FROM python:3.13-slim AS build
+FROM python:3.15-slim AS build
 COPY --from=ghcr.io/astral-sh/uv:0.11 /uv /usr/local/bin/uv
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=never
 WORKDIR /app
@@ -14,7 +14,7 @@ COPY apps/api/src apps/api/src
 COPY apps/worker/src apps/worker/src
 RUN uv sync --frozen --no-dev --no-editable
 
-FROM python:3.13-slim AS runtime
+FROM python:3.15-slim AS runtime
 ARG APP=api
 ENV PYTHONUNBUFFERED=1 PATH="/app/.venv/bin:$PATH" APP=${APP} PORT=8080 \
     PRIMESTONE_STORAGE_LOCAL_ROOT=/data/storage
