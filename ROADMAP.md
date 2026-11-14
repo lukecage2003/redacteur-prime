@@ -72,7 +72,7 @@ Fiche du module : [docs/modules/comic-library.md](docs/modules/comic-library.md)
 | Vue « Bibliothèque » dans le web | TESTED |
 | Stockage Cloud Storage (adaptateur GCS, URL signées) | NOT IMPLEMENTED — requis avant déploiement |
 | Métadonnées ComicInfo.xml (série, numéro) | NOT IMPLEMENTED |
-| Validation sur la bibliothèque réelle de l'utilisateur | NOT IMPLEMENTED — passage à VALIDATED |
+| Validation sur la bibliothèque réelle de l'utilisateur | EN COURS — 3 vrais numéros (79 pages) importés et rendus sans erreur ; lot de 50 réels à faire |
 
 **Critères** : lot de 50 comics ou plus importé ✅ (60 comics, 1 330 pages, voir mesures) ;
 reprise après arrêt forcé sans doublon ni perte ✅ ; une page manquante bloque `COMPLETE` ✅ ;
@@ -184,6 +184,13 @@ Stratégies YouTube (long), TikTok (découverte), Instagram (Reels, carrousels) 
 autonomes construites depuis l'architecture narrative, pas par découpage mécanique.
 
 ## Phase 10 — Maximum Storytelling
+
+Observation (exemples de scripts fournis le 2026-11-14) : scripts YouTube longs (18–35 min),
+en français, découpés en sections horodatées, citant leurs sources par œuvre et par histoire
+(« The Sandman: Endless Nights (2003), The Heart of a Star ») plutôt que par page, avec une part
+de savoir général hors bibliothèque. À prévoir : citations par œuvre dans le Fact Checker,
+distinction « vérifiable dans la bibliothèque » / « savoir externe à sourcer », lecture des
+horodatages comme structure.
 
 Workflow en 13 étapes, notation sur 100, veto factuel, versions FR et EN adaptées.
 
