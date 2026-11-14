@@ -10,9 +10,10 @@ from primestone import __version__
 from primestone.comic import library_service_from_settings
 from primestone.config import Settings, get_settings
 from primestone.db import create_db_engine
+from primestone.forensic import forensic_service
 from primestone.storage import create_object_store
 from primestone.vision import vision_service_from_settings
-from primestone_api.routes import health, library, vision
+from primestone_api.routes import forensic, health, library, vision
 
 
 def create_app(settings: Settings | None = None, engine: Engine | None = None) -> FastAPI:
@@ -25,6 +26,7 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
         app.state.store = create_object_store(settings.storage_backend, settings.storage_local_root)
         app.state.library = library_service_from_settings(settings, app.state.engine)
         app.state.vision = vision_service_from_settings(settings, app.state.engine)
+        app.state.forensic = forensic_service(app.state.engine)
         try:
             yield
         finally:
@@ -41,6 +43,7 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
     app.include_router(health.router, prefix="/api/v1")
     app.include_router(library.router, prefix="/api/v1")
     app.include_router(vision.router, prefix="/api/v1")
+    app.include_router(forensic.router, prefix="/api/v1")
     return app
 
 

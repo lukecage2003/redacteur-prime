@@ -12,7 +12,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 2 | Comic Library | TESTED | 1 |
 | 2b | Market Intelligence — collecte (avancée, voir ci-dessous) | NOT IMPLEMENTED | 1 |
 | 3 | Comic Vision | TESTED (texte réel : BLOCKED, voir ci-dessous) | 2 |
-| 4 | Forensic Intelligence | NOT IMPLEMENTED | 3 |
+| 4 | Forensic Intelligence (coût nul) | TESTED | 3 |
 | 5 | Knowledge Intelligence | NOT IMPLEMENTED | 4 |
 | 6 | Editorial Director (+ banc d'essai voix) | NOT IMPLEMENTED | 5 |
 | 7 | Research et Theory Laboratory | NOT IMPLEMENTED | 6 |
@@ -112,10 +112,22 @@ Fiche : [docs/modules/comic-vision.md](docs/modules/comic-vision.md) · ADR-0010
 **Critères** : précision/rappel des cases ✅ (synthétique) ; CER FR/EN et exactitude des
 locuteurs sur corpus réel ⏳ (BLOCKED).
 
-## Phase 4 — Forensic Intelligence
+## Phase 4 — Forensic Intelligence (coût nul)
 
-Observations par page et par case (personnages, dialogues, décors, objets, symboles,
-événements, continuité, indices, transitions), toujours prouvées.
+Fiche : [docs/modules/forensic.md](docs/modules/forensic.md) · ADR-0011.
+
+| Élément | Statut |
+|---|---|
+| Mode zéro coût par défaut (refus des fournisseurs payants avant tout appel) | TESTED |
+| Transcription humaine (web + API), versionnée, CANON | TESTED (y compris dans un vrai navigateur) |
+| Fournisseur de vision local gratuit (Ollama) | IMPLEMENTED — testé avec serveur simulé, à essayer sur la machine de l'utilisateur |
+| Cases détectées à la volée pour transcrire une page jamais analysée | TESTED |
+| Extracteurs : texte, répliques, mentions, premières attestations, affirmations, contradictions, variantes de noms | TESTED |
+| Discipline CANON / INTERPRETATION, preuves exactes, idempotence, corrections | TESTED |
+| Complétude (rapport INCOMPLETE tant qu'une page manque) | TESTED |
+| Rapport forensique (CLI, API, web) | TESTED |
+| Objets, lieux, symboles, transitions narratives | NOT IMPLEMENTED (nécessitent une analyse visuelle) |
+| Validation sur vrais comics transcrits | NOT IMPLEMENTED — passage à VALIDATED |
 
 **Critères** : 100 % des observations ont une preuve résolvable ; catégories jamais mélangées ;
 contradictions injectées dans le corpus détectées.

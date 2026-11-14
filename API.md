@@ -43,6 +43,13 @@ Le nom de fichier envoyé par le client est réduit à son nom de base (aucun ch
 | POST | `/api/v1/vision/analyses` | Lance l'analyse si l'estimation tient dans le budget ; sinon 422 avec l'estimation | 202, 422 |
 | GET | `/api/v1/vision/analyses/{run_id}` | Rapport : pages réussies/échouées, dépense réelle, jetons, étapes | 200, 404 |
 | GET | `/api/v1/library/documents/{id}/pages/{n}/analysis` | Dernière analyse réussie : cases et textes dans l'ordre de lecture, versions et coût | 200, 404 |
+| GET | `/api/v1/library/documents/{id}/pages/{n}/panels` | Cases (dernière analyse, sinon détection locale gratuite à la volée) | 200, 404 |
+| PUT | `/api/v1/library/documents/{id}/pages/{n}/transcription` | Transcription humaine (`texts[]` : texte, type, case, locuteur, langue) — nouvelle version, coût nul | 201, 404, 422 |
+| POST | `/api/v1/forensic/analyses` | Exécute les extracteurs (`document_ids` dans l'ordre de lecture, `known_characters`) | 201 |
+| GET | `/api/v1/forensic/report?document_ids=…` | Complétude, personnages, contradictions, affirmations, variantes, comptes par type et niveau | 200 |
+| GET | `/api/v1/forensic/observations?document_ids=…&kind=&level=&subject=` | Observations courantes avec leurs preuves | 200 |
+
+En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payant renvoie 422.
 
 Exemple :
 

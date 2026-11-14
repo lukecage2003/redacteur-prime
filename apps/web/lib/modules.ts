@@ -17,7 +17,7 @@ export interface IntelligenceModule {
 export const MODULES: readonly IntelligenceModule[] = [
   { id: "comic", name: "Comic Intelligence", phase: 2, summary: "Bibliothèque, import par lots, rendu des pages", status: "TESTED" },
   { id: "vision", name: "Comic Vision", phase: 3, summary: "OCR, cases, bulles, ordre de lecture", status: "TESTED" },
-  { id: "forensic", name: "Forensic Intelligence", phase: 4, summary: "Observations prouvées, CANON / INTERPRÉTATION / THÉORIE / SPÉCULATION", status: "NOT_IMPLEMENTED" },
+  { id: "forensic", name: "Forensic Intelligence", phase: 4, summary: "Observations prouvées, CANON / INTERPRÉTATION / THÉORIE / SPÉCULATION", status: "TESTED" },
   { id: "knowledge", name: "Knowledge Intelligence", phase: 5, summary: "Entités, relations, provenance, recherche hybride", status: "NOT_IMPLEMENTED" },
   { id: "editorial", name: "Editorial Intelligence", phase: 6, summary: "Chief Editor et agents spécialisés", status: "NOT_IMPLEMENTED" },
   { id: "market", name: "Market Intelligence", phase: 8, summary: "Tendances FR / EN, sujets sous-exploités en français", status: "NOT_IMPLEMENTED" },

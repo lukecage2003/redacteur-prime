@@ -4,6 +4,14 @@
 > Aucune ressource n'est créée sans approbation explicite. Les coûts réels mesurés remplaceront
 > ces estimations (phase 13).
 
+## Mode zéro coût (défaut)
+
+`PRIMESTONE_ZERO_COST=true` : tout fournisseur payant est refusé avant le moindre appel (à la
+création, au lancement et avant chaque appel). Chaîne entièrement gratuite disponible :
+bibliothèque et rendu (local), cases (local), texte par transcription humaine ou modèle local
+(Ollama), forensique par règles (local). Coût d'exploitation en local : **0**. Aucun service
+cloud n'est requis pour cet usage.
+
 ## Stratégie (usage personnel)
 
 - **Un seul environnement cloud au départ** : `staging` sert d'environnement personnel. Le projet

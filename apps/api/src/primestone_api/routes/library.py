@@ -76,7 +76,7 @@ def create_import(
     """Importe un lot. Le traitement (validation, rendu) est asynchrone : suivre le lot via
     `GET /library/imports/{run_id}`."""
     if not files:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "aucun fichier")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "aucun fichier")
     if len(files) > MAX_FILES_PER_REQUEST:
         raise HTTPException(
             status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,

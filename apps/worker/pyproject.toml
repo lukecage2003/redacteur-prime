@@ -11,6 +11,7 @@ dependencies = [
 primestone-worker = "primestone_worker.main:main"
 primestone-library = "primestone_worker.cli:main"
 primestone-vision = "primestone_worker.cli_vision:main"
+primestone-forensic = "primestone_worker.cli_forensic:main"
 
 [tool.uv.sources]
 primestone = { workspace = true }

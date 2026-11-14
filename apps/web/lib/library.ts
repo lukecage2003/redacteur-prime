@@ -110,3 +110,67 @@ export const fetchAnalysis = (id: string, page: number, fetcher: typeof fetch = 
 
 export const pageImageUrl = (id: string, page: number, base?: string) =>
   apiUrl(`library/documents/${encodeURIComponent(id)}/pages/${page}/image`, base);
+
+export interface ForensicEvidence {
+  document_id: string;
+  page: number;
+  panel: number | null;
+  excerpt: string | null;
+  role: "SUPPORTS" | "REFUTES";
+}
+
+export interface ForensicObservation {
+  id: string;
+  kind: string;
+  level: "CANON" | "INTERPRETATION" | "THEORY" | "SPECULATION";
+  subject: string | null;
+  predicate: string | null;
+  value: string | null;
+  statement: string;
+  confidence: number;
+  evidence: ForensicEvidence[];
+}
+
+export interface ForensicReport {
+  status: "COMPLETE" | "INCOMPLETE";
+  extractor: string;
+  documents: Record<
+    string,
+    { title: string; expected_pages: number; analyzed_pages: number; missing_pages: number[]; complete: boolean }
+  >;
+  observations_by_kind: Record<string, Record<string, number>>;
+  characters: Record<
+    string,
+    { speeches: number; mentions: number; first_appearances: (ForensicEvidence & { level: string })[] }
+  >;
+  contradiction_candidates: ForensicObservation[];
+  alias_candidates: ForensicObservation[];
+  claims: ForensicObservation[];
+}
+
+export const fetchForensicReport = (ids: string[], fetcher: typeof fetch = fetch, base?: string) =>
+  getJson<ForensicReport>(
+    `forensic/report?${ids.map((id) => `document_ids=${encodeURIComponent(id)}`).join("&")}`,
+    fetcher,
+    base,
+  );
+
+/** Résume une liste de pages manquantes : [1,2,3,7] → "1–3, 7". */
+export function formatPageRanges(pages: number[]): string {
+  const sorted = [...new Set(pages)].sort((a, b) => a - b);
+  const parts: string[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    const start = sorted[i]!;
+    let end = start;
+    while (i + 1 < sorted.length && sorted[i + 1] === end + 1) end = sorted[++i]!;
+    parts.push(start === end ? `${start}` : `${start}–${end}`);
+  }
+  return parts.join(", ");
+}
+
+export const fetchPanels = (id: string, page: number, fetcher: typeof fetch = fetch, base?: string) =>
+  getJson<{ index: number; bbox: Box }[]>(
+    `library/documents/${encodeURIComponent(id)}/pages/${page}/panels`,
+    fetcher,
+    base,
+  );

@@ -339,11 +339,33 @@ class ClaudeVisionProvider:
         )
 
 
-def create_vision_provider(name: str, *, model: str | None = None) -> PageVisionProvider:
+class PaidProviderRefusedError(LookupError):
+    """Fournisseur payant demandé alors que le mode zéro coût est actif."""
+
+
+FREE_PROVIDERS = frozenset({"fake", "ollama", "human"})
+
+
+def create_vision_provider(
+    name: str,
+    *,
+    model: str | None = None,
+    zero_cost: bool = True,
+    ollama_url: str = "http://localhost:11434",
+) -> PageVisionProvider:
     if name == "fake":
         return FakeVisionProvider()
+    if name == "ollama":
+        from primestone.vision.ollama import OllamaVisionProvider
+
+        return OllamaVisionProvider(base_url=ollama_url, model=model or "qwen2.5vl:7b")
     if name == "claude":
+        if zero_cost:
+            raise PaidProviderRefusedError(
+                "mode zéro coût actif : le fournisseur payant « claude » est refusé "
+                "(PRIMESTONE_ZERO_COST=false pour l'autoriser)"
+            )
         import anthropic
 
         return ClaudeVisionProvider(anthropic.AsyncAnthropic(), model=model or "claude-opus-5-5")
-    raise LookupError(f"fournisseur vision inconnu : {name} (connus : fake, claude)")
+    raise LookupError(f"fournisseur vision inconnu : {name} (connus : fake, ollama, claude)")

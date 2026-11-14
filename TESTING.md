@@ -39,6 +39,14 @@ schéma, coûts, refus, troncature, JSON invalide, erreurs réseau), pipeline (e
 au-delà du budget, budget revérifié avant chaque appel, jamais payé deux fois, échecs permanents
 et transitoires, 4 workers en parallèle), API.
 
+Couverture Forensic : extracteurs (preuve obligatoire, niveaux CANON/INTERPRETATION selon la
+source, mentions insensibles aux accents et à la casse, premières attestations par document,
+affirmations FR/EN, lettrage en capitales, contradictions avec rôles de preuve, identité
+secrète, variantes de noms, clés stables), mode zéro coût, fournisseur Ollama (serveur simulé :
+requête, conversion PNG, erreurs), transcription humaine (versions, cases invalides),
+pipeline forensique (complétude, idempotence, corrections qui remplacent sans effacer, ordre
+des tomes), API, et parcours complet dans un navigateur (formulaire, analyse, rapport).
+
 Banc d'essai reproductible du détecteur : `uv run primestone-vision benchmark-panels --pages 200`.
 
 Les comics de test sont **synthétiques** (générés par `conftest.py`) : aucune œuvre protégée.

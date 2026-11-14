@@ -15,7 +15,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from PIL import Image
 from sqlalchemy import Engine, text
@@ -33,14 +33,40 @@ from primestone.vision.providers import (
 )
 
 ANALYZE_STEP = "vision.analyze_page"
+HUMAN_PROVIDER = "human"
 RUN_KIND = "vision.analyze"
 ESTIMATE_PANELS_PER_PAGE = 6
 
 
+@dataclass(frozen=True)
+class HumanText:
+    text: str
+    kind: TextKind
+    panel_index: int | None = None
+    speaker: str | None = None
+    language: str | None = None
+    bbox: BoundingBox | None = None
+
+
+class _HumanProvider:
+    name = HUMAN_PROVIDER
+    prompt_version = "manual"
+
+    def __init__(self, author: str) -> None:
+        self.model = f"human:{author}"
+
+    def estimate_cost(self, context: PageContext) -> Decimal:
+        return Decimal("0")
+
+    async def analyze(self, context: PageContext) -> Any:  # pragma: no cover - jamais appelé
+        raise NotImplementedError
+
+
 class VisionBudgetError(ValueError):
-    def __init__(self, estimate: VisionEstimate) -> None:
+    def __init__(self, estimate: VisionEstimate, reason: str | None = None) -> None:
         super().__init__(
-            f"coût estimé {estimate.estimated_cost_usd} USD > budget {estimate.budget_usd} USD"
+            reason
+            or f"coût estimé {estimate.estimated_cost_usd} USD > budget {estimate.budget_usd} USD"
         )
         self.estimate = estimate
 
@@ -77,7 +103,10 @@ class VisionService:
         store: ObjectStore,
         queue: PostgresJobQueue,
         provider_factory: ProviderFactory,
+        *,
+        zero_cost: bool = True,
     ) -> None:
+        self.zero_cost = zero_cost
         self._engine = engine
         self._store = store
         self._queue = queue
@@ -183,6 +212,8 @@ class VisionService:
         language_hint: str | None = None,
     ) -> tuple[UUID, VisionEstimate]:
         estimate, todo = self.estimate(document_ids, provider_name, budget_usd, direction)
+        if self.zero_cost and estimate.estimated_cost_usd > 0:
+            raise VisionBudgetError(estimate, "mode zéro coût : toute dépense est refusée")
         if estimate.estimated_cost_usd > budget_usd:
             raise VisionBudgetError(estimate)
         provider = self.provider(provider_name)
@@ -239,6 +270,8 @@ class VisionService:
 
         budget, spent = self._budget(run_id)
         planned = provider.estimate_cost(context)
+        if self.zero_cost and planned > 0:
+            raise PermanentError("mode zéro coût : appel payant refusé")
         if spent + planned > budget:
             raise PermanentError(f"budget épuisé : {spent} + {planned} > {budget} USD")
 
@@ -314,7 +347,7 @@ class VisionService:
     def _record(
         self,
         page_id: UUID,
-        run_id: UUID,
+        run_id: UUID | None,
         render_sha: str,
         key: str,
         provider: PageVisionProvider,
@@ -400,7 +433,115 @@ class VisionService:
                     },
                 )
 
+    # --- Transcription humaine (gratuite, source la plus fiable) ---------------------------
+
+    def save_human_transcription(
+        self,
+        document_id: UUID,
+        number: int,
+        entries: Sequence[HumanText],
+        *,
+        author: str,
+        direction: ReadingDirection = ReadingDirection.LTR,
+    ) -> UUID:
+        """Enregistre une transcription saisie ou corrigée par un humain.
+
+        Nouvelle analyse (fournisseur « human », coût nul) qui devient la version servie ;
+        les analyses précédentes sont conservées (ajout seul). Les cases reprennent celles de
+        la dernière analyse, ou sont détectées si la page n'a jamais été analysée."""
+        with self._engine.connect() as conn:
+            page = (
+                conn.execute(
+                    text(
+                        "SELECT id, render_key, render_sha256, status FROM page "
+                        "WHERE document_id = :doc AND number = :n"
+                    ),
+                    {"doc": document_id, "n": number},
+                )
+                .mappings()
+                .one_or_none()
+            )
+        if page is None or page["status"] != "RENDERED":
+            raise LookupError("page introuvable ou non rendue")
+
+        previous = self.latest_analysis(document_id, number)
+        if previous is not None:
+            panels = [
+                Panel(index=p["index"], bbox=BoundingBox(**p["bbox"])) for p in previous["panels"]
+            ]
+        else:
+            with self._store.open(page["render_key"]) as fh:
+                image = Image.open(io.BytesIO(fh.read()))
+                panels = detect_panels(image, direction=direction)
+        by_index = {p.index: p.bbox for p in panels}
+        full_page = BoundingBox(x=0, y=0, width=1, height=1)
+        regions = []
+        for entry in entries:
+            if entry.panel_index is not None and entry.panel_index not in by_index:
+                raise ValueError(f"case {entry.panel_index} inexistante sur cette page")
+            regions.append(
+                TextRegion(
+                    text=entry.text,
+                    kind=entry.kind,
+                    bbox=entry.bbox
+                    or (by_index[entry.panel_index] if entry.panel_index else full_page),
+                    language=entry.language,
+                    confidence=1.0,
+                    speaker=entry.speaker,
+                    speaker_confidence=1.0 if entry.speaker else None,
+                )
+            )
+        texts = assign_texts(panels, regions, direction)
+        # Une case choisie donne au texte la boîte de cette case : le rattachement
+        # géométrique la retrouve sans cas particulier.
+        analysis_id = uuid4()
+        key = f"{page['render_sha256']}:human:{analysis_id}"
+        self._record(
+            page["id"],
+            None,
+            page["render_sha256"],
+            key,
+            _HumanProvider(author),
+            direction,
+            panels,
+            texts,
+            None,
+            None,
+        )
+        with self._engine.connect() as conn:
+            saved: UUID = conn.execute(
+                text("SELECT id FROM page_analysis WHERE analysis_key = :k"), {"k": key}
+            ).scalar_one()
+        return saved
+
     # --- Lecture ----------------------------------------------------------------------------
+
+    def page_panels(
+        self,
+        document_id: UUID,
+        number: int,
+        direction: ReadingDirection = ReadingDirection.LTR,
+    ) -> list[dict[str, Any]] | None:
+        """Cases de la page : celles de la dernière analyse, sinon détectées à la volée
+        (local, gratuit, rien n'est enregistré). None si la page n'est pas rendue."""
+        latest = self.latest_analysis(document_id, number)
+        if latest is not None:
+            panels: list[dict[str, Any]] = latest["panels"]
+            return panels
+        with self._engine.connect() as conn:
+            key = conn.execute(
+                text(
+                    "SELECT render_key FROM page WHERE document_id = :doc AND number = :n "
+                    "AND status = 'RENDERED'"
+                ),
+                {"doc": document_id, "n": number},
+            ).scalar_one_or_none()
+        if key is None:
+            return None
+        with self._store.open(key) as fh:
+            image = Image.open(io.BytesIO(fh.read()))
+            detected = detect_panels(image, direction=direction)
+        return [{"index": p.index, "bbox": p.bbox.model_dump()} for p in detected]
 
     def latest_analysis(self, document_id: UUID, number: int) -> dict[str, Any] | None:
         """Dernière analyse réussie d'une page, avec cases et textes dans l'ordre de lecture."""

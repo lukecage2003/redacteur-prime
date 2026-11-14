@@ -166,5 +166,6 @@ def test_claude_estimate_and_pricing() -> None:
 
 def test_factory() -> None:
     assert create_vision_provider("fake").name == "fake"
+    assert create_vision_provider("claude", zero_cost=False).name == "claude"
     with pytest.raises(LookupError):
         create_vision_provider("nope")

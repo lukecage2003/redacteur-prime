@@ -5,6 +5,9 @@ d'une bibliothèque de comics, mémoire de connaissances prouvées, compréhensi
 francophone et anglophone, scripts de très haute qualité en français et en anglais, et
 apprentissage à partir des performances réelles des contenus Primestone.
 
+> **Coût nul par défaut** : mode zéro coût actif, aucun fournisseur payant n'est appelé
+> (transcription humaine ou modèle local gratuit). Voir [COSTS.md](COSTS.md).
+>
 > **Usage personnel, non commercial.** Les comics analysés restent privés (jamais versionnés,
 > jamais redistribués). Voir [SECURITY.md](SECURITY.md).
 
@@ -16,7 +19,8 @@ apprentissage à partir des performances réelles des contenus Primestone.
 | Phase 1 — Socle (monorepo, CI, file de tâches, passerelle IA simulée, API, web) | TESTED |
 | Phase 2 — Comic Library (import par lots, validation, rendu, reprise) | TESTED |
 | Phase 3 — Comic Vision (cases, ordre de lecture, texte et locuteurs via fournisseur IA) | TESTED — banc réel BLOCKED |
-| Phases 4 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
+| Phase 4 — Forensic Intelligence (règles déterministes, transcription humaine, coût nul) | TESTED |
+| Phases 5 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
 | Infrastructure GCP | Non provisionnée (en attente d'autorisation explicite) |
 
 ## Démarrage rapide

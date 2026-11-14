@@ -48,12 +48,16 @@ Ajout seul : une nouvelle version de détecteur, de modèle ou de prompt crée u
 la plus récente réussie est servie. Référence documentaire d'un texte :
 `DocumentRef(document_id, page, panel=panel_index, bbox)`.
 
-## Analyse 🔜 (phase 4)
+## Analyse ✅ (phase 4, migration 0004)
 
 | Table | Colonnes clés |
 |---|---|
-| `observation` | `statement`, `kind` (personnage, objet, symbole, événement…), `level`, `confidence`, `agent_run_id` |
-| `evidence_ref` | cible polymorphe (observation/relation/theory), `document_id`, `page`, `panel`, `bbox`, `excerpt`, `role` (SUPPORTS/REFUTES) |
+| `observation` ✅ | `observation_key` (unique, stable), `extractor` (version), `kind` (LETTERING, SPEECH, MENTION, CLAIM, FIRST_APPEARANCE, ALIAS_CANDIDATE, CONTRADICTION_CANDIDATE), `level` (CANON/INTERPRETATION/THEORY/SPECULATION), `subject`, `predicate`, `value`, `statement`, `confidence`, `run_id` |
+| `evidence_ref` ✅ | `observation_id`, `document_id`, `page_number`, `panel_index`, `analysis_id`, `text_region_id`, boîte, `excerpt`, `role` (SUPPORTS/REFUTES) |
+
+Une observation est « courante » si toutes ses preuves proviennent des analyses servies
+aujourd'hui ; une correction humaine rend les anciennes caduques sans les effacer. Les
+transcriptions humaines sont des `page_analysis` de fournisseur `human` (coût nul).
 
 ## Connaissance 🔜 (phase 5)
 

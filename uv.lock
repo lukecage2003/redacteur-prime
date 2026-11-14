@@ -1453,6 +1453,7 @@ source = { editable = "packages/primestone" }
 dependencies = [
     { name = "alembic" },
     { name = "anthropic" },
+    { name = "httpx" },
     { name = "numpy" },
     { name = "pgvector" },
     { name = "pillow" },
@@ -1467,6 +1468,7 @@ dependencies = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.14" },
     { name = "anthropic", specifier = ">=2.8.0" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "numpy", specifier = ">=2.5.4" },
     { name = "pgvector", specifier = ">=0.3.6" },
     { name = "pillow", specifier = ">=13.0.0" },

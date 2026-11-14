@@ -32,7 +32,7 @@ def _check_provider(service: VisionService, name: str) -> None:
     try:
         service.provider(name)
     except LookupError as exc:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(exc)) from None
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from None
 
 
 @router.post("/vision/estimates")
@@ -59,7 +59,7 @@ def create_analysis(request: Request, body: AnalysisRequest) -> dict[str, Any]:
         )
     except VisionBudgetError as exc:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             {"message": str(exc), "estimate": exc.estimate.as_dict()},
         ) from None
     return {"run_id": str(run_id), "estimate": result.as_dict()}
@@ -79,3 +79,17 @@ def get_page_analysis(request: Request, document_id: UUID, number: int) -> dict[
     if analysis is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "aucune analyse pour cette page")
     return analysis
+
+
+@router.get("/library/documents/{document_id}/pages/{number}/panels")
+def get_page_panels(
+    request: Request,
+    document_id: UUID,
+    number: int,
+    direction: ReadingDirection = ReadingDirection.LTR,
+) -> list[dict[str, Any]]:
+    """Cases de la page (dernière analyse, sinon détection locale gratuite à la volée)."""
+    panels = _service(request).page_panels(document_id, number, direction)
+    if panels is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "page non rendue")
+    return panels

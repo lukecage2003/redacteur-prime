@@ -41,9 +41,14 @@ class Settings(BaseSettings):
     worker_poll_interval_seconds: float = Field(default=2.0, gt=0)
     worker_lease_seconds: int = Field(default=900, gt=0)
 
-    # Comic Vision (phase 3) : "fake" (gratuit, CI) ou "claude" (payant, sur budget explicite).
+    # Mode zéro coût (défaut) : tout fournisseur payant est refusé AVANT tout appel.
+    zero_cost: bool = True
+
+    # Comic Vision (phase 3) : "fake" (gratuit, CI), "ollama" (gratuit, modèle local)
+    # ou "claude" (payant : exige zero_cost=false et un budget explicite).
     vision_provider: str = "fake"
     vision_model: str | None = None
+    ollama_url: str = "http://localhost:11434"
 
     # Stockage objet : "local" (développement) ou "gcs" (cloud, phase 13 — non implémenté).
     storage_backend: Literal["local", "gcs"] = "local"

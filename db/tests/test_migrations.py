@@ -19,7 +19,7 @@ def test_round_trip(database_url: str, migrated_engine: Engine) -> None:
     command.upgrade(cfg, "head")
     tables = set(inspect(migrated_engine).get_table_names())
     expected = {"pipeline_run", "pipeline_step", "comic", "document", "page", "import_item"}
-    expected |= {"page_analysis", "panel", "text_region"}
+    expected |= {"page_analysis", "panel", "text_region", "observation", "evidence_ref"}
     assert expected <= tables
 
 

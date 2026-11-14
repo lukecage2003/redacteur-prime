@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { DOCUMENT_STATUS_LABELS, boxStyle, fetchAnalysis, fetchDocuments, pageImageUrl, renderProgress } from "./library";
+import {
+  DOCUMENT_STATUS_LABELS,
+  boxStyle,
+  fetchAnalysis,
+  fetchDocuments,
+  formatPageRanges,
+  pageImageUrl,
+  renderProgress,
+} from "./library";
 
 describe("renderProgress", () => {
   it("calcule un pourcentage borné", () => {
@@ -53,5 +61,13 @@ describe("analyse de page", () => {
 
   it("encode l'identifiant dans l'URL de l'image", () => {
     expect(pageImageUrl("a/b", 2, "http://api.test")).toBe("http://api.test/api/v1/library/documents/a%2Fb/pages/2/image");
+  });
+});
+
+
+describe("formatPageRanges", () => {
+  it("regroupe les pages consécutives", () => {
+    expect(formatPageRanges([7, 1, 2, 3, 3])).toBe("1–3, 7");
+    expect(formatPageRanges([])).toBe("");
   });
 });

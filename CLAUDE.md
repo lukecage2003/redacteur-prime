@@ -35,6 +35,7 @@ uv run alembic revision -m "..."           # nouvelle migration (écrite à la m
 pnpm --filter @primestone/web lint|typecheck|test|build
 uv run primestone-library import DOSSIER --process        # bibliothèque (phase 2)
 uv run primestone-vision estimate|analyze|show|benchmark-panels  # vision (phase 3), budget explicite
+uv run primestone-forensic analyze|report|observations --documents ID…  # forensique (phase 4), gratuit
 ```
 
 ## Architecture (résumé — détails dans ARCHITECTURE.md)
@@ -70,6 +71,8 @@ uv run primestone-vision estimate|analyze|show|benchmark-panels  # vision (phase
 
 - Aucun secret dans le dépôt ni dans les logs. Secrets → Secret Manager.
 - Aucun PDF de comic, aucune donnée personnelle dans Git ou dans les fixtures.
+- Mode zéro coût actif par défaut (`PRIMESTONE_ZERO_COST=true`) : ne jamais le désactiver
+  sans demande explicite du propriétaire.
 - Aucune ressource GCP créée, aucun déploiement, aucune migration en environnement partagé,
   aucun traitement massif ou appel payant sans approbation explicite de l'utilisateur.
 - La CI n'appelle jamais de fournisseur payant : `FakeLLMProvider` et fixtures uniquement.

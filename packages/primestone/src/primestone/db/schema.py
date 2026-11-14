@@ -270,3 +270,73 @@ text_region = Table(
     CheckConstraint("confidence >= 0 AND confidence <= 1", name="confidence"),
     UniqueConstraint("analysis_id", "order"),
 )
+
+
+# --- Forensic Intelligence (phase 4) ------------------------------------------------------
+
+OBSERVATION_KINDS = (
+    "LETTERING",
+    "SPEECH",
+    "MENTION",
+    "CLAIM",
+    "FIRST_APPEARANCE",
+    "ALIAS_CANDIDATE",
+    "CONTRADICTION_CANDIDATE",
+)
+EVIDENCE_LEVELS = ("CANON", "INTERPRETATION", "THEORY", "SPECULATION")
+
+observation = Table(
+    "observation",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("run_id", UUID(as_uuid=True), ForeignKey("pipeline_run.id", ondelete="RESTRICT")),
+    # Empreinte stable (extracteur + contenu + preuves) : ré-exécuter ne duplique rien.
+    Column("observation_key", Text, nullable=False, unique=True),
+    Column("extractor", Text, nullable=False),
+    Column("kind", Text, nullable=False),
+    Column("level", Text, nullable=False),
+    Column("subject", Text),
+    Column("predicate", Text),
+    Column("value", Text),
+    Column("statement", Text, nullable=False),
+    Column("confidence", Float, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint(_in(OBSERVATION_KINDS, "kind"), name="kind"),
+    CheckConstraint(_in(EVIDENCE_LEVELS, "level"), name="level"),
+    CheckConstraint("confidence >= 0 AND confidence <= 1", name="confidence"),
+    Index("ix_observation_kind", "kind"),
+    Index("ix_observation_subject", "subject"),
+)
+
+evidence_ref = Table(
+    "evidence_ref",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "observation_id",
+        UUID(as_uuid=True),
+        ForeignKey("observation.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column(
+        "document_id",
+        UUID(as_uuid=True),
+        ForeignKey("document.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("page_number", Integer, nullable=False),
+    Column("panel_index", Integer),
+    Column("analysis_id", UUID(as_uuid=True), ForeignKey("page_analysis.id", ondelete="RESTRICT")),
+    Column("text_region_id", UUID(as_uuid=True), ForeignKey("text_region.id", ondelete="RESTRICT")),
+    Column("x", Float),
+    Column("y", Float),
+    Column("width", Float),
+    Column("height", Float),
+    Column("excerpt", Text),
+    Column("role", Text, nullable=False, server_default=text("'SUPPORTS'")),
+    CheckConstraint("page_number >= 1", name="page_number"),
+    CheckConstraint("role IN ('SUPPORTS', 'REFUTES')", name="role"),
+    Index("ix_evidence_ref_observation_id", "observation_id"),
+    Index("ix_evidence_ref_document_id", "document_id"),
+    Index("ix_evidence_ref_analysis_id", "analysis_id"),
+)

@@ -73,7 +73,8 @@ async def make_env(
     store = LocalObjectStore(root / "storage")
     queue = PostgresJobQueue(engine)
     library = LibraryService(engine, store, queue, profile=RenderProfile(max_dimension=600))
-    vision = VisionService(engine, store, queue, lambda _name: provider)
+    # Ces tests vérifient les garde-fous de budget : la dépense simulée doit être autorisée.
+    vision = VisionService(engine, store, queue, lambda _name: provider, zero_cost=False)
     result = library.start_import([ImportSource(path=f, filename=f.name) for f in files])
     env = Env(library=library, vision=vision, queue=queue)
     await env.drain()
@@ -237,3 +238,14 @@ async def test_parallel_workers_record_each_page_once(
             assert env.vision.latest_analysis(document_id, number) is not None
     estimate, _ = env.vision.estimate(env.document_ids, "fake", Decimal("1"))
     assert estimate.to_analyze == 0
+
+
+async def test_zero_cost_mode_refuses_any_spend(
+    db_engine: Engine, tmp_path: Path, comic_factory: SimpleNamespace
+) -> None:
+    provider = FakeVisionProvider(cost_per_page_usd=Decimal("0.001"))
+    env = await make_env(db_engine, tmp_path, [comic_factory.pdf(pages=1)], provider)
+    env.vision.zero_cost = True
+    with pytest.raises(VisionBudgetError, match="zéro coût"):
+        env.vision.start(env.document_ids, "fake", Decimal("100"))
+    assert provider.calls == []

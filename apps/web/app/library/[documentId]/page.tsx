@@ -20,6 +20,9 @@ export default async function DocumentPage({ params }: { params: Promise<{ docum
         {doc.format ?? "—"} · {doc.page_count ?? "?"} pages · {DOCUMENT_STATUS_LABELS[doc.status]}
         {doc.error ? ` · ${doc.error}` : ""}
       </p>
+      <Link href={`/library/${documentId}/forensic`} className="mt-2 inline-block text-sm font-medium text-amber-700 hover:underline">
+        Analyse forensique →
+      </Link>
       <ul className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-8">
         {doc.pages.map((page) => (
           <li key={page.number}>
