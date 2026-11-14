@@ -26,11 +26,16 @@ class MissionIn(BaseModel):
         "THEORY_REVIEW",
         "RESEARCH_DOSSIER",
         "MARKET_BRIEF",
+        "SOCIAL_PACKAGE",
     ]
     # Vide pour une revue de théorie : les documents de la théorie sont repris.
     document_ids: Annotated[list[UUID], Field(max_length=200)] = []
     theory_id: UUID | None = None
     question: Annotated[str, Field(max_length=500)] | None = None
+    source_mission_id: UUID | None = None
+    platforms: (
+        list[Literal["youtube_long", "tiktok", "instagram_reels", "instagram_carousel"]] | None
+    ) = None
     character: Annotated[str, Field(max_length=200)] | None = None
     draft: Annotated[str, Field(max_length=50_000)] | None = None
     known_characters: Annotated[
@@ -62,6 +67,10 @@ def create_mission(request: Request, body: MissionIn) -> dict[str, str]:
         params["theory_id"] = str(body.theory_id)
     if body.question:
         params["question"] = body.question
+    if body.source_mission_id:
+        params["source_mission_id"] = str(body.source_mission_id)
+    if body.platforms:
+        params["platforms"] = body.platforms
     try:
         mission_id = _editorial(request).create_mission(
             body.type, body.document_ids, params, title=body.title

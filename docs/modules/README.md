@@ -16,7 +16,7 @@ ajoutée ici au démarrage de la phase correspondante.
 | `editorial` | 6 | Chief Editor, agents, Fact Checker, approbations ([fiche](editorial.md)) | TESTED (coût nul) |
 | `lab` | 7 | théories, preuves et contre-preuves, confiance calculée ([fiche](lab.md)) | TESTED (coût nul) |
 | `market` | 2b, 8 | sources avec fiche, collecte publique gratuite, écart EN→FR ([fiche](market.md)) | TESTED (collecte réelle BLOCKED) |
-| `social` | 9 | stratégies et déclinaisons par plateforme | NOT IMPLEMENTED |
+| `social` | 9 | déclinaisons par plateforme depuis les faits vérifiés ([fiche](social.md)) | TESTED (coût nul) |
 | `storytelling` | 10 | scripts en 13 étapes, notation, veto factuel | NOT IMPLEMENTED |
 | `performance` | 11 | métriques autorisées, boucle d'apprentissage | NOT IMPLEMENTED |
 | `voice` | 12 | streaming STT/TTS, personnalités | NOT IMPLEMENTED |

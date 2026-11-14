@@ -46,3 +46,9 @@ export async function decide(rawMissionId: string, rawApprovalId: string, form: 
   });
   revalidatePath(`/editorial/${missionId}`);
 }
+
+export async function decline(rawMissionId: string): Promise<void> {
+  const response = await post("editorial/missions", { type: "SOCIAL_PACKAGE", source_mission_id: requireUuid(rawMissionId) });
+  const { mission_id } = (await response.json()) as { mission_id: string };
+  redirect(`/editorial/${requireUuid(mission_id)}`);
+}

@@ -73,4 +73,9 @@ export const MISSION_LABELS: Record<string, string> = {
   THEORY_REVIEW: "Revue de théorie",
   RESEARCH_DOSSIER: "Dossier de recherche",
   MARKET_BRIEF: "Note de marché EN → FR",
+  SOCIAL_PACKAGE: "Déclinaisons sociales",
 };
+
+/** Livrables qu'on peut décliner pour les réseaux, une fois approuvés. */
+export const DECLINABLE = ["CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "THEORY_REVIEW", "RESEARCH_DOSSIER"];
+export const canDecline = (m: { type: string; status: string }) => m.status === "APPROVED" && DECLINABLE.includes(m.type);

@@ -4,6 +4,7 @@
     primestone-editorial dossier  --documents ID… --character "Selina" [--process]
     primestone-editorial audit    --documents ID… [--process]
     primestone-editorial check    --documents ID… --draft fichier.md [--process]
+    primestone-editorial social   MISSION_ID [--process]   (déclinaisons d'un livrable approuvé)
     primestone-editorial show     MISSION_ID
     primestone-editorial approve  APPROVAL_ID [--comment "…"]
     primestone-editorial reject   APPROVAL_ID [--comment "…"]
@@ -39,6 +40,9 @@ def main(argv: list[str] | None = None) -> int:
         if name == "check":
             cmd.add_argument("--draft", type=Path, required=True)
     sub.add_parser("show").add_argument("mission_id", type=UUID)
+    social = sub.add_parser("social")
+    social.add_argument("mission_id", type=UUID)
+    social.add_argument("--process", action="store_true", help="exécuter ici, sans worker")
     for name in ("approve", "reject"):
         cmd = sub.add_parser(name)
         cmd.add_argument("approval_id", type=UUID)
@@ -63,6 +67,13 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "check":
             params["draft"] = args.draft.read_text(encoding="utf-8")
         mission_id = service.create_mission(mission_type, args.documents, params)
+        if args.process:
+            asyncio.run(service.run_mission({"mission_id": str(mission_id)}))
+        out = service.mission(mission_id)
+    elif args.command == "social":
+        mission_id = service.create_mission(
+            "SOCIAL_PACKAGE", [], {"source_mission_id": str(args.mission_id)}
+        )
         if args.process:
             asyncio.run(service.run_mission({"mission_id": str(mission_id)}))
         out = service.mission(mission_id)
