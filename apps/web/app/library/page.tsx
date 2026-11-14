@@ -37,7 +37,11 @@ export default async function LibraryPage() {
             <tbody>
               {result.documents.map((doc) => (
                 <tr key={doc.id} className="border-b border-zinc-100 dark:border-zinc-900">
-                  <td className="py-2 pr-3 font-medium">{doc.title}</td>
+                  <td className="py-2 pr-3 font-medium">
+                    <Link href={`/library/${doc.id}`} className="hover:underline">
+                      {doc.title}
+                    </Link>
+                  </td>
                   <td className="py-2 pr-3">{doc.format ?? "—"}</td>
                   <td className="py-2 pr-3">
                     {doc.page_count ?? "—"}

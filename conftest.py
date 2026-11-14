@@ -52,7 +52,17 @@ def migrated_engine(database_url: str) -> Iterator[Engine]:
 def db_engine(migrated_engine: Engine) -> Engine:
     """Moteur migré ; les tables de la file sont vidées avant chaque test (base de test)."""
     with migrated_engine.begin() as conn:
-        for table in ("import_item", "page", "document", "comic", "pipeline_step", "pipeline_run"):
+        for table in (
+            "text_region",
+            "panel",
+            "page_analysis",
+            "import_item",
+            "page",
+            "document",
+            "comic",
+            "pipeline_step",
+            "pipeline_run",
+        ):
             conn.execute(text(f"DELETE FROM {table}"))  # noqa: S608 - liste fixe
     return migrated_engine
 

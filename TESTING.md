@@ -32,6 +32,15 @@ chemin, bombe zip, image géante, image illisible, tri naturel, mise à l'échel
 reprise après arrêt brutal, doublons inter- et intra-lot, pages manquantes, page illisible,
 fichiers rejetés), API (téléversement, rapport, navigation, image, chemins client ignorés).
 
+Couverture Comic Vision : détecteur de cases sur planches synthétiques à vérité connue (LTR,
+RTL, inclinées, page blanche, page pleine, bulle à cheval), rattachement et ordre des textes,
+métriques (IoU, appariement, F1, ordre, CER), adaptateur Claude avec client simulé (requête,
+schéma, coûts, refus, troncature, JSON invalide, erreurs réseau), pipeline (estimation, refus
+au-delà du budget, budget revérifié avant chaque appel, jamais payé deux fois, échecs permanents
+et transitoires, 4 workers en parallèle), API.
+
+Banc d'essai reproductible du détecteur : `uv run primestone-vision benchmark-panels --pages 200`.
+
 Les comics de test sont **synthétiques** (générés par `conftest.py`) : aucune œuvre protégée.
 
 ## Fournisseurs IA

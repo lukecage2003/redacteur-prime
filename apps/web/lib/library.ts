@@ -45,3 +45,68 @@ export async function fetchDocuments(
     return { ok: false, error: "API injoignable" };
   }
 }
+
+export interface PageSummary {
+  number: number;
+  status: "PENDING" | "RENDERED" | "FAILED";
+  width: number | null;
+  height: number | null;
+  error: string | null;
+}
+
+export interface DocumentDetail extends LibraryDocument {
+  pages: PageSummary[];
+}
+
+export interface Box {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface PageAnalysis {
+  analysis_id: string;
+  detector: string;
+  provider: string;
+  model: string;
+  prompt_version: string;
+  reading_direction: "LTR" | "RTL";
+  cost_usd: string;
+  panels: { index: number; bbox: Box }[];
+  texts: {
+    order: number;
+    panel_index: number | null;
+    kind: "DIALOGUE" | "THOUGHT" | "NARRATION" | "SFX" | "CAPTION" | "OTHER";
+    text: string;
+    language: string | null;
+    confidence: number;
+    speaker: string | null;
+    speaker_confidence: number | null;
+    bbox: Box;
+  }[];
+}
+
+/** Position CSS (en %) d'une boîte normalisée, pour la superposer à l'image de la page. */
+export function boxStyle(box: Box): { left: string; top: string; width: string; height: string } {
+  const pct = (v: number) => `${(Math.min(1, Math.max(0, v)) * 100).toFixed(2)}%`;
+  return { left: pct(box.x), top: pct(box.y), width: pct(box.width), height: pct(box.height) };
+}
+
+async function getJson<T>(path: string, fetcher: typeof fetch, base?: string): Promise<T | null> {
+  try {
+    const response = await fetcher(apiUrl(path, base), { cache: "no-store" });
+    return response.ok ? ((await response.json()) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+export const fetchDocument = (id: string, fetcher: typeof fetch = fetch, base?: string) =>
+  getJson<DocumentDetail>(`library/documents/${encodeURIComponent(id)}`, fetcher, base);
+
+export const fetchAnalysis = (id: string, page: number, fetcher: typeof fetch = fetch, base?: string) =>
+  getJson<PageAnalysis>(`library/documents/${encodeURIComponent(id)}/pages/${page}/analysis`, fetcher, base);
+
+export const pageImageUrl = (id: string, page: number, base?: string) =>
+  apiUrl(`library/documents/${encodeURIComponent(id)}/pages/${page}/image`, base);

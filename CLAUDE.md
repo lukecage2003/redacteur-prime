@@ -33,6 +33,8 @@ uv run mypy                                # strict
 uv run alembic upgrade head                # migrations (PRIMESTONE_DATABASE_URL)
 uv run alembic revision -m "..."           # nouvelle migration (écrite à la main, relue)
 pnpm --filter @primestone/web lint|typecheck|test|build
+uv run primestone-library import DOSSIER --process        # bibliothèque (phase 2)
+uv run primestone-vision estimate|analyze|show|benchmark-panels  # vision (phase 3), budget explicite
 ```
 
 ## Architecture (résumé — détails dans ARCHITECTURE.md)

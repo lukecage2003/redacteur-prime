@@ -14,5 +14,6 @@ on le remplace par un nouvel ADR (statut « Remplacé par ADR-XXXX »).
 | [0007](0007-workload-identity-federation.md) | GitHub → GCP par Workload Identity Federation | Accepté |
 | [0008](0008-git-workflow.md) | Développement trunk-based | Accepté |
 | [0009](0009-content-addressed-storage.md) | Stockage adressé par contenu, profils de rendu versionnés | Accepté |
+| [0010](0010-comic-vision.md) | Comic Vision : cases en local, texte par fournisseur IA sous budget | Accepté |
 
 Modèle : [template.md](template.md).

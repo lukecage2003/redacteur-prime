@@ -46,6 +46,8 @@ L'infrastructure est en europe-west1 (UE). Les appels aux fournisseurs IA extern
 des données hors UE : avant d'activer un fournisseur, vérifier et consigner dans
 `docs/operations/ai-providers.md` ses conditions de rétention et de non-utilisation pour
 l'entraînement. Envoyer le minimum nécessaire (une page ou une case, pas un comic entier).
+La vision (phase 3) envoie une page rendue à la fois, uniquement sur lancement explicite avec
+budget ; aucun appel n'a lieu en CI ni par défaut (`PRIMESTONE_VISION_PROVIDER=fake`).
 
 ## Données et migrations
 

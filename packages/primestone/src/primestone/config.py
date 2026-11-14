@@ -41,6 +41,10 @@ class Settings(BaseSettings):
     worker_poll_interval_seconds: float = Field(default=2.0, gt=0)
     worker_lease_seconds: int = Field(default=900, gt=0)
 
+    # Comic Vision (phase 3) : "fake" (gratuit, CI) ou "claude" (payant, sur budget explicite).
+    vision_provider: str = "fake"
+    vision_model: str | None = None
+
     # Stockage objet : "local" (développement) ou "gcs" (cloud, phase 13 — non implémenté).
     storage_backend: Literal["local", "gcs"] = "local"
     storage_local_root: Path = Path("data/storage")
@@ -61,6 +65,8 @@ class Settings(BaseSettings):
                 )
             if self.ai_provider == "fake":
                 raise ValueError("Le fournisseur IA 'fake' est interdit en staging/production")
+            if self.vision_provider == "fake":
+                raise ValueError("Le fournisseur vision 'fake' est interdit en staging/production")
             if self.storage_backend == "local":
                 raise ValueError("Le stockage local est interdit en staging/production (éphémère)")
         return self

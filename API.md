@@ -37,6 +37,13 @@ POST /api/v1/library/imports?label=lot-1  →  202
 
 Le nom de fichier envoyé par le client est réduit à son nom de base (aucun chemin n'est accepté).
 
+| Méthode | Chemin | Description | Réponses |
+|---|---|---|---|
+| POST | `/api/v1/vision/estimates` | Coût estimé d'une analyse (`document_ids`, `provider`, `budget_usd`, `direction`) — ne lance rien | 200, 422 |
+| POST | `/api/v1/vision/analyses` | Lance l'analyse si l'estimation tient dans le budget ; sinon 422 avec l'estimation | 202, 422 |
+| GET | `/api/v1/vision/analyses/{run_id}` | Rapport : pages réussies/échouées, dépense réelle, jetons, étapes | 200, 404 |
+| GET | `/api/v1/library/documents/{id}/pages/{n}/analysis` | Dernière analyse réussie : cases et textes dans l'ordre de lecture, versions et coût | 200, 404 |
+
 Exemple :
 
 ```json

@@ -10,6 +10,7 @@ dependencies = [
 [project.scripts]
 primestone-worker = "primestone_worker.main:main"
 primestone-library = "primestone_worker.cli:main"
+primestone-vision = "primestone_worker.cli_vision:main"
 
 [tool.uv.sources]
 primestone = { workspace = true }

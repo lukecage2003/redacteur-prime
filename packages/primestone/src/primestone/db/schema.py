@@ -12,10 +12,12 @@ from sqlalchemy import (
     CheckConstraint,
     Column,
     DateTime,
+    Float,
     ForeignKey,
     Index,
     Integer,
     MetaData,
+    Numeric,
     Table,
     Text,
     UniqueConstraint,
@@ -38,8 +40,8 @@ RUN_STATUSES = ("PENDING", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED")
 STEP_STATUSES = ("PENDING", "RUNNING", "SUCCEEDED", "FAILED", "DEAD")
 
 
-def _in(values: tuple[str, ...]) -> str:
-    return "status IN (" + ", ".join(f"'{v}'" for v in values) + ")"
+def _in(values: tuple[str, ...], column: str = "status") -> str:
+    return f"{column} IN (" + ", ".join(f"'{v}'" for v in values) + ")"
 
 
 pipeline_run = Table(
@@ -182,4 +184,89 @@ import_item = Table(
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     CheckConstraint("outcome IN ('NEW', 'DUPLICATE', 'REJECTED')", name="outcome"),
     Index("ix_import_item_run_id", "run_id"),
+)
+
+
+# --- Comic Vision (phase 3) ---------------------------------------------------------------
+# Analyses en ajout seul : une nouvelle version (détecteur, fournisseur, modèle, prompt)
+# crée une nouvelle analyse sans effacer les précédentes.
+
+ANALYSIS_STATUSES = ("SUCCEEDED", "FAILED")
+TEXT_KINDS = ("DIALOGUE", "THOUGHT", "NARRATION", "SFX", "CAPTION", "OTHER")
+
+
+def _bbox_columns() -> list[Column[object]]:
+    return [Column(name, Float, nullable=False) for name in ("x", "y", "width", "height")]
+
+
+page_analysis = Table(
+    "page_analysis",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "page_id", UUID(as_uuid=True), ForeignKey("page.id", ondelete="RESTRICT"), nullable=False
+    ),
+    Column("run_id", UUID(as_uuid=True), ForeignKey("pipeline_run.id", ondelete="RESTRICT")),
+    # Empreinte de l'image analysée : une analyse vaut pour toute page au rendu identique.
+    Column("render_sha256", Text, nullable=False),
+    # (rendu, détecteur, fournisseur, modèle, prompt) : jamais deux fois la même analyse payée.
+    Column("analysis_key", Text, nullable=False, unique=True),
+    Column("status", Text, nullable=False),
+    Column("detector", Text, nullable=False),
+    Column("provider", Text, nullable=False),
+    Column("model", Text, nullable=False),
+    Column("prompt_version", Text, nullable=False),
+    Column("reading_direction", Text, nullable=False),
+    Column("cost_usd", Numeric(12, 6), nullable=False, server_default=text("0")),
+    Column("input_tokens", Integer, nullable=False, server_default=text("0")),
+    Column("output_tokens", Integer, nullable=False, server_default=text("0")),
+    Column("latency_ms", Float),
+    Column("error", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint(_in(ANALYSIS_STATUSES), name="status"),
+    CheckConstraint("reading_direction IN ('LTR', 'RTL')", name="reading_direction"),
+    CheckConstraint("cost_usd >= 0", name="cost_usd"),
+    Index("ix_page_analysis_page_id", "page_id"),
+    Index("ix_page_analysis_run_id", "run_id"),
+    Index("ix_page_analysis_render_sha256", "render_sha256"),
+)
+
+panel = Table(
+    "panel",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "analysis_id",
+        UUID(as_uuid=True),
+        ForeignKey("page_analysis.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("index", Integer, nullable=False),
+    *_bbox_columns(),
+    CheckConstraint('"index" >= 1', name="index"),
+    UniqueConstraint("analysis_id", "index"),
+)
+
+text_region = Table(
+    "text_region",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "analysis_id",
+        UUID(as_uuid=True),
+        ForeignKey("page_analysis.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("order", Integer, nullable=False),
+    Column("panel_index", Integer),
+    Column("kind", Text, nullable=False),
+    Column("text", Text, nullable=False),
+    Column("language", Text),
+    Column("confidence", Float, nullable=False),
+    Column("speaker", Text),
+    Column("speaker_confidence", Float),
+    *_bbox_columns(),
+    CheckConstraint(_in(TEXT_KINDS, "kind"), name="kind"),
+    CheckConstraint("confidence >= 0 AND confidence <= 1", name="confidence"),
+    UniqueConstraint("analysis_id", "order"),
 )

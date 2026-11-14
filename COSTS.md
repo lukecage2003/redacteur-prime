@@ -46,6 +46,13 @@ par lots asynchrones des fournisseurs quand disponible.
 |---|---|---|---|---|---|
 | 2026-11-14 | Rendu Comic Library (local) | 60 comics, 1 330 pages | 73,6 s | 4 vCPU | 0 (aucun service payant) |
 
+| 2026-11-14 | Détection des cases (local) | 200 planches synthétiques | ≈ 30 ms/page | 1 vCPU | 0 |
+
+Estimation Claude Opus 5.5 (vision, effort `medium`) : ≈ 2 000 à 2 500 jetons d'entrée et
+≈ 1 500 à 3 000 de sortie par page, soit **≈ 0,04 à 0,07 USD par page** (≈ 1 à 1,75 USD pour
+un comic de 25 pages) — à confirmer par le banc d'essai réel. Claude Haiku 5.5 : ≈ 40 fois moins
+cher, qualité à mesurer.
+
 Projection Cloud Run (à valider) : ≈ 18 pages/s sur 4 vCPU, soit environ 75 s de calcul pour un
 lot de 50 comics de 25 pages : quelques centimes de calcul par lot.
 

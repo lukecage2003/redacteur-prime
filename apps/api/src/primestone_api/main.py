@@ -11,7 +11,8 @@ from primestone.comic import library_service_from_settings
 from primestone.config import Settings, get_settings
 from primestone.db import create_db_engine
 from primestone.storage import create_object_store
-from primestone_api.routes import health, library
+from primestone.vision import vision_service_from_settings
+from primestone_api.routes import health, library, vision
 
 
 def create_app(settings: Settings | None = None, engine: Engine | None = None) -> FastAPI:
@@ -23,6 +24,7 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
         app.state.engine = engine or create_db_engine(settings.database_url)
         app.state.store = create_object_store(settings.storage_backend, settings.storage_local_root)
         app.state.library = library_service_from_settings(settings, app.state.engine)
+        app.state.vision = vision_service_from_settings(settings, app.state.engine)
         try:
             yield
         finally:
@@ -38,6 +40,7 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
     )
     app.include_router(health.router, prefix="/api/v1")
     app.include_router(library.router, prefix="/api/v1")
+    app.include_router(vision.router, prefix="/api/v1")
     return app
 
 

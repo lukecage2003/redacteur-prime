@@ -15,7 +15,8 @@ apprentissage à partir des performances réelles des contenus Primestone.
 | Phase 0 — Audit et architecture | VALIDATED ([rapport](docs/audit/phase-0.md)) |
 | Phase 1 — Socle (monorepo, CI, file de tâches, passerelle IA simulée, API, web) | TESTED |
 | Phase 2 — Comic Library (import par lots, validation, rendu, reprise) | TESTED |
-| Phases 3 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
+| Phase 3 — Comic Vision (cases, ordre de lecture, texte et locuteurs via fournisseur IA) | TESTED — banc réel BLOCKED |
+| Phases 4 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
 | Infrastructure GCP | Non provisionnée (en attente d'autorisation explicite) |
 
 ## Démarrage rapide

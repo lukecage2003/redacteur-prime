@@ -36,12 +36,17 @@ et que N correspond à `expected_page_count` lorsqu'il est connu (sinon `INCOMPL
 illisible rend le document `FAILED`. La série est un simple texte pour l'instant ; elle deviendra
 une entité `SERIES` du graphe en phase 5.
 
-## Vision 🔜 (phase 3)
+## Vision ✅ (phase 3, migration 0003)
 
 | Table | Colonnes clés |
 |---|---|
-| `panel` | page, `index`, `bbox` (normalisée), ordre de lecture |
-| `text_region` | page, panel, `kind` (dialogue/narration/onomatopée/légende), texte, langue, locuteur, `bbox`, confiance OCR |
+| `page_analysis` ✅ | `page_id`, `run_id`, `render_sha256` (l'analyse vaut pour tout rendu identique), `analysis_key` (unique : rendu + détecteur + fournisseur + modèle + prompt + sens), `status` (SUCCEEDED/FAILED), `detector`, `provider`, `model`, `prompt_version`, `reading_direction`, `cost_usd`, `input_tokens`, `output_tokens`, `latency_ms`, `error` |
+| `panel` ✅ | `analysis_id`, `index` (ordre de lecture), `x`, `y`, `width`, `height` (normalisés) |
+| `text_region` ✅ | `analysis_id`, `order`, `panel_index` (NULL : hors case), `kind` (DIALOGUE, THOUGHT, NARRATION, SFX, CAPTION, OTHER), `text`, `language`, `confidence`, `speaker`, `speaker_confidence`, boîte normalisée |
+
+Ajout seul : une nouvelle version de détecteur, de modèle ou de prompt crée une nouvelle analyse ;
+la plus récente réussie est servie. Référence documentaire d'un texte :
+`DocumentRef(document_id, page, panel=panel_index, bbox)`.
 
 ## Analyse 🔜 (phase 4)
 

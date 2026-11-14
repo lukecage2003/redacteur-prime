@@ -11,7 +11,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 1 | Core Platform | TESTED (socle) | 0 |
 | 2 | Comic Library | TESTED | 1 |
 | 2b | Market Intelligence — collecte (avancée, voir ci-dessous) | NOT IMPLEMENTED | 1 |
-| 3 | Comic Vision | NOT IMPLEMENTED | 2 |
+| 3 | Comic Vision | TESTED (texte réel : BLOCKED, voir ci-dessous) | 2 |
 | 4 | Forensic Intelligence | NOT IMPLEMENTED | 3 |
 | 5 | Knowledge Intelligence | NOT IMPLEMENTED | 4 |
 | 6 | Editorial Director (+ banc d'essai voix) | NOT IMPLEMENTED | 5 |
@@ -94,11 +94,23 @@ officielle), flux RSS d'actualités comics. Instantanés quotidiens horodatés.
 
 ## Phase 3 — Comic Vision
 
-OCR (bulles, narration, onomatopées), détection des cases, ordre de lecture, attribution du
-locuteur. Banc d'essai de fournisseurs (OCR et vision) sur le corpus de référence `eval/`.
+Fiche : [docs/modules/comic-vision.md](docs/modules/comic-vision.md) · ADR-0010.
 
-**Critères** : précision/rappel des cases et taux d'erreur OCR FR/EN au-dessus des seuils fixés
-avant le banc d'essai.
+| Élément | Statut |
+|---|---|
+| Détection des cases (local, redressement des scans inclinés) | TESTED — F1 = 1,000 sur 200 planches synthétiques |
+| Ordre de lecture LTR / RTL | TESTED — 100 % |
+| Rattachement des textes aux cases, ordre du texte | TESTED |
+| Interface fournisseur + fournisseur simulé | TESTED |
+| Adaptateur Claude (transcription, type, langue, locuteur) | IMPLEMENTED — testé avec un client simulé, jamais appelé réellement |
+| Estimation, budget, jamais payé deux fois, analyses en ajout seul | TESTED |
+| API, CLI `primestone-vision`, visionneuse web avec superposition | TESTED |
+| Métriques du banc d'essai (F1 cases, ordre, CER) | TESTED |
+| Banc d'essai sur vrais comics (transcription, locuteurs, coût réel) | **BLOCKED** — corpus annoté + budget + clé API à fournir |
+| Bulles à cheval sur une gouttière | limite connue (F1 = 0,62) — à traiter si le banc réel le confirme |
+
+**Critères** : précision/rappel des cases ✅ (synthétique) ; CER FR/EN et exactitude des
+locuteurs sur corpus réel ⏳ (BLOCKED).
 
 ## Phase 4 — Forensic Intelligence
 
