@@ -87,6 +87,9 @@ de pipeline ou de prompt produit de nouveaux résultats sans écraser les ancien
 - **L5 supervisé** : exécution autonome ; approbation humaine pour publication, traitements au-delà
   du seuil de coût, modification du canon, validation finale des scripts.
 - Orchestrateur interne léger (ADR à rédiger en phase 6, LangGraph réévalué à ce moment).
+- **Laboratoire des théories (phase 7, ADR-0014)** : `primestone.lab` — théories jamais CANON,
+  preuves vérifiées sur la transcription servie, confiance calculée et expliquée ; le Theory
+  Researcher propose des candidats, un humain les classe.
 
 ## Voix (Phase 12)
 

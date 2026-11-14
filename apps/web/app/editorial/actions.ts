@@ -31,6 +31,7 @@ export async function createMission(form: FormData): Promise<void> {
     document_ids: documentIds,
     character: field(form, "character") || null,
     draft: field(form, "draft") || null,
+    question: field(form, "question") || null,
   });
   const { mission_id } = (await response.json()) as { mission_id: string };
   redirect(`/editorial/${requireUuid(mission_id)}`);

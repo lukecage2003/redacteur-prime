@@ -12,6 +12,7 @@ from primestone.editorial.service import RUN_STEP, EditorialError, EditorialServ
 from primestone.forensic import forensic_service
 from primestone.jobs import PostgresJobQueue
 from primestone.knowledge import knowledge_service_from_settings
+from primestone.lab import TheoryLab
 
 __all__ = [
     "AGENTS",
@@ -40,10 +41,13 @@ def editorial_service_from_settings(settings: Settings, engine: Engine) -> Edito
         def writer() -> LLMProvider:
             return registry.create(name)
 
+    forensic = forensic_service(engine)
+    knowledge = knowledge_service_from_settings(settings, engine)
     return EditorialService(
         engine,
-        forensic_service(engine),
-        knowledge_service_from_settings(settings, engine),
+        forensic,
+        knowledge,
         PostgresJobQueue(engine),
         writer,
+        lab=TheoryLab(engine, forensic, knowledge),
     )

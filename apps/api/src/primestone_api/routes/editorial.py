@@ -19,8 +19,13 @@ def _editorial(request: Request) -> EditorialService:
 
 
 class MissionIn(BaseModel):
-    type: Literal["CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "FACT_CHECK"]
-    document_ids: Annotated[list[UUID], Field(min_length=1, max_length=200)]
+    type: Literal[
+        "CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "FACT_CHECK", "THEORY_REVIEW", "RESEARCH_DOSSIER"
+    ]
+    # Vide pour une revue de théorie : les documents de la théorie sont repris.
+    document_ids: Annotated[list[UUID], Field(max_length=200)] = []
+    theory_id: UUID | None = None
+    question: Annotated[str, Field(max_length=500)] | None = None
     character: Annotated[str, Field(max_length=200)] | None = None
     draft: Annotated[str, Field(max_length=50_000)] | None = None
     known_characters: Annotated[
@@ -48,6 +53,10 @@ def create_mission(request: Request, body: MissionIn) -> dict[str, str]:
         params["character"] = body.character
     if body.draft:
         params["draft"] = body.draft
+    if body.theory_id:
+        params["theory_id"] = str(body.theory_id)
+    if body.question:
+        params["question"] = body.question
     try:
         mission_id = _editorial(request).create_mission(
             body.type, body.document_ids, params, title=body.title

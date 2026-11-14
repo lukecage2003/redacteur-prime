@@ -63,9 +63,15 @@ En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payan
 | POST | `/api/v1/knowledge/relations` | Relation manuelle (preuve obligatoire ; THEORY refusée) | 201, 404, 422 |
 | GET | `/api/v1/search?q=&document_ids=` | Recherche hybride (textes servis + entités), scores détaillés | 200, 422 |
 | GET | `/api/v1/editorial/agents` | Agents, rôles, limites, disponibilité | 200 |
-| POST | `/api/v1/editorial/missions` | Lance une mission (`type`, `document_ids`, `character` ou `draft`) | 202, 422 |
+| POST | `/api/v1/editorial/missions` | Lance une mission (`type`, `document_ids`, `character`, `draft`, `theory_id` ou `question`) | 202, 422 |
 | GET | `/api/v1/editorial/missions` · `/{id}` | Missions ; détail (tâches, recommandation, livrable, vérification, décisions, traces) | 200, 404 |
 | POST | `/api/v1/editorial/approvals` | Décision humaine (`approve` / `reject`) — refusée si erreur factuelle majeure | 201, 404, 422 |
+| POST | `/api/v1/lab/theories` | Crée une théorie (`title`, `claim`, `document_ids`, `subjects`) | 201, 422 |
+| GET | `/api/v1/lab/theories?status=&level=` · `/{id}` | Théories ; détail (preuves revérifiées, alternatives, journal, calcul) | 200, 404 |
+| POST | `/api/v1/lab/evidence` | Preuve pour/contre ; extrait absent de la page transcrite ⇒ refus | 201, 404, 422 |
+| POST | `/api/v1/lab/evidence/retractions` | Retrait motivé (jamais d'effacement) | 201, 404, 422 |
+| POST | `/api/v1/lab/alternatives` | Explication alternative | 201, 404, 422 |
+| POST | `/api/v1/lab/research` | Theory Researcher : candidats pour/contre, marque la recherche faite | 200, 404 |
 
 Exemple :
 
@@ -80,7 +86,6 @@ GET /api/v1/health/ready
 |---|---|
 | 4–5 | `GET /observations`, `GET /entities`, `GET /entities/{id}/relations`, `GET /search?q=` (hybride) |
 | 6 | `POST /missions`, `GET /missions/{id}`, `POST /approvals/{id}` |
-| 7 | `GET /theories`, `POST /theories/{id}/review` |
 | 8 | `GET /market/opportunities?lang=fr` |
 | 10 | `POST /scripts`, `GET /scripts/{id}/versions`, `GET /scripts/{id}/score` |
 | 12 | `WS /ws/voice` |

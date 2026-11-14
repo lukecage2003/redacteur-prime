@@ -25,7 +25,7 @@ export default async function EditorialPage() {
         <form action={createMission} className="space-y-3 rounded border border-zinc-200 p-4 dark:border-zinc-800">
           <h2 className="font-semibold">Nouvelle mission</h2>
           <select name="type" className={input} defaultValue="CHARACTER_DOSSIER">
-            {Object.entries(MISSION_LABELS).map(([value, label]) => (
+            {Object.entries(MISSION_LABELS).filter(([value]) => value !== "THEORY_REVIEW").map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
@@ -40,6 +40,10 @@ export default async function EditorialPage() {
             ))}
           </fieldset>
           <input name="character" placeholder="Personnage (dossier)" className={input} />
+          <input name="question" placeholder="Question (dossier de recherche)" className={input} />
+          <p className="text-xs text-zinc-500">
+            Revue de théorie : à lancer depuis la fiche de la théorie, dans le <Link href="/lab" className="underline">laboratoire</Link>.
+          </p>
           <textarea name="draft" rows={4} placeholder="Texte à vérifier, citations au format « … » [Titre, p. 12, case 3]" className={input} />
           <button className="rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700">Lancer (gratuit)</button>
         </form>

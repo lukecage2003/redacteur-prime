@@ -164,15 +164,29 @@ Fiche : [docs/modules/editorial.md](docs/modules/editorial.md) · ADR-0013.
 | Fact Checker bloquant (citations, âges contredits, références) | TESTED |
 | Approbation humaine (refusée si erreur majeure) | TESTED (y compris navigateur + vrai worker) |
 | Rédaction par modèle local gratuit, retenue seulement si vérifiée | IMPLEMENTED — testé avec modèle simulé |
-| Agents des phases 7 à 11 | NOT IMPLEMENTED (listés, jamais simulés) |
+| Agents des phases 8 à 11 | NOT IMPLEMENTED (listés, jamais simulés) ; Theory Researcher livré en phase 7 |
 | Banc d'essai STT/TTS | **BLOCKED** — gratuit possible en local (whisper.cpp, Piper) mais exige de télécharger des modèles : à faire sur la machine de l'utilisateur, phase 12 |
 
 **Critères** : mission de bout en bout ✅ ; gestion des échecs ✅ ; aucune conclusion sans
 preuve ✅ (Fact Checker sur chaque livrable).
 
-## Phase 7 — Research et Theory Laboratory
+## Phase 7 — Research et Theory Laboratory (coût nul)
 
-Théories avec preuves, contre-preuves, alternatives, confiance ; confrontation entre agents.
+Fiche : [docs/modules/lab.md](docs/modules/lab.md) · ADR-0014.
+
+| Élément | Statut |
+|---|---|
+| Théories structurées (énoncé, sujets, documents), jamais CANON (contrainte en base) | TESTED |
+| Preuves et contre-preuves vérifiées sur la transcription, retrait motivé, revérification | TESTED |
+| Alternatives, journal append-only | TESTED |
+| Niveau / statut / confiance calculés et expliqués (`lab-confidence@1`) | TESTED |
+| Theory Researcher (candidats pour/contre, gratuit) ; classement humain | TESTED |
+| Missions THEORY_REVIEW et RESEARCH_DOSSIER (Fact Checker bloquant) | TESTED |
+| API, CLI `primestone-lab`, pages web `/lab` | TESTED (web : lint, types, build) |
+| Validation sur la bibliothèque réelle | NOT IMPLEMENTED — passage à VALIDATED |
+
+**Critères** : aucune théorie sans preuve vérifiable ✅ ; contre-preuves cherchées avant THEORY
+✅ ; confiance explicable ✅.
 
 ## Phase 8 — Market Intelligence (analyse)
 

@@ -590,3 +590,93 @@ agent_run = Table(
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     Index("ix_agent_run_mission_task_id", "mission_task_id"),
 )
+
+
+# --- Research et Theory Laboratory (phase 7) ---------------------------------------------
+# Une théorie n'est jamais CANON (contrainte en base). Rien n'est effacé : une preuve est
+# retirée (datée, motivée) et chaque changement est journalisé dans `theory_event`.
+
+THEORY_STATUSES = ("OPEN", "SUPPORTED", "CONTESTED", "REFUTED")
+
+
+def _theory_fk() -> Column[object]:
+    return Column(
+        "theory_id",
+        UUID(as_uuid=True),
+        ForeignKey("theory.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+
+
+theory = Table(
+    "theory",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("title", Text, nullable=False),
+    Column("claim", Text, nullable=False),
+    Column("level", Text, nullable=False, server_default=text("'SPECULATION'")),
+    Column("status", Text, nullable=False, server_default=text("'OPEN'")),
+    Column("confidence", Float, nullable=False, server_default=text("0")),
+    Column("document_ids", JSONB, nullable=False),
+    Column("subjects", JSONB, nullable=False, server_default=text("'[]'::jsonb")),
+    Column("counter_search_at", DateTime(timezone=True)),
+    Column("author", Text, nullable=False),
+    *_ts(),
+    CheckConstraint("level IN ('THEORY', 'SPECULATION')", name="level"),
+    CheckConstraint(_in(THEORY_STATUSES), name="status"),
+    CheckConstraint("confidence >= 0 AND confidence <= 1", name="confidence"),
+)
+
+theory_evidence = Table(
+    "theory_evidence",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    _theory_fk(),
+    Column("role", Text, nullable=False),
+    Column(
+        "document_id",
+        UUID(as_uuid=True),
+        ForeignKey("document.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("page_number", Integer, nullable=False),
+    Column("panel_index", Integer),
+    Column("excerpt", Text),
+    Column("verified", Boolean, nullable=False),
+    Column("level", Text, nullable=False),
+    Column("note", Text),
+    Column("origin", Text, nullable=False),
+    Column("added_by", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    Column("retracted_at", DateTime(timezone=True)),
+    Column("retraction_reason", Text),
+    CheckConstraint("role IN ('SUPPORTS', 'REFUTES')", name="role"),
+    CheckConstraint("level IN ('CANON', 'INTERPRETATION', 'SPECULATION')", name="level"),
+    CheckConstraint("origin IN ('HUMAN', 'RESEARCHER')", name="origin"),
+    CheckConstraint("page_number >= 1", name="page_number"),
+    Index("ix_theory_evidence_theory_id", "theory_id"),
+)
+
+theory_alternative = Table(
+    "theory_alternative",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    _theory_fk(),
+    Column("text", Text, nullable=False),
+    Column("author", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    Index("ix_theory_alternative_theory_id", "theory_id"),
+)
+
+theory_event = Table(
+    "theory_event",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    _theory_fk(),
+    Column("action", Text, nullable=False),
+    Column("detail", JSONB),
+    Column("author", Text, nullable=False),
+    Column("reason", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    Index("ix_theory_event_theory_id", "theory_id"),
+)

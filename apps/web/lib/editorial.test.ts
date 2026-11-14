@@ -11,6 +11,12 @@ describe("checkSeverity", () => {
   });
 
   it("a un libellé par type de mission", () => {
-    expect(Object.keys(MISSION_LABELS)).toEqual(["CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "FACT_CHECK"]);
+    expect(Object.keys(MISSION_LABELS)).toEqual([
+      "CHARACTER_DOSSIER",
+      "CONTINUITY_AUDIT",
+      "FACT_CHECK",
+      "THEORY_REVIEW",
+      "RESEARCH_DOSSIER",
+    ]);
   });
 });

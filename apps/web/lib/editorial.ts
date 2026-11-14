@@ -70,4 +70,6 @@ export const MISSION_LABELS: Record<string, string> = {
   CHARACTER_DOSSIER: "Dossier de personnage",
   CONTINUITY_AUDIT: "Audit de continuité",
   FACT_CHECK: "Vérification d'un texte",
+  THEORY_REVIEW: "Revue de théorie",
+  RESEARCH_DOSSIER: "Dossier de recherche",
 };
