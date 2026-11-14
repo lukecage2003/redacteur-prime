@@ -12,6 +12,7 @@ primestone-worker = "primestone_worker.main:main"
 primestone-library = "primestone_worker.cli:main"
 primestone-vision = "primestone_worker.cli_vision:main"
 primestone-forensic = "primestone_worker.cli_forensic:main"
+primestone-knowledge = "primestone_worker.cli_knowledge:main"
 
 [tool.uv.sources]
 primestone = { workspace = true }

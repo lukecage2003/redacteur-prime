@@ -15,6 +15,9 @@ export default function Home() {
         <Link href="/library" className="mt-4 inline-block text-sm font-medium text-amber-700 hover:underline">
           Ouvrir la bibliothèque →
         </Link>
+        <Link href="/knowledge" className="ml-4 mt-4 inline-block text-sm font-medium text-amber-700 hover:underline">
+          Connaissances →
+        </Link>
       </header>
       <ul className="grid gap-3 sm:grid-cols-2">
         {modules.map((m) => (

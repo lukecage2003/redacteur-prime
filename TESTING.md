@@ -47,6 +47,14 @@ requête, conversion PNG, erreurs), transcription humaine (versions, cases inval
 pipeline forensique (complétude, idempotence, corrections qui remplacent sans effacer, ordre
 des tomes), API, et parcours complet dans un navigateur (formulaire, analyse, rapport).
 
+Couverture Knowledge : plongements (déterminisme, normalisation, fautes, accents, Ollama
+simulé), construction (entités, APPEARS_IN vs REFERENCES, REVEALS en INTERPRETATION,
+co-présence, preuve sur chaque relation), idempotence, corrections journalisées qui survivent à
+la reconstruction (fusion, alias, renommage, retrait), relation manuelle (preuve et page
+vérifiées), graphe (voisinage, chemin), recherche hybride (exact, faute de frappe, portée par
+document, version corrigée seule visible), API, parcours navigateur (construction, recherche
+avec faute, alias, retrait).
+
 Banc d'essai reproductible du détecteur : `uv run primestone-vision benchmark-panels --pages 200`.
 
 Les comics de test sont **synthétiques** (générés par `conftest.py`) : aucune œuvre protégée.

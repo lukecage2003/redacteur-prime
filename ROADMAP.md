@@ -13,7 +13,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 2b | Market Intelligence — collecte (avancée, voir ci-dessous) | NOT IMPLEMENTED | 1 |
 | 3 | Comic Vision | TESTED (texte réel : BLOCKED, voir ci-dessous) | 2 |
 | 4 | Forensic Intelligence (coût nul) | TESTED | 3 |
-| 5 | Knowledge Intelligence | NOT IMPLEMENTED | 4 |
+| 5 | Knowledge Intelligence (coût nul) | TESTED | 4 |
 | 6 | Editorial Director (+ banc d'essai voix) | NOT IMPLEMENTED | 5 |
 | 7 | Research et Theory Laboratory | NOT IMPLEMENTED | 6 |
 | 8 | Market Intelligence — analyse | NOT IMPLEMENTED | 2b, 6 |
@@ -132,10 +132,21 @@ Fiche : [docs/modules/forensic.md](docs/modules/forensic.md) · ADR-0011.
 **Critères** : 100 % des observations ont une preuve résolvable ; catégories jamais mélangées ;
 contradictions injectées dans le corpus détectées.
 
-## Phase 5 — Knowledge Intelligence
+## Phase 5 — Knowledge Intelligence (coût nul)
 
-Entités, alias FR/EN, relations typées avec provenance, corrections versionnées, recherche
-hybride (plein texte + pgvector), graphe en PostgreSQL.
+Fiche : [docs/modules/knowledge.md](docs/modules/knowledge.md) · ADR-0012.
+
+| Élément | Statut |
+|---|---|
+| Entités (personnages, comics, séries) et alias FR/EN | TESTED |
+| Relations typées dérivées des observations, preuve obligatoire | TESTED |
+| Corrections journalisées (renommage, alias, fusion, retrait, relation manuelle) | TESTED (y compris dans un navigateur) |
+| Reconstruction idempotente qui respecte les corrections | TESTED |
+| Graphe : voisinage et plus court chemin (CTE récursives) | TESTED |
+| Recherche hybride plein texte + vecteurs (RRF), versions servies uniquement | TESTED |
+| Plongements sémantiques locaux (Ollama) | IMPLEMENTED — testé avec serveur simulé |
+| Lieux, objets, événements, ordre de publication automatique | NOT IMPLEMENTED |
+| Validation sur la bibliothèque réelle | NOT IMPLEMENTED — passage à VALIDATED |
 
 **Critères** : relations toutes prouvées ; historique de corrections complet ; requêtes de
 graphe et de recherche dans les budgets de latence.

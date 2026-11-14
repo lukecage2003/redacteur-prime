@@ -50,6 +50,11 @@ class Settings(BaseSettings):
     vision_model: str | None = None
     ollama_url: str = "http://localhost:11434"
 
+    # Knowledge (phase 5) : plongements gratuits. "hashing" (local, sans modèle, lexical) ou
+    # "ollama" (modèle sémantique open source local, ex. nomic-embed-text).
+    embedder: Literal["hashing", "ollama"] = "hashing"
+    embedding_model: str = "nomic-embed-text"
+
     # Stockage objet : "local" (développement) ou "gcs" (cloud, phase 13 — non implémenté).
     storage_backend: Literal["local", "gcs"] = "local"
     storage_local_root: Path = Path("data/storage")

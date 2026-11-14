@@ -20,7 +20,8 @@ apprentissage à partir des performances réelles des contenus Primestone.
 | Phase 2 — Comic Library (import par lots, validation, rendu, reprise) | TESTED |
 | Phase 3 — Comic Vision (cases, ordre de lecture, texte et locuteurs via fournisseur IA) | TESTED — banc réel BLOCKED |
 | Phase 4 — Forensic Intelligence (règles déterministes, transcription humaine, coût nul) | TESTED |
-| Phases 5 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
+| Phase 5 — Knowledge Intelligence (graphe prouvé, corrections, recherche hybride gratuite) | TESTED |
+| Phases 6 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
 | Infrastructure GCP | Non provisionnée (en attente d'autorisation explicite) |
 
 ## Démarrage rapide

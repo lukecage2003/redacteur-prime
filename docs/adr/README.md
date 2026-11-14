@@ -16,5 +16,6 @@ on le remplace par un nouvel ADR (statut « Remplacé par ADR-XXXX »).
 | [0009](0009-content-addressed-storage.md) | Stockage adressé par contenu, profils de rendu versionnés | Accepté |
 | [0010](0010-comic-vision.md) | Comic Vision : cases en local, texte par fournisseur IA sous budget | Accepté |
 | [0011](0011-zero-cost-forensic.md) | Mode zéro coût et forensique par règles déterministes | Accepté |
+| [0012](0012-knowledge-graph.md) | Graphe dérivé des preuves, corrections journalisées, recherche gratuite | Accepté |
 
 Modèle : [template.md](template.md).

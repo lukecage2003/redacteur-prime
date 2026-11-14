@@ -9,7 +9,8 @@
 `PRIMESTONE_ZERO_COST=true` : tout fournisseur payant est refusé avant le moindre appel (à la
 création, au lancement et avant chaque appel). Chaîne entièrement gratuite disponible :
 bibliothèque et rendu (local), cases (local), texte par transcription humaine ou modèle local
-(Ollama), forensique par règles (local). Coût d'exploitation en local : **0**. Aucun service
+(Ollama), forensique par règles (local), graphe et recherche hybride (local, plongements sans modèle ou
+modèle local Ollama). Coût d'exploitation en local : **0**. Aucun service
 cloud n'est requis pour cet usage.
 
 ## Stratégie (usage personnel)

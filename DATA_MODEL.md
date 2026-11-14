@@ -59,7 +59,16 @@ Une observation est « courante » si toutes ses preuves proviennent des analyse
 aujourd'hui ; une correction humaine rend les anciennes caduques sans les effacer. Les
 transcriptions humaines sont des `page_analysis` de fournisseur `human` (coût nul).
 
-## Connaissance 🔜 (phase 5)
+## Connaissance ✅ (phase 5, migration 0005)
+
+Implémenté : `entity` (type, nom canonique, `merged_into`), `entity_alias` (origine
+EXTRACTOR/HUMAN), `relation` (`relation_key` unique, `qualifier`, `level`, `origin`,
+`retracted_at`), `relation_evidence` (observation, document, page, case, extrait),
+`correction` (journal : action, avant, après, auteur, motif), `search_document` (texte normalisé,
+plongement `vector`, `embedder` ; index GIN plein texte). Rien n'est effacé : fusion = pointeur,
+retrait = date.
+
+Détail prévu à l'origine :
 
 | Table | Colonnes clés |
 |---|---|

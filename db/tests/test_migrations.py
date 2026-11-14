@@ -20,12 +20,23 @@ def test_round_trip(database_url: str, migrated_engine: Engine) -> None:
     tables = set(inspect(migrated_engine).get_table_names())
     expected = {"pipeline_run", "pipeline_step", "comic", "document", "page", "import_item"}
     expected |= {"page_analysis", "panel", "text_region", "observation", "evidence_ref"}
+    expected |= {"entity", "entity_alias", "relation", "relation_evidence", "correction"}
+    expected |= {"search_document"}
     assert expected <= tables
 
 
 def test_models_match_migrations(migrated_engine: Engine) -> None:
     with migrated_engine.connect() as conn:
-        diff = compare_metadata(MigrationContext.configure(conn), metadata)
+        # Même exclusion que db/migrations/env.py : index plein texte créé en SQL brut.
+        context = MigrationContext.configure(
+            conn,
+            opts={
+                "include_object": lambda obj, name, type_, reflected, compare_to: (
+                    not (type_ == "index" and name == "ix_search_document_fts")
+                )
+            },
+        )
+        diff = compare_metadata(context, metadata)
     assert diff == [], f"schéma et migrations divergent : {diff}"
 
 

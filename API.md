@@ -52,6 +52,17 @@ Le nom de fichier envoyé par le client est réduit à son nom de base (aucun ch
 
 En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payant renvoie 422.
 
+| Méthode | Chemin | Description | Réponses |
+|---|---|---|---|
+| POST | `/api/v1/knowledge/build` | Construit entités, relations et index à partir des observations (`document_ids`) | 201 |
+| GET | `/api/v1/knowledge/entities?type=&q=` | Entités actives (non fusionnées) | 200 |
+| GET | `/api/v1/knowledge/entities/{id}` | Fiche : alias, relations avec preuves, historique des corrections | 200, 404 |
+| GET | `/api/v1/knowledge/entities/{id}/graph?depth=1..3` | Voisinage (nœuds, arêtes) | 200, 404 |
+| GET | `/api/v1/knowledge/path?from_id=&to_id=` | Plus court chemin | 200, 404 |
+| POST | `/api/v1/knowledge/corrections` | `rename`, `add_alias`, `merge`, `retract_relation` — motif obligatoire, journalisé (URL fixe) | 201, 404, 422 |
+| POST | `/api/v1/knowledge/relations` | Relation manuelle (preuve obligatoire ; THEORY refusée) | 201, 404, 422 |
+| GET | `/api/v1/search?q=&document_ids=` | Recherche hybride (textes servis + entités), scores détaillés | 200, 422 |
+
 Exemple :
 
 ```json

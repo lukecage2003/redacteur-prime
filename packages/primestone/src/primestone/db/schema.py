@@ -7,6 +7,7 @@ réellement implémentées figurent ici.
 
 from __future__ import annotations
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     BigInteger,
     CheckConstraint,
@@ -339,4 +340,158 @@ evidence_ref = Table(
     Index("ix_evidence_ref_observation_id", "observation_id"),
     Index("ix_evidence_ref_document_id", "document_id"),
     Index("ix_evidence_ref_analysis_id", "analysis_id"),
+)
+
+
+# --- Knowledge Intelligence (phase 5) -----------------------------------------------------
+
+ENTITY_TYPES = (
+    "CHARACTER",
+    "EVENT",
+    "LOCATION",
+    "OBJECT",
+    "CONCEPT",
+    "SERIES",
+    "CONTINUITY",
+    "COMIC",
+)
+RELATION_TYPES = (
+    "APPEARS_IN",
+    "REFERENCES",
+    "CONTRADICTS",
+    "PRECEDES",
+    "REVEALS",
+    "FORESHADOWS",
+    "RELATED_TO",
+    "OPPOSES",
+)
+
+entity = Table(
+    "entity",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("type", Text, nullable=False),
+    Column("canonical_name", Text, nullable=False),
+    Column("folded_name", Text, nullable=False),
+    Column("description", Text),
+    # Fusion (correction humaine) : l'entité absorbée est conservée et pointe vers la cible.
+    Column("merged_into", UUID(as_uuid=True), ForeignKey("entity.id", ondelete="RESTRICT")),
+    *_ts(),
+    CheckConstraint(_in(ENTITY_TYPES, "type"), name="type"),
+    Index("ix_entity_type_folded_name", "type", "folded_name"),
+)
+
+entity_alias = Table(
+    "entity_alias",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "entity_id",
+        UUID(as_uuid=True),
+        ForeignKey("entity.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("alias", Text, nullable=False),
+    Column("folded", Text, nullable=False),
+    Column("language", Text),
+    Column("origin", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint("origin IN ('EXTRACTOR', 'HUMAN')", name="origin"),
+    UniqueConstraint("entity_id", "folded"),
+    Index("ix_entity_alias_folded", "folded"),
+)
+
+relation = Table(
+    "relation",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("relation_key", Text, nullable=False, unique=True),
+    Column(
+        "source_id",
+        UUID(as_uuid=True),
+        ForeignKey("entity.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column(
+        "target_id",
+        UUID(as_uuid=True),
+        ForeignKey("entity.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("type", Text, nullable=False),
+    Column("qualifier", Text),
+    Column("level", Text, nullable=False),
+    Column("confidence", Float, nullable=False),
+    Column("origin", Text, nullable=False),
+    # Retrait (correction humaine) : la relation reste en base, marquée retirée.
+    Column("retracted_at", DateTime(timezone=True)),
+    *_ts(),
+    CheckConstraint(_in(RELATION_TYPES, "type"), name="type"),
+    CheckConstraint(_in(EVIDENCE_LEVELS, "level"), name="level"),
+    CheckConstraint("origin IN ('EXTRACTOR', 'HUMAN')", name="origin"),
+    CheckConstraint("confidence >= 0 AND confidence <= 1", name="confidence"),
+    CheckConstraint("source_id <> target_id", name="not_self"),
+    Index("ix_relation_source_id", "source_id"),
+    Index("ix_relation_target_id", "target_id"),
+)
+
+relation_evidence = Table(
+    "relation_evidence",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "relation_id",
+        UUID(as_uuid=True),
+        ForeignKey("relation.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("observation_id", UUID(as_uuid=True), ForeignKey("observation.id", ondelete="RESTRICT")),
+    Column(
+        "document_id",
+        UUID(as_uuid=True),
+        ForeignKey("document.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("page_number", Integer, nullable=False),
+    Column("panel_index", Integer),
+    Column("excerpt", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint("page_number >= 1", name="page_number"),
+    UniqueConstraint("relation_id", "observation_id"),
+    Index("ix_relation_evidence_relation_id", "relation_id"),
+)
+
+correction = Table(
+    "correction",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("target_type", Text, nullable=False),
+    Column("target_id", UUID(as_uuid=True), nullable=False),
+    Column("action", Text, nullable=False),
+    Column("before", JSONB),
+    Column("after", JSONB),
+    Column("author", Text, nullable=False),
+    Column("reason", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint("target_type IN ('ENTITY', 'RELATION')", name="target_type"),
+    Index("ix_correction_target_id", "target_id"),
+)
+
+search_document = Table(
+    "search_document",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("kind", Text, nullable=False),
+    Column("ref_id", UUID(as_uuid=True), nullable=False),
+    Column("document_id", UUID(as_uuid=True), ForeignKey("document.id", ondelete="RESTRICT")),
+    Column("page_number", Integer),
+    Column("panel_index", Integer),
+    Column("content", Text, nullable=False),
+    Column("folded", Text, nullable=False),
+    Column("embedder", Text, nullable=False),
+    Column("embedding", Vector(), nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint("kind IN ('TEXT', 'ENTITY')", name="kind"),
+    UniqueConstraint("kind", "ref_id", "embedder"),
+    Index("ix_search_document_document_id", "document_id"),
 )
