@@ -55,6 +55,13 @@ vérifiées), graphe (voisinage, chemin), recherche hybride (exact, faute de fra
 document, version corrigée seule visible), API, parcours navigateur (construction, recherche
 avec faute, alias, retrait).
 
+Couverture Editorial : Fact Checker (citations vérifiées, mauvaise case, références invalides,
+âge contredit avec preuves, paraphrase, non sourcé, page non transcrite, titres et notes,
+citations contenant « . » ou « ? », appariement citation/référence, nombres cités), plans de
+mission, missions de bout en bout (dossier vérifié, texte faux bloqué, rédacteur menteur
+écarté, échec critique, échec non critique, reprise après interruption), API, parcours
+navigateur avec un vrai worker.
+
 Banc d'essai reproductible du détecteur : `uv run primestone-vision benchmark-panels --pages 200`.
 
 Les comics de test sont **synthétiques** (générés par `conftest.py`) : aucune œuvre protégée.

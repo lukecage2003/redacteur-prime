@@ -10,6 +10,7 @@ from __future__ import annotations
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     CheckConstraint,
     Column,
     DateTime,
@@ -494,4 +495,98 @@ search_document = Table(
     CheckConstraint("kind IN ('TEXT', 'ENTITY')", name="kind"),
     UniqueConstraint("kind", "ref_id", "embedder"),
     Index("ix_search_document_document_id", "document_id"),
+)
+
+
+# --- Editorial Director (phase 6) -----------------------------------------------------------
+
+MISSION_STATUSES = ("PLANNED", "RUNNING", "AWAITING_APPROVAL", "APPROVED", "REJECTED", "FAILED")
+TASK_STATUSES = ("PENDING", "RUNNING", "SUCCEEDED", "FAILED", "SKIPPED")
+
+mission = Table(
+    "mission",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("type", Text, nullable=False),
+    Column("title", Text, nullable=False),
+    Column("status", Text, nullable=False, server_default=text("'PLANNED'")),
+    Column("document_ids", JSONB, nullable=False),
+    Column("params", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column("result", JSONB),
+    Column("error", Text),
+    Column("run_id", UUID(as_uuid=True), ForeignKey("pipeline_run.id", ondelete="RESTRICT")),
+    *_ts(),
+    Column("completed_at", DateTime(timezone=True)),
+    CheckConstraint(_in(MISSION_STATUSES), name="status"),
+)
+
+mission_task = Table(
+    "mission_task",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "mission_id",
+        UUID(as_uuid=True),
+        ForeignKey("mission.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("position", Integer, nullable=False),
+    Column("key", Text, nullable=False),
+    Column("agent", Text, nullable=False),
+    Column("critical", Boolean, nullable=False),
+    Column("status", Text, nullable=False, server_default=text("'PENDING'")),
+    Column("input", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column("output", JSONB),
+    Column("error", Text),
+    Column("attempts", Integer, nullable=False, server_default=text("0")),
+    Column("started_at", DateTime(timezone=True)),
+    Column("finished_at", DateTime(timezone=True)),
+    CheckConstraint(_in(TASK_STATUSES), name="status"),
+    UniqueConstraint("mission_id", "position"),
+)
+
+approval_request = Table(
+    "approval_request",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "mission_id",
+        UUID(as_uuid=True),
+        ForeignKey("mission.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("kind", Text, nullable=False),
+    Column("summary", Text, nullable=False),
+    Column("recommendation", Text, nullable=False),
+    Column("status", Text, nullable=False, server_default=text("'PENDING'")),
+    Column("decided_by", Text),
+    Column("comment", Text),
+    Column("decided_at", DateTime(timezone=True)),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint("status IN ('PENDING', 'APPROVED', 'REJECTED')", name="status"),
+    Index("ix_approval_request_mission_id", "mission_id"),
+)
+
+agent_run = Table(
+    "agent_run",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "mission_task_id",
+        UUID(as_uuid=True),
+        ForeignKey("mission_task.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("agent", Text, nullable=False),
+    Column("provider", Text),
+    Column("model", Text),
+    Column("prompt_id", Text),
+    Column("prompt_version", Text),
+    Column("input_tokens", Integer, nullable=False, server_default=text("0")),
+    Column("output_tokens", Integer, nullable=False, server_default=text("0")),
+    Column("cost_usd", Numeric(12, 6), nullable=False, server_default=text("0")),
+    Column("latency_ms", Float),
+    Column("error", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    Index("ix_agent_run_mission_task_id", "mission_task_id"),
 )

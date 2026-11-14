@@ -40,10 +40,15 @@ class ProviderRegistry:
         return sorted(self._factories)
 
 
-def default_registry() -> ProviderRegistry:
-    """Registre par défaut. Les adaptateurs réels seront ajoutés après benchmark (Phase 3)."""
+def default_registry(
+    *, ollama_url: str = "http://localhost:11434", ollama_model: str = "qwen2.5:7b"
+) -> ProviderRegistry:
+    """Registre par défaut : fournisseurs GRATUITS uniquement (simulé, modèle local Ollama)."""
+    from primestone.ai_gateway.ollama import OllamaLLMProvider
+
     registry = ProviderRegistry()
     registry.register("fake", FakeLLMProvider)
+    registry.register("ollama", lambda: OllamaLLMProvider(base_url=ollama_url, model=ollama_model))
     return registry
 
 
@@ -54,9 +59,12 @@ class AIGateway:
     - enregistre chaque appel, réussi ou non, dans `records`.
     """
 
-    def __init__(self, provider: LLMProvider, budget_usd: Decimal) -> None:
+    def __init__(
+        self, provider: LLMProvider, budget_usd: Decimal, *, zero_cost: bool = False
+    ) -> None:
         if budget_usd < 0:
             raise ValueError("le budget doit être positif")
+        self.zero_cost = zero_cost
         self._provider = provider
         self._budget = budget_usd
         self._spent = Decimal("0")
@@ -72,6 +80,8 @@ class AIGateway:
 
     async def complete(self, request: CompletionRequest) -> CompletionResult:
         estimate = self._provider.estimate_cost(request)
+        if self.zero_cost and estimate > 0:
+            raise BudgetExceededError("mode zéro coût : appel payant refusé")
         if self._spent + estimate > self._budget:
             raise BudgetExceededError(
                 f"appel refusé : estimé {estimate} USD, restant {self.remaining_usd} USD"

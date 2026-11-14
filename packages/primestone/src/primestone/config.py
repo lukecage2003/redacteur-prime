@@ -50,6 +50,11 @@ class Settings(BaseSettings):
     vision_model: str | None = None
     ollama_url: str = "http://localhost:11434"
 
+    # Editorial Director (phase 6) : rédaction optionnelle par un modèle de texte GRATUIT.
+    # "none" (gabarits déterministes, défaut), "fake" (tests) ou "ollama" (modèle local).
+    editorial_writer: Literal["none", "fake", "ollama"] = "none"
+    ollama_text_model: str = "qwen2.5:7b"
+
     # Knowledge (phase 5) : plongements gratuits. "hashing" (local, sans modèle, lexical) ou
     # "ollama" (modèle sémantique open source local, ex. nomic-embed-text).
     embedder: Literal["hashing", "ollama"] = "hashing"

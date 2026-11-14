@@ -14,7 +14,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 3 | Comic Vision | TESTED (texte réel : BLOCKED, voir ci-dessous) | 2 |
 | 4 | Forensic Intelligence (coût nul) | TESTED | 3 |
 | 5 | Knowledge Intelligence (coût nul) | TESTED | 4 |
-| 6 | Editorial Director (+ banc d'essai voix) | NOT IMPLEMENTED | 5 |
+| 6 | Editorial Director (coût nul) | TESTED (banc voix : BLOCKED) | 5 |
 | 7 | Research et Theory Laboratory | NOT IMPLEMENTED | 6 |
 | 8 | Market Intelligence — analyse | NOT IMPLEMENTED | 2b, 6 |
 | 9 | Social Intelligence | NOT IMPLEMENTED | 8 |
@@ -72,7 +72,7 @@ Fiche du module : [docs/modules/comic-library.md](docs/modules/comic-library.md)
 | Vue « Bibliothèque » dans le web | TESTED |
 | Stockage Cloud Storage (adaptateur GCS, URL signées) | NOT IMPLEMENTED — requis avant déploiement |
 | Métadonnées ComicInfo.xml (série, numéro) | NOT IMPLEMENTED |
-| Validation sur la bibliothèque réelle de l'utilisateur | NOT IMPLEMENTED — passage à VALIDATED |
+| Validation sur la bibliothèque réelle de l'utilisateur | EN COURS — 3 vrais numéros (79 pages) importés et rendus sans erreur ; lot de 50 réels à faire |
 
 **Critères** : lot de 50 comics ou plus importé ✅ (60 comics, 1 330 pages, voir mesures) ;
 reprise après arrêt forcé sans doublon ni perte ✅ ; une page manquante bloque `COMPLETE` ✅ ;
@@ -151,13 +151,24 @@ Fiche : [docs/modules/knowledge.md](docs/modules/knowledge.md) · ADR-0012.
 **Critères** : relations toutes prouvées ; historique de corrections complet ; requêtes de
 graphe et de recherche dans les budgets de latence.
 
-## Phase 6 — Editorial Director
+## Phase 6 — Editorial Director (coût nul)
 
-Chief Editor (machine à états persistée), agents spécialisés à contrats typés, demandes
-d'approbation humaine. Banc d'essai STT/TTS.
+Fiche : [docs/modules/editorial.md](docs/modules/editorial.md) · ADR-0013.
 
-**Critères** : mission de bout en bout sur le corpus ; gestion des échecs d'agents ; aucune
-conclusion sans preuve.
+| Élément | Statut |
+|---|---|
+| Chief Editor : missions durables, reprise après interruption | TESTED |
+| Agents : Research Director, Comics Analyst, Continuity Editor, Character Researcher, Fact Checker | TESTED |
+| Gestion des échecs (2 tentatives, dégradé vs critique) | TESTED |
+| Confrontation des résultats et recommandation | TESTED |
+| Fact Checker bloquant (citations, âges contredits, références) | TESTED |
+| Approbation humaine (refusée si erreur majeure) | TESTED (y compris navigateur + vrai worker) |
+| Rédaction par modèle local gratuit, retenue seulement si vérifiée | IMPLEMENTED — testé avec modèle simulé |
+| Agents des phases 7 à 11 | NOT IMPLEMENTED (listés, jamais simulés) |
+| Banc d'essai STT/TTS | **BLOCKED** — gratuit possible en local (whisper.cpp, Piper) mais exige de télécharger des modèles : à faire sur la machine de l'utilisateur, phase 12 |
+
+**Critères** : mission de bout en bout ✅ ; gestion des échecs ✅ ; aucune conclusion sans
+preuve ✅ (Fact Checker sur chaque livrable).
 
 ## Phase 7 — Research et Theory Laboratory
 
@@ -173,6 +184,13 @@ Stratégies YouTube (long), TikTok (découverte), Instagram (Reels, carrousels) 
 autonomes construites depuis l'architecture narrative, pas par découpage mécanique.
 
 ## Phase 10 — Maximum Storytelling
+
+Observation (exemples de scripts fournis le 2026-11-14) : scripts YouTube longs (18–35 min),
+en français, découpés en sections horodatées, citant leurs sources par œuvre et par histoire
+(« The Sandman: Endless Nights (2003), The Heart of a Star ») plutôt que par page, avec une part
+de savoir général hors bibliothèque. À prévoir : citations par œuvre dans le Fact Checker,
+distinction « vérifiable dans la bibliothèque » / « savoir externe à sourcer », lecture des
+horodatages comme structure.
 
 Workflow en 13 étapes, notation sur 100, veto factuel, versions FR et EN adaptées.
 

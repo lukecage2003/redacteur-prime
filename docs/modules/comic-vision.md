@@ -46,6 +46,18 @@ Le fournisseur `claude` nécessite une clé d'API Anthropic (variable `ANTHROPIC
 ≈ 30 ms par page sur 1 vCPU. Limites : bulles qui chevauchent les gouttières, cases qui se
 chevauchent, gouttières non rectilignes → renvoyées comme une case englobante.
 
+## Essai sur de vrais comics (2026-11-14, fichiers privés, non versionnés)
+
+3 numéros réels fournis par le propriétaire (79 pages) : import, validation et rendu sans erreur
+en 7,8 s (≈ 0,33 Mo par page rendue) ; détection des cases sur les 79 pages en 6,1 s.
+Vérification visuelle de 5 pages : cases et ordre de lecture corrects sur les planches
+classiques (5, 6, 6 cases) et sur une grille irrégulière de 15 cases (4×4 avec une case
+double) ; couvertures et pleines pages = 1 case. Un faux positif relevé : le bloc de mentions
+légales de la page de crédits est pris pour une case (amélioration possible : écarter les
+bandes de texte très plates en marge). Le lettrage est en capitales (« I AM T'CHALLA, THE
+BLACK PANTHER ») : la règle d'identité de la phase 4 (nom connu exigé en capitales) est
+pertinente.
+
 ## Reste à faire pour VALIDATED
 
 Banc d'essai sur un corpus réel annoté (cases, textes, locuteurs) : F1 des cases, CER de la
