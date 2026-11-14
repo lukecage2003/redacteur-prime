@@ -17,6 +17,7 @@ describe("checkSeverity", () => {
       "FACT_CHECK",
       "THEORY_REVIEW",
       "RESEARCH_DOSSIER",
+      "MARKET_BRIEF",
     ]);
   });
 });

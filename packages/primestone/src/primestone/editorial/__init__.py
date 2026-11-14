@@ -13,6 +13,7 @@ from primestone.forensic import forensic_service
 from primestone.jobs import PostgresJobQueue
 from primestone.knowledge import knowledge_service_from_settings
 from primestone.lab import TheoryLab
+from primestone.market import market_service_from_settings
 
 __all__ = [
     "AGENTS",
@@ -50,4 +51,5 @@ def editorial_service_from_settings(settings: Settings, engine: Engine) -> Edito
         PostgresJobQueue(engine),
         writer,
         lab=TheoryLab(engine, forensic, knowledge),
+        market=market_service_from_settings(settings, engine),
     )

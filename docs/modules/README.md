@@ -15,7 +15,7 @@ ajoutée ici au démarrage de la phase correspondante.
 | `knowledge` | 5 | entités, relations prouvées, corrections, graphe, recherche ([fiche](knowledge.md)) | TESTED (coût nul) |
 | `editorial` | 6 | Chief Editor, agents, Fact Checker, approbations ([fiche](editorial.md)) | TESTED (coût nul) |
 | `lab` | 7 | théories, preuves et contre-preuves, confiance calculée ([fiche](lab.md)) | TESTED (coût nul) |
-| `market` | 2b, 8 | sources, signaux, écart EN→FR | NOT IMPLEMENTED |
+| `market` | 2b, 8 | sources avec fiche, collecte publique gratuite, écart EN→FR ([fiche](market.md)) | TESTED (collecte réelle BLOCKED) |
 | `social` | 9 | stratégies et déclinaisons par plateforme | NOT IMPLEMENTED |
 | `storytelling` | 10 | scripts en 13 étapes, notation, veto factuel | NOT IMPLEMENTED |
 | `performance` | 11 | métriques autorisées, boucle d'apprentissage | NOT IMPLEMENTED |

@@ -10,13 +10,13 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 0 | Audit du dépôt et architecture | VALIDATED | — |
 | 1 | Core Platform | TESTED (socle) | 0 |
 | 2 | Comic Library | TESTED | 1 |
-| 2b | Market Intelligence — collecte (avancée, voir ci-dessous) | NOT IMPLEMENTED | 1 |
+| 2b | Market Intelligence — collecte (avancée, voir ci-dessous) | TESTED (livrée avec la phase 8 ; collecte réelle BLOCKED) | 1 |
 | 3 | Comic Vision | TESTED (texte réel : BLOCKED, voir ci-dessous) | 2 |
 | 4 | Forensic Intelligence (coût nul) | TESTED | 3 |
 | 5 | Knowledge Intelligence (coût nul) | TESTED | 4 |
 | 6 | Editorial Director (coût nul) | TESTED (banc voix : BLOCKED) | 5 |
-| 7 | Research et Theory Laboratory | NOT IMPLEMENTED | 6 |
-| 8 | Market Intelligence — analyse | NOT IMPLEMENTED | 2b, 6 |
+| 7 | Research et Theory Laboratory (coût nul) | TESTED | 6 |
+| 8 | Market Intelligence — analyse (coût nul) | TESTED | 2b, 6 |
 | 9 | Social Intelligence | NOT IMPLEMENTED | 8 |
 | 10 | Maximum Storytelling | NOT IMPLEMENTED | 6, 7 |
 | 11 | Performance Intelligence | NOT IMPLEMENTED | 9, 10 |
@@ -90,7 +90,19 @@ Connecteurs avec fiche d'accès (quotas, conditions d'utilisation, classe de don
 YouTube Data API v3 (public), YouTube Analytics (chaîne Primestone, OAuth), Reddit (API
 officielle), flux RSS d'actualités comics. Instantanés quotidiens horodatés.
 
-**Critères** : 100 % des données portent une `DataClass` ; aucune source sans fiche validée.
+**Critères** : 100 % des données portent une `DataClass` ✅ (contrainte en base) ; aucune source
+sans fiche validée ✅. Livrée avec la phase 8, voir ci-dessous.
+
+| Élément | Statut |
+|---|---|
+| Sources avec fiche (accès, quota, conditions), validation humaine obligatoire | TESTED |
+| YouTube Data API v3 (gratuite, quota contrôlé, clé jamais divulguée) | IMPLEMENTED — testé avec API simulée |
+| Flux RSS / Atom (HTTPS, DOCTYPE refusé) | IMPLEMENTED — testé hors ligne |
+| Import manuel CSV / API (métriques privées refusées) | TESTED |
+| Instantanés horodatés, append-only, idempotents ; `snapshot` quotidien | TESTED (planification : cron local ; Cloud Scheduler en phase 13) |
+| YouTube Analytics (chaîne Primestone, OAuth) | NOT IMPLEMENTED — phase 11 |
+| Reddit | NOT IMPLEMENTED — application OAuth approuvée exigée |
+| Collecte réelle | **BLOCKED** — clé YouTube gratuite à créer par le propriétaire + hôtes réseau à autoriser |
 
 ## Phase 3 — Comic Vision
 
@@ -164,7 +176,7 @@ Fiche : [docs/modules/editorial.md](docs/modules/editorial.md) · ADR-0013.
 | Fact Checker bloquant (citations, âges contredits, références) | TESTED |
 | Approbation humaine (refusée si erreur majeure) | TESTED (y compris navigateur + vrai worker) |
 | Rédaction par modèle local gratuit, retenue seulement si vérifiée | IMPLEMENTED — testé avec modèle simulé |
-| Agents des phases 8 à 11 | NOT IMPLEMENTED (listés, jamais simulés) ; Theory Researcher livré en phase 7 |
+| Agents des phases 9 à 11 | NOT IMPLEMENTED (listés, jamais simulés) ; Theory Researcher (phase 7) et Market Analyst (phase 8) livrés |
 | Banc d'essai STT/TTS | **BLOCKED** — gratuit possible en local (whisper.cpp, Piper) mais exige de télécharger des modèles : à faire sur la machine de l'utilisateur, phase 12 |
 
 **Critères** : mission de bout en bout ✅ ; gestion des échecs ✅ ; aucune conclusion sans
@@ -188,9 +200,22 @@ Fiche : [docs/modules/lab.md](docs/modules/lab.md) · ADR-0014.
 **Critères** : aucune théorie sans preuve vérifiable ✅ ; contre-preuves cherchées avant THEORY
 ✅ ; confiance explicable ✅.
 
-## Phase 8 — Market Intelligence (analyse)
+## Phase 8 — Market Intelligence (analyse, coût nul)
 
-Sujets populaires, saturation, niches, différences culturelles, score d'écart EN→FR.
+Fiche : [docs/modules/market.md](docs/modules/market.md) · ADR-0015.
+
+| Élément | Statut |
+|---|---|
+| Sujets (mots-clés FR/EN) et correspondance par mots | TESTED |
+| Score d'écart EN→FR, saturation, popularité, niches, différences culturelles (`market-gap@1`) | TESTED |
+| Refus de chiffrer sous le seuil de données (INSUFFICIENT_DATA) | TESTED |
+| Résultats ESTIMATE reliés à leurs sources PUBLIC | TESTED |
+| Agent Market Analyst + mission MARKET_BRIEF du Chief Editor | TESTED |
+| API `/market/*`, CLI `primestone-market`, page web `/market` | TESTED (navigateur, mobile) |
+| Validation sur données réelles | NOT IMPLEMENTED — exige la collecte réelle (2b) |
+
+**Critères** : aucune métrique privée de concurrent ✅ (contrainte en base) ; aucun chiffre
+sans données suffisantes ✅ ; chaque score explicable ✅.
 
 ## Phase 9 — Social Intelligence
 

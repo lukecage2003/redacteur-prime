@@ -10,7 +10,8 @@
 création, au lancement et avant chaque appel). Chaîne entièrement gratuite disponible :
 bibliothèque et rendu (local), cases (local), texte par transcription humaine ou modèle local
 (Ollama), forensique par règles (local), graphe et recherche hybride (local, plongements sans modèle ou
-modèle local Ollama). Coût d'exploitation en local : **0**. Aucun service
+modèle local Ollama), marché (YouTube Data API v3 dans son quota gratuit de 10 000 unités par
+jour, jamais dépassé ; RSS ; import manuel). Coût d'exploitation en local : **0**. Aucun service
 cloud n'est requis pour cet usage.
 
 ## Stratégie (usage personnel)
