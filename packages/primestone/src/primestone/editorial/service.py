@@ -22,6 +22,7 @@ from primestone.ai_gateway import AIGateway, CompletionRequest, LLMProvider, Mes
 from primestone.editorial.agents import (
     AGENTS,
     MISSION_TYPES,
+    WITHOUT_DOCUMENTS,
     WRITER_PROMPT_ID,
     WRITER_PROMPT_VERSION,
     MissionContext,
@@ -32,6 +33,7 @@ from primestone.forensic import ForensicService
 from primestone.jobs import PermanentError, PostgresJobQueue
 from primestone.knowledge import KnowledgeService
 from primestone.lab import TheoryLab
+from primestone.market import MarketService
 
 RUN_STEP = "editorial.run_mission"
 RUN_KIND = "editorial.mission"
@@ -55,8 +57,10 @@ class EditorialService:
         queue: PostgresJobQueue,
         writer_provider: Callable[[], LLMProvider] | None = None,
         lab: TheoryLab | None = None,
+        market: MarketService | None = None,
     ) -> None:
         self._lab = lab
+        self._market = market
         self._engine = engine
         self._forensic = forensic
         self._knowledge = knowledge
@@ -102,7 +106,11 @@ class EditorialService:
             if theory is None:
                 raise EditorialError("théorie introuvable")
             document_ids = document_ids or [UUID(d) for d in theory["document_ids"]]
-        if not document_ids:
+        if mission_type in WITHOUT_DOCUMENTS:
+            if self._market is None:
+                raise EditorialError("Market Intelligence non configurée")
+            document_ids = []
+        elif not document_ids:
             raise EditorialError("au moins un document est requis")
         try:
             tasks = plan(mission_type, params)
@@ -122,6 +130,7 @@ class EditorialService:
             "FACT_CHECK": "Vérification d'un texte",
             "THEORY_REVIEW": f"Revue de théorie : {theory['title'] if theory else ''}",
             "RESEARCH_DOSSIER": f"Recherche : {params.get('question', '')}",
+            "MARKET_BRIEF": "Note de marché EN → FR",
         }[mission_type]
         with self._engine.begin() as conn:
             mission_id: UUID = conn.execute(
@@ -215,6 +224,7 @@ class EditorialService:
             page_counts={r[0]: r[2] or 0 for r in rows},
             writer=self._writer(),
             lab=self._lab,
+            market=self._market,
         )
 
     def _set_mission(self, mission_id: UUID, **fields: Any) -> None:
@@ -370,6 +380,24 @@ class EditorialService:
         searched = ctx.outputs.get("research", {}).get("search")
         if searched is not None and not searched["passages"] and not searched["observations"]:
             findings.append("Aucune source trouvée dans les pages transcrites.")
+        market = ctx.outputs.get("market")
+        if market is not None:
+            # Une note de marché ne cite aucune page : pas de Fact Checker, mais des estimations
+            # à relire, toujours validées avec réserves (ou pas du tout sans données).
+            scored = [t for t in market["topics"] if t["status"] == "SCORED"]
+            thin = len(market["topics"]) - len(scored)
+            if thin:
+                findings.append(f"{thin} sujet(s) sans assez de données publiques collectées.")
+            findings.append("Chiffres = estimations sur un échantillon collecté (classe ESTIMATE).")
+            return {
+                "recommendation": "VALIDER AVEC RÉSERVES" if scored else "NE PAS VALIDER",
+                "summary": f"Note de marché : {len(scored)} sujet(s) chiffré(s), "
+                f"opportunités : {', '.join(market['opportunities']) or 'aucune'}.",
+                "findings": findings,
+                "deliverable": synthesis.get("text"),
+                "author": synthesis.get("author", "gabarit déterministe"),
+                "fact_check": {"verdict": "NOT_APPLICABLE", "counts": {}, "checks": []},
+            }
         check = ctx.outputs.get("fact_check", {})
         verdict = check.get("verdict", "NEEDS_REVIEW")
         if verdict == "FAIL":

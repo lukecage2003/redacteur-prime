@@ -19,5 +19,6 @@ on le remplace par un nouvel ADR (statut « Remplacé par ADR-XXXX »).
 | [0012](0012-knowledge-graph.md) | Graphe dérivé des preuves, corrections journalisées, recherche gratuite | Accepté |
 | [0013](0013-editorial-director.md) | Editorial Director : missions durables, agents déterministes, Fact Checker bloquant | Accepté |
 | [0014](0014-theory-laboratory.md) | Laboratoire des théories : preuves vérifiées, confiance calculée, jamais CANON | Accepté |
+| [0015](0015-market-intelligence.md) | Market Intelligence : données publiques gratuites, fiche validée, score explicite | Accepté |
 
 Modèle : [template.md](template.md).

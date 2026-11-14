@@ -11,7 +11,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Environment = Literal["development", "test", "staging", "production"]
@@ -59,6 +59,12 @@ class Settings(BaseSettings):
     # "ollama" (modèle sémantique open source local, ex. nomic-embed-text).
     embedder: Literal["hashing", "ollama"] = "hashing"
     embedding_model: str = "nomic-embed-text"
+
+    # Market Intelligence (phases 2b, 8) : YouTube Data API v3 est GRATUITE dans la limite d'un
+    # quota quotidien (10 000 unités par défaut) ; sans clé, ce connecteur est désactivé.
+    youtube_api_key: SecretStr | None = None
+    youtube_daily_quota_units: int = Field(default=10_000, ge=0)
+    market_http_timeout_seconds: float = Field(default=20.0, gt=0)
 
     # Stockage objet : "local" (développement) ou "gcs" (cloud, phase 13 — non implémenté).
     storage_backend: Literal["local", "gcs"] = "local"

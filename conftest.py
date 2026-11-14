@@ -53,6 +53,11 @@ def db_engine(migrated_engine: Engine) -> Engine:
     """Moteur migré ; les tables de la file sont vidées avant chaque test (base de test)."""
     with migrated_engine.begin() as conn:
         for table in (
+            "market_metric",
+            "market_item",
+            "market_collection",
+            "market_source",
+            "market_topic",
             "theory_event",
             "theory_alternative",
             "theory_evidence",

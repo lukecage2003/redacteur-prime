@@ -72,4 +72,5 @@ export const MISSION_LABELS: Record<string, string> = {
   FACT_CHECK: "Vérification d'un texte",
   THEORY_REVIEW: "Revue de théorie",
   RESEARCH_DOSSIER: "Dossier de recherche",
+  MARKET_BRIEF: "Note de marché EN → FR",
 };

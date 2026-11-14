@@ -16,6 +16,7 @@ from primestone.editorial.factcheck import Corpus, check_text
 from primestone.forensic import ForensicService, fold
 from primestone.knowledge import KnowledgeService
 from primestone.lab import TheoryLab
+from primestone.market import MarketService
 
 
 @dataclass
@@ -31,6 +32,7 @@ class MissionContext:
     outputs: dict[str, dict[str, Any]] = field(default_factory=dict)
     writer: Callable[[str, str], Awaitable[tuple[str, dict[str, Any]]]] | None = None
     lab: TheoryLab | None = None
+    market: MarketService | None = None
 
     def corpus(self) -> Corpus:
         return Corpus(
@@ -153,6 +155,15 @@ async def theory_researcher(ctx: MissionContext, inputs: dict[str, Any]) -> dict
             raise LookupError("théorie introuvable")
         return {"theory": theory, "research": research}
     return {"search": ctx.lab.search(inputs["question"], ctx.document_ids, limit=12)}
+
+
+async def market_analyst(ctx: MissionContext, inputs: dict[str, Any]) -> dict[str, Any]:
+    """Écarts EN→FR sur données publiques collectées : estimations, jamais de métrique privée."""
+    if ctx.market is None:
+        raise RuntimeError("Market Intelligence non configurée")
+    return ctx.market.analysis(
+        window_days=int(inputs.get("window_days", 90)), min_items=int(inputs.get("min_items", 5))
+    )
 
 
 THEORY_RECOMMENDATIONS = {
@@ -334,6 +345,48 @@ def research_template(ctx: MissionContext) -> str:
     return "\n".join(lines)
 
 
+def market_template(ctx: MissionContext) -> str:
+    analysis = ctx.outputs["market"]
+    lines = [
+        "# Note de marché : écarts EN → FR",
+        f"Note : estimations ({analysis['method']}, fenêtre de {analysis['window_days']} jours, "
+        f"{analysis['items_considered']} contenus) : {analysis['caveat']}",
+    ]
+    scored = [t for t in analysis["topics"] if t["status"] == "SCORED"]
+    thin = [t for t in analysis["topics"] if t["status"] != "SCORED"]
+    lines.append("## Sujets chiffrés (du plus grand écart au plus petit)")
+    if not scored:
+        lines.append("Note : aucun sujet n'a assez de données pour être chiffré.")
+    for t in scored:
+        en, fr = t["languages"]["en"], t["languages"]["fr"]
+        culture = (
+            f", différence culturelle {t['cultural_difference']:+.3f}"
+            if t["cultural_difference"] is not None
+            else ""
+        )
+        lines.append(
+            f"Note : {t['topic']} : écart {t['gap_score']} (demande EN {t['demand_en']}, "
+            f"saturation FR {t['saturation_fr']} ; {en['items']} contenu(s) EN, médiane "
+            f"{en['median_views']:g} vues ; {fr['items']} contenu(s) FR{culture})."
+        )
+        for src in en["sources"][:2]:
+            lines.append(
+                f"Note : source publique : {src['title']} ({src['views']} vues relevées le "
+                f"{str(src['observed_at'])[:10]}) {src['url'] or ''}".rstrip()
+            )
+    for key, label in (
+        ("opportunities", "Opportunités"),
+        ("niches", "Niches"),
+        ("saturated_fr", "Déjà saturés en français"),
+    ):
+        if analysis[key]:
+            lines.append(f"Note : {label} : {', '.join(analysis[key])}.")
+    if thin:
+        lines.append("## Données insuffisantes (à collecter)")
+        lines.extend(f"Note : {t['topic']} : {t['explanation'][0]}." for t in thin)
+    return "\n".join(lines)
+
+
 TEMPLATES: dict[str, Callable[[MissionContext], str]] = {}
 
 
@@ -473,7 +526,14 @@ AGENTS: dict[str, AgentSpec] = {
             7,
             theory_researcher,
         ),
-        AgentSpec("market_analyst", "Market Analyst", "marchés FR/EN", "Market Intelligence", 8),
+        AgentSpec(
+            "market_analyst",
+            "Market Analyst",
+            "écarts EN→FR, sujets populaires, niches, saturation, différences culturelles",
+            "données publiques collectées uniquement ; estimations ; aucune métrique privée",
+            8,
+            market_analyst,
+        ),
         AgentSpec(
             "content_strategist",
             "Content Strategist",
@@ -555,6 +615,12 @@ def plan(mission_type: str, params: dict[str, Any]) -> list[PlannedTask]:
             PlannedTask("synthesis", "chief_editor_writer", True),
             PlannedTask("fact_check", "fact_checker", True),
         ]
+    if mission_type == "MARKET_BRIEF":
+        inputs: dict[str, Any] = {k: params[k] for k in ("window_days", "min_items") if k in params}
+        return [
+            PlannedTask("market", "market_analyst", True, inputs),
+            PlannedTask("synthesis", "chief_editor_writer", True),
+        ]
     if mission_type == "RESEARCH_DOSSIER":
         question = str(params.get("question") or "").strip()
         if not question:
@@ -574,10 +640,14 @@ MISSION_TYPES = (
     "FACT_CHECK",
     "THEORY_REVIEW",
     "RESEARCH_DOSSIER",
+    "MARKET_BRIEF",
 )
+# Missions qui ne portent sur aucun comic (pas de documents, pas de citations de pages).
+WITHOUT_DOCUMENTS = ("MARKET_BRIEF",)
 TEMPLATES.update(
     CHARACTER_DOSSIER=dossier_template,
     CONTINUITY_AUDIT=audit_template,
     THEORY_REVIEW=theory_template,
     RESEARCH_DOSSIER=research_template,
+    MARKET_BRIEF=market_template,
 )

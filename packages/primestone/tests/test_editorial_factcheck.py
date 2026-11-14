@@ -105,7 +105,9 @@ def test_plan() -> None:
         "FACT_CHECK",
         "THEORY_REVIEW",
         "RESEARCH_DOSSIER",
+        "MARKET_BRIEF",
     }
+    assert [t.agent for t in plan("MARKET_BRIEF", {})] == ["market_analyst", "chief_editor_writer"]
     keys = [t.key for t in plan("CHARACTER_DOSSIER", {"character": "Selina"})]
     assert keys == ["prepare", "character_research", "continuity", "synthesis", "fact_check"]
     assert [t.critical for t in plan("CONTINUITY_AUDIT", {})] == [True, False, True, True, True]

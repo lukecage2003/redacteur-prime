@@ -20,7 +20,12 @@ def _editorial(request: Request) -> EditorialService:
 
 class MissionIn(BaseModel):
     type: Literal[
-        "CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "FACT_CHECK", "THEORY_REVIEW", "RESEARCH_DOSSIER"
+        "CHARACTER_DOSSIER",
+        "CONTINUITY_AUDIT",
+        "FACT_CHECK",
+        "THEORY_REVIEW",
+        "RESEARCH_DOSSIER",
+        "MARKET_BRIEF",
     ]
     # Vide pour une revue de théorie : les documents de la théorie sont repris.
     document_ids: Annotated[list[UUID], Field(max_length=200)] = []

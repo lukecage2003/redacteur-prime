@@ -21,7 +21,7 @@ export const MODULES: readonly IntelligenceModule[] = [
   { id: "knowledge", name: "Knowledge Intelligence", phase: 5, summary: "Entités, relations, provenance, recherche hybride", status: "TESTED" },
   { id: "editorial", name: "Editorial Intelligence", phase: 6, summary: "Chief Editor et agents spécialisés", status: "TESTED" },
   { id: "lab", name: "Research et Theory Laboratory", phase: 7, summary: "Théories avec preuves, contre-preuves, alternatives et confiance calculée", status: "TESTED" },
-  { id: "market", name: "Market Intelligence", phase: 8, summary: "Tendances FR / EN, sujets sous-exploités en français", status: "NOT_IMPLEMENTED" },
+  { id: "market", name: "Market Intelligence", phase: 8, summary: "Écarts EN → FR sur données publiques, niches, saturation (estimations)", status: "TESTED" },
   { id: "social", name: "Social Intelligence", phase: 9, summary: "Déclinaisons YouTube, TikTok, Instagram", status: "NOT_IMPLEMENTED" },
   { id: "storytelling", name: "Storytelling Intelligence", phase: 10, summary: "Scripts FR / EN, notation sur 100, veto factuel", status: "NOT_IMPLEMENTED" },
   { id: "performance", name: "Performance Intelligence", phase: 11, summary: "Boucle mesurer → apprendre → optimiser", status: "NOT_IMPLEMENTED" },

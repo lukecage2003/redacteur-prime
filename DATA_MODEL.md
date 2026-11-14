@@ -103,11 +103,18 @@ jetons, coût, erreur).
 `research_dossier`, `script`, `script_version` (langue, contenu, étape), `script_score`
 (8 critères + `factual_veto`).
 
-## Marché et performance 🔜 (phases 2b, 8, 11)
+## Marché ✅ (phases 2b, 8, migration 0008)
 
-`market_source` (fiche : accès, quotas, conditions, date de vérification), `market_signal`
-(source, sujet, langue, valeur, unité, `data_class`, `observed_at`), `content_item`,
-`performance_metric` (série temporelle, comptes autorisés uniquement).
+`market_source` (fiche : type, accès, quota, conditions, classe, langue, configuration,
+`verified_at`/`verified_by`), `market_collection` (trace de chaque collecte : statut, paramètres,
+unités de quota, erreur), `market_item` (plateforme, identifiant externe unique, titre, langue
+fr/en, publication), `market_metric` (views/likes/comments uniquement, `data_class = 'PUBLIC'`,
+`observed_at`, append-only), `market_topic` (nom, mots-clés FR/EN).
+
+## Performance 🔜 (phase 11)
+
+`content_item`, `performance_metric` (série temporelle, comptes autorisés uniquement,
+`PRIVATE_AUTHORIZED`).
 
 ## Voix 🔜 (phase 12)
 

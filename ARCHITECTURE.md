@@ -107,6 +107,9 @@ Personnalités : Conversation, Research, Editorial, Director, Brainstorming. Mod
 Connecteurs avec fiche (accès, quotas, conditions, `DataClass`) ; instantanés horodatés ;
 score d'écart EN→FR = demande anglophone mesurée × (1 − saturation francophone).
 Aucune métrique privée de concurrent n'est estimée et présentée comme un fait.
+Implémenté en phase 8 (ADR-0015) : fiche validée avant toute collecte, YouTube Data API v3 sous
+quota gratuit, RSS, import manuel ; métriques publiques seules (contrainte en base) ; méthode
+`market-gap@1`, saturation FR = min(1, n_FR / n_EN), refus de chiffrer sous un seuil de données.
 
 ## Storytelling
 

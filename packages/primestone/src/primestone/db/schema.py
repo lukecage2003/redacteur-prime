@@ -680,3 +680,114 @@ theory_event = Table(
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     Index("ix_theory_event_theory_id", "theory_id"),
 )
+
+
+# --- Market Intelligence (phases 2b et 8) --------------------------------------------------
+# Uniquement des données PUBLIQUES observées (ou importées avec leur source) : aucune métrique
+# privée de concurrent (CTR, rétention, impressions) ne peut être stockée — contrainte en base.
+
+MARKET_PUBLIC_METRICS = ("views", "likes", "comments")
+
+market_source = Table(
+    "market_source",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("key", Text, nullable=False, unique=True),
+    Column("name", Text, nullable=False),
+    Column("kind", Text, nullable=False),
+    Column("access", Text, nullable=False),
+    Column("quota", Text, nullable=False),
+    Column("terms_url", Text, nullable=False),
+    Column("data_class", Text, nullable=False),
+    Column("language", Text),
+    Column("config", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column("verified_at", DateTime(timezone=True)),
+    Column("verified_by", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint("kind IN ('YOUTUBE_API', 'RSS', 'MANUAL')", name="kind"),
+    CheckConstraint("data_class IN ('PUBLIC', 'ESTIMATE', 'HYPOTHESIS')", name="data_class"),
+    CheckConstraint("language IS NULL OR language IN ('fr', 'en')", name="language"),
+)
+
+market_collection = Table(
+    "market_collection",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "source_id",
+        UUID(as_uuid=True),
+        ForeignKey("market_source.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("status", Text, nullable=False),
+    Column("params", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column("items", Integer, nullable=False, server_default=text("0")),
+    Column("metrics", Integer, nullable=False, server_default=text("0")),
+    Column("quota_units", Integer, nullable=False, server_default=text("0")),
+    Column("error", Text),
+    Column("author", Text, nullable=False),
+    Column("started_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    Column("finished_at", DateTime(timezone=True)),
+    CheckConstraint("status IN ('RUNNING', 'SUCCEEDED', 'FAILED')", name="status"),
+    Index("ix_market_collection_source_id", "source_id"),
+)
+
+market_item = Table(
+    "market_item",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "source_id",
+        UUID(as_uuid=True),
+        ForeignKey("market_source.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("platform", Text, nullable=False),
+    Column("external_id", Text, nullable=False),
+    Column("url", Text),
+    Column("title", Text, nullable=False),
+    Column("description", Text),
+    Column("channel", Text),
+    Column("language", Text, nullable=False),
+    Column("published_at", DateTime(timezone=True)),
+    Column("first_seen_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("platform", "external_id"),
+    CheckConstraint("language IN ('fr', 'en')", name="language"),
+)
+
+market_metric = Table(
+    "market_metric",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "item_id",
+        UUID(as_uuid=True),
+        ForeignKey("market_item.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column(
+        "collection_id",
+        UUID(as_uuid=True),
+        ForeignKey("market_collection.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("metric", Text, nullable=False),
+    Column("value", BigInteger, nullable=False),
+    Column("data_class", Text, nullable=False),
+    Column("observed_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("item_id", "metric", "observed_at"),
+    CheckConstraint(_in(MARKET_PUBLIC_METRICS, "metric"), name="metric"),
+    CheckConstraint("data_class = 'PUBLIC'", name="data_class"),
+    CheckConstraint("value >= 0", name="value"),
+)
+
+market_topic = Table(
+    "market_topic",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("name", Text, nullable=False, unique=True),
+    Column("keywords_fr", JSONB, nullable=False),
+    Column("keywords_en", JSONB, nullable=False),
+    Column("author", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)

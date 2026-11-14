@@ -17,6 +17,8 @@ jamais redistribués. Les contenus produits (scripts, analyses) citent leurs sou
 - Développement : fichier `.env` local (ignoré par Git). Cloud : Secret Manager, monté par Cloud Run.
 - GitHub → GCP : Workload Identity Federation, **aucune clé JSON** de compte de service.
 - Détection : gitleaks à chaque PR et chaque semaine (`security.yml`).
+- Clé YouTube Data API (`PRIMESTONE_YOUTUBE_API_KEY`) : `SecretStr`, jamais recopiée dans les
+  erreurs ni les traces de collecte ; Secret Manager dans le cloud.
 
 ## GitHub Actions
 

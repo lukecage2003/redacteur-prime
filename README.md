@@ -23,7 +23,8 @@ apprentissage à partir des performances réelles des contenus Primestone.
 | Phase 5 — Knowledge Intelligence (graphe prouvé, corrections, recherche hybride gratuite) | TESTED |
 | Phase 6 — Editorial Director (Chief Editor, agents, Fact Checker bloquant, validation humaine) | TESTED |
 | Phase 7 — Research et Theory Laboratory (preuves vérifiées, contre-preuves, confiance expliquée) | TESTED |
-| Phases 8 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
+| Phase 8 (+ 2b) — Market Intelligence (données publiques gratuites, écart EN→FR expliqué) | TESTED — collecte réelle BLOCKED (clé YouTube gratuite à créer) |
+| Phases 9 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
 | Infrastructure GCP | Non provisionnée (en attente d'autorisation explicite) |
 
 ## Démarrage rapide
