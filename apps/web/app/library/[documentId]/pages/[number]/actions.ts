@@ -14,15 +14,13 @@ export async function saveTranscription(rawDocumentId: string, rawPage: number, 
   const documentId = requireUuid(rawDocumentId);
   const page = requirePageNumber(rawPage);
   const texts = parseTranscriptionForm(form);
-  const response = await fetch(
-    apiUrl(`library/documents/${documentId}/pages/${page}/transcription`, serverApi()),
-    {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ texts, author: "propriétaire" }),
-      cache: "no-store",
-    },
-  );
+  // URL fixe : les valeurs venues du client ne voyagent que dans le corps, validé par l'API.
+  const response = await fetch(apiUrl("transcriptions", serverApi()), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ document_id: documentId, page, texts, author: "propriétaire" }),
+    cache: "no-store",
+  });
   if (!response.ok) throw new Error(`Enregistrement refusé (HTTP ${response.status})`);
   revalidatePath(`/library/${documentId}/pages/${page}`);
   redirect(`/library/${documentId}/pages/${page}?saved=1`);

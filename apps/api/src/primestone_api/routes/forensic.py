@@ -29,6 +29,11 @@ class TranscriptionIn(BaseModel):
     direction: ReadingDirection = ReadingDirection.LTR
 
 
+class TranscriptionByIdIn(TranscriptionIn):
+    document_id: UUID
+    page: Annotated[int, Field(ge=1, le=100_000)]
+
+
 class ForensicRequest(BaseModel):
     document_ids: Annotated[list[UUID], Field(min_length=1, max_length=500)]
     known_characters: Annotated[
@@ -53,6 +58,18 @@ def save_transcription(
 ) -> dict[str, Any]:
     """Transcription saisie ou corrigée par un humain : nouvelle version servie (coût nul),
     les versions précédentes restent en base."""
+    return _save(request, document_id, number, body)
+
+
+@router.post("/transcriptions", status_code=status.HTTP_201_CREATED)
+def save_transcription_by_body(request: Request, body: TranscriptionByIdIn) -> dict[str, Any]:
+    """Même opération, URL fixe : l'identifiant et la page voyagent dans le corps validé."""
+    return _save(request, body.document_id, body.page, body)
+
+
+def _save(
+    request: Request, document_id: UUID, number: int, body: TranscriptionIn
+) -> dict[str, Any]:
     vision: VisionService = request.app.state.vision
     entries = [
         HumanText(

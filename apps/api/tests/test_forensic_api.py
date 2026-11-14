@@ -57,6 +57,21 @@ def test_transcribe_analyze_report(
     analysis = client.get(f"/api/v1/library/documents/{doc}/pages/1/analysis").json()
     assert analysis["provider"] == "human"
     assert analysis["texts"][0]["panel_index"] == 2
+    by_body = client.post(
+        "/api/v1/transcriptions",
+        json={
+            "document_id": doc,
+            "page": 1,
+            "texts": [{"text": "J'ai 30 ans.", "speaker": "Diana", "panel_index": 2}],
+        },
+    )
+    assert by_body.status_code == 201
+    assert (
+        client.post(
+            "/api/v1/transcriptions", json={"document_id": "../x", "page": 1, "texts": []}
+        ).status_code
+        == 422
+    )
 
     assert client.post("/api/v1/forensic/analyses", json={"document_ids": [doc]}).status_code == 201
     report = client.get("/api/v1/forensic/report", params={"document_ids": [doc]}).json()
