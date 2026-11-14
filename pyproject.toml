@@ -1,0 +1,62 @@
+[project]
+name = "primestone-editorial"
+version = "0.1.0"
+description = "PRIMESTONE EDITORIAL 2.0 — workspace racine (monorepo Python)"
+requires-python = ">=3.12"
+dependencies = [
+    "primestone",
+    "primestone-api",
+    "primestone-worker",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "httpx>=0.28",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pip-audit>=2.7",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/primestone", "apps/api", "apps/worker"]
+
+[tool.uv.sources]
+primestone = { workspace = true }
+primestone-api = { workspace = true }
+primestone-worker = { workspace = true }
+
+# --- Qualité ---------------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["packages/primestone/src", "apps/api/src", "apps/worker/src"]
+extend-exclude = ["apps/web"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "ASYNC", "PT"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101", "S105", "S106"]
+"db/migrations/**" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = ["packages/primestone/src", "apps/api/src", "apps/worker/src"]
+explicit_package_bases = true
+files = ["packages/primestone/src", "apps/api/src", "apps/worker/src"]
+
+[tool.pytest.ini_options]
+testpaths = ["packages/primestone/tests", "apps/api/tests", "apps/worker/tests", "db/tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "integration: nécessite PostgreSQL + pgvector (PRIMESTONE_TEST_DATABASE_URL)",
+]

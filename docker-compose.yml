@@ -1,0 +1,49 @@
+# Environnement local de développement. Identifiants de développement uniquement.
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: primestone
+      POSTGRES_PASSWORD: primestone
+      POSTGRES_DB: primestone
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U primestone"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: docker/python.Dockerfile
+      args:
+        APP: api
+    environment:
+      PRIMESTONE_DATABASE_URL: postgresql+psycopg://primestone:primestone@db:5432/primestone
+    ports:
+      - "8000:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  worker:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: docker/python.Dockerfile
+      args:
+        APP: worker
+    environment:
+      PRIMESTONE_DATABASE_URL: postgresql+psycopg://primestone:primestone@db:5432/primestone
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

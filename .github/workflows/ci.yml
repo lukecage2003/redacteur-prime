@@ -1,0 +1,141 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: python
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: primestone
+          POSTGRES_PASSWORD: primestone
+          POSTGRES_DB: primestone_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U primestone"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      PRIMESTONE_TEST_DATABASE_URL: postgresql+psycopg://primestone:primestone@localhost:5432/primestone_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Lint (ruff)
+        run: uv run ruff check --output-format=github .
+      - name: Format (ruff)
+        run: uv run ruff format --check .
+      - name: Types (mypy strict)
+        run: uv run mypy
+      - name: Tests unitaires et d'intégration
+        run: uv run pytest --cov=primestone --cov=primestone_api --cov=primestone_worker --cov-report=term-missing
+
+  migrations:
+    name: migrations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: primestone
+          POSTGRES_PASSWORD: primestone
+          POSTGRES_DB: primestone_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U primestone"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      PRIMESTONE_DATABASE_URL: postgresql+psycopg://primestone:primestone@localhost:5432/primestone_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Une seule tête de migration
+        run: test "$(uv run alembic heads | wc -l)" -eq 1
+      - name: upgrade → downgrade → upgrade
+        run: |
+          uv run alembic upgrade head
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+      - name: Schéma déclaré = migrations (alembic check)
+        run: uv run alembic check
+
+  web:
+    name: web
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint (eslint)
+        run: pnpm --filter @primestone/web lint --max-warnings=0
+      - name: Types (tsc)
+        run: pnpm --filter @primestone/web typecheck
+      - name: Tests (vitest)
+        run: pnpm --filter @primestone/web test
+      - name: Build (next)
+        run: pnpm --filter @primestone/web build
+
+  docker:
+    name: docker
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: api
+            dockerfile: docker/python.Dockerfile
+            app: api
+          - image: worker
+            dockerfile: docker/python.Dockerfile
+            app: worker
+          - image: web
+            dockerfile: apps/web/Dockerfile
+            app: ""
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build ${{ matrix.image }} (sans push)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          build-args: APP=${{ matrix.app }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
