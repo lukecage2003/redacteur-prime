@@ -100,8 +100,14 @@ jetons, coût, erreur).
 
 `mission`, `mission_task`, `agent_run` (agent, entrées/sorties JSON validées, `prompt_id`,
 `prompt_version`, fournisseur, modèle, jetons, coût, latence, erreur), `approval_request`,
-`research_dossier`, `script`, `script_version` (langue, contenu, étape), `script_score`
-(8 critères + `factual_veto`).
+`research_dossier`. Scripts : voir « Storytelling ».
+
+## Storytelling ✅ (phase 10, migration 0009)
+
+`script` (titre, langue fr/en, documents, étape parmi 13, statut IN_PROGRESS/VALIDATED,
+`adapted_from`), `script_version` (numéro, étape, contenu, origine HUMAN/IMPORT/MODEL ; ajout
+seul), `script_score` (méthode, 8 critères JSON, total 0–100, `factual_veto`, analyse),
+`script_event` (journal).
 
 ## Marché ✅ (phases 2b, 8, migration 0008)
 

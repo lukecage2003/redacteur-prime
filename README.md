@@ -25,7 +25,8 @@ apprentissage à partir des performances réelles des contenus Primestone.
 | Phase 7 — Research et Theory Laboratory (preuves vérifiées, contre-preuves, confiance expliquée) | TESTED |
 | Phase 8 (+ 2b) — Market Intelligence (données publiques gratuites, écart EN→FR expliqué) | TESTED — collecte réelle BLOCKED (clé YouTube gratuite à créer) |
 | Phase 9 — Social Intelligence (déclinaisons YouTube, TikTok, Instagram depuis les faits vérifiés) | TESTED |
-| Phases 10 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
+| Phase 10 — Maximum Storytelling (scripts en 13 étapes, pré-notation sur 100, veto factuel) | TESTED |
+| Phases 11 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
 | Infrastructure GCP | Non provisionnée (en attente d'autorisation explicite) |
 
 ## Démarrage rapide

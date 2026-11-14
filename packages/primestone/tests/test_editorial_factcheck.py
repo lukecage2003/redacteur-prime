@@ -107,7 +107,12 @@ def test_plan() -> None:
         "RESEARCH_DOSSIER",
         "MARKET_BRIEF",
         "SOCIAL_PACKAGE",
+        "SCRIPT_REVIEW",
     }
+    assert [t.agent for t in plan("SCRIPT_REVIEW", {"script_id": "x"})][:2] == [
+        "story_architect",
+        "editorial_critic",
+    ]
     with pytest.raises(ValueError, match="source_mission_id"):
         plan("SOCIAL_PACKAGE", {})
     assert [t.agent for t in plan("MARKET_BRIEF", {})] == ["market_analyst", "chief_editor_writer"]

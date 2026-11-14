@@ -72,6 +72,8 @@ En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payan
 | POST | `/api/v1/lab/evidence/retractions` | Retrait motivé (jamais d'effacement) | 201, 404, 422 |
 | POST | `/api/v1/lab/alternatives` | Explication alternative | 201, 404, 422 |
 | POST | `/api/v1/lab/research` | Theory Researcher : candidats pour/contre, marque la recherche faite | 200, 404 |
+| GET · POST | `/api/v1/scripts` · GET `/{id}` | Scripts (création avec contenu et documents) ; détail (versions, notes, journal) | 200, 201, 404, 422 |
+| POST | `/api/v1/scripts/versions` · `/steps` · `/evaluations` · `/validations` · `/adaptations` | Nouvelle version ; changement d'étape ; Fact Checker + note sur 100 ; validation finale (refusée si veto ou < 70) ; adaptation FR/EN | 201, 404, 422 |
 | GET · POST | `/api/v1/market/sources` | Sources et leur fiche ; déclaration (clé, type, accès, quota, conditions) | 200, 201, 422 |
 | POST | `/api/v1/market/sources/verifications` | Validation humaine de la fiche (préalable à toute collecte) | 201, 404 |
 | POST | `/api/v1/market/imports` | Relevés publics manuels (champs inconnus, dont métriques privées, refusés) | 201, 404, 422 |
@@ -92,6 +94,5 @@ GET /api/v1/health/ready
 |---|---|
 | 4–5 | `GET /observations`, `GET /entities`, `GET /entities/{id}/relations`, `GET /search?q=` (hybride) |
 | 6 | `POST /missions`, `GET /missions/{id}`, `POST /approvals/{id}` |
-| 10 | `POST /scripts`, `GET /scripts/{id}/versions`, `GET /scripts/{id}/score` |
 | 12 | `WS /ws/voice` |
 | 13 | `GET /integrations/panel-explorer/...`, `GET /integrations/motion-studio/...` (facultatives) |

@@ -13,7 +13,7 @@ import json
 from collections.abc import Awaitable, Callable, Sequence
 from datetime import UTC, datetime
 from decimal import Decimal
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from sqlalchemy import Engine, text
@@ -35,6 +35,9 @@ from primestone.jobs import PermanentError, PostgresJobQueue
 from primestone.knowledge import KnowledgeService
 from primestone.lab import TheoryLab
 from primestone.market import MarketService
+
+if TYPE_CHECKING:  # import circulaire : storytelling utilise le Fact Checker
+    from primestone.storytelling import StorytellingService
 
 RUN_STEP = "editorial.run_mission"
 RUN_KIND = "editorial.mission"
@@ -59,7 +62,9 @@ class EditorialService:
         writer_provider: Callable[[], LLMProvider] | None = None,
         lab: TheoryLab | None = None,
         market: MarketService | None = None,
+        storytelling: StorytellingService | None = None,
     ) -> None:
+        self._storytelling = storytelling
         self._lab = lab
         self._market = market
         self._engine = engine
@@ -121,9 +126,19 @@ class EditorialService:
                 raise EditorialError("seul un livrable approuvé peut être décliné")
             params = {**params, "source_mission_id": source["id"]}
             document_ids = [UUID(d) for d in source["document_ids"]]
+        if mission_type == "MARKET_BRIEF" and self._market is None:
+            raise EditorialError("Market Intelligence non configurée")
+        script = None
+        if mission_type == "SCRIPT_REVIEW":
+            if self._storytelling is None:
+                raise EditorialError("Storytelling non configuré")
+            try:
+                script = self._storytelling.script(UUID(str(params.get("script_id"))))
+            except (ValueError, LookupError):
+                raise EditorialError("script introuvable") from None
+            if not script["versions"]:
+                raise EditorialError("script sans version")
         if mission_type in WITHOUT_DOCUMENTS:
-            if self._market is None:
-                raise EditorialError("Market Intelligence non configurée")
             document_ids = []
         elif not document_ids:
             raise EditorialError("au moins un document est requis")
@@ -147,6 +162,7 @@ class EditorialService:
             "RESEARCH_DOSSIER": f"Recherche : {params.get('question', '')}",
             "MARKET_BRIEF": "Note de marché EN → FR",
             "SOCIAL_PACKAGE": f"Déclinaisons sociales : {source['title'] if source else ''}",
+            "SCRIPT_REVIEW": f"Critique du script : {script['title'] if script else ''}",
         }[mission_type]
         with self._engine.begin() as conn:
             mission_id: UUID = conn.execute(
@@ -241,6 +257,7 @@ class EditorialService:
             writer=self._writer(),
             lab=self._lab,
             market=self._market,
+            storytelling=self._storytelling,
             source_mission=self.mission(UUID(mission["params"]["source_mission_id"]))
             if mission["params"].get("source_mission_id")
             else None,
@@ -411,6 +428,31 @@ class EditorialService:
                     f"{len(social['excluded_unverified'])} phrase(s) non vérifiée(s) du livrable "
                     "source écartée(s)."
                 )
+        critique = ctx.outputs.get("critique")
+        if critique is not None:
+            if critique["factual_veto"]:
+                recommendation = "NE PAS VALIDER"
+                findings.insert(0, "Veto factuel : erreur factuelle majeure dans le script.")
+            elif critique["total"] >= 70:
+                recommendation = "VALIDER AVEC RÉSERVES"
+            else:
+                recommendation = "RETRAVAILLER"
+            external = [
+                w for w in critique["analysis"]["works"] if w["status"] == "EXTERNAL_TO_SOURCE"
+            ]
+            if external:
+                findings.append(f"{len(external)} référence(s) hors bibliothèque à sourcer.")
+            findings.append("Pré-notation heuristique : relecture humaine indispensable.")
+            return {
+                "recommendation": recommendation,
+                "summary": f"Script : {critique['total']}/100"
+                + (" (veto factuel)" if critique["factual_veto"] else "")
+                + f", version {critique['version']}.",
+                "findings": findings,
+                "deliverable": synthesis.get("text"),
+                "author": synthesis.get("author", "gabarit déterministe"),
+                "fact_check": critique["analysis"]["fact_check"],
+            }
         market = ctx.outputs.get("market")
         if market is not None:
             # Une note de marché ne cite aucune page : pas de Fact Checker, mais des estimations

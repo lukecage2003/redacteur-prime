@@ -16,6 +16,7 @@ primestone-knowledge = "primestone_worker.cli_knowledge:main"
 primestone-editorial = "primestone_worker.cli_editorial:main"
 primestone-lab = "primestone_worker.cli_lab:main"
 primestone-market = "primestone_worker.cli_market:main"
+primestone-script = "primestone_worker.cli_script:main"
 
 [tool.uv.sources]
 primestone = { workspace = true }
