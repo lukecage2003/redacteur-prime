@@ -63,7 +63,7 @@ En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payan
 | POST | `/api/v1/knowledge/relations` | Relation manuelle (preuve obligatoire ; THEORY refusée) | 201, 404, 422 |
 | GET | `/api/v1/search?q=&document_ids=` | Recherche hybride (textes servis + entités), scores détaillés | 200, 422 |
 | GET | `/api/v1/editorial/agents` | Agents, rôles, limites, disponibilité | 200 |
-| POST | `/api/v1/editorial/missions` | Lance une mission (`type`, `document_ids`, `character`, `draft`, `theory_id`, `question` ; `MARKET_BRIEF` sans document) | 202, 422 |
+| POST | `/api/v1/editorial/missions` | Lance une mission (`type`, `document_ids`, `character`, `draft`, `theory_id`, `question`, `source_mission_id` + `platforms` pour `SOCIAL_PACKAGE` ; `MARKET_BRIEF` sans document) | 202, 422 |
 | GET | `/api/v1/editorial/missions` · `/{id}` | Missions ; détail (tâches, recommandation, livrable, vérification, décisions, traces) | 200, 404 |
 | POST | `/api/v1/editorial/approvals` | Décision humaine (`approve` / `reject`) — refusée si erreur factuelle majeure | 201, 404, 422 |
 | POST | `/api/v1/lab/theories` | Crée une théorie (`title`, `claim`, `document_ids`, `subjects`) | 201, 422 |

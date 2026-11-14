@@ -17,7 +17,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 6 | Editorial Director (coût nul) | TESTED (banc voix : BLOCKED) | 5 |
 | 7 | Research et Theory Laboratory (coût nul) | TESTED | 6 |
 | 8 | Market Intelligence — analyse (coût nul) | TESTED | 2b, 6 |
-| 9 | Social Intelligence | NOT IMPLEMENTED | 8 |
+| 9 | Social Intelligence (coût nul) | TESTED | 8 |
 | 10 | Maximum Storytelling | NOT IMPLEMENTED | 6, 7 |
 | 11 | Performance Intelligence | NOT IMPLEMENTED | 9, 10 |
 | 12 | Adaptive Voice | NOT IMPLEMENTED | 6 |
@@ -176,7 +176,7 @@ Fiche : [docs/modules/editorial.md](docs/modules/editorial.md) · ADR-0013.
 | Fact Checker bloquant (citations, âges contredits, références) | TESTED |
 | Approbation humaine (refusée si erreur majeure) | TESTED (y compris navigateur + vrai worker) |
 | Rédaction par modèle local gratuit, retenue seulement si vérifiée | IMPLEMENTED — testé avec modèle simulé |
-| Agents des phases 9 à 11 | NOT IMPLEMENTED (listés, jamais simulés) ; Theory Researcher (phase 7) et Market Analyst (phase 8) livrés |
+| Agents des phases 10 et 11 | NOT IMPLEMENTED (listés, jamais simulés) ; Theory Researcher (7), Market Analyst (8), Content Strategist (9) livrés |
 | Banc d'essai STT/TTS | **BLOCKED** — gratuit possible en local (whisper.cpp, Piper) mais exige de télécharger des modèles : à faire sur la machine de l'utilisateur, phase 12 |
 
 **Critères** : mission de bout en bout ✅ ; gestion des échecs ✅ ; aucune conclusion sans
@@ -217,10 +217,21 @@ Fiche : [docs/modules/market.md](docs/modules/market.md) · ADR-0015.
 **Critères** : aucune métrique privée de concurrent ✅ (contrainte en base) ; aucun chiffre
 sans données suffisantes ✅ ; chaque score explicable ✅.
 
-## Phase 9 — Social Intelligence
+## Phase 9 — Social Intelligence (coût nul)
 
-Stratégies YouTube (long), TikTok (découverte), Instagram (Reels, carrousels) ; déclinaisons
-autonomes construites depuis l'architecture narrative, pas par découpage mécanique.
+Fiche : [docs/modules/social.md](docs/modules/social.md) · ADR-0016.
+
+| Élément | Statut |
+|---|---|
+| Content Strategist : faits vérifiés → rôle narratif et section | TESTED |
+| YouTube long (chapitres), TikTok, Reels (autre angle), carrousel (≤ 20 cartes) | TESTED |
+| Mission SOCIAL_PACKAGE (livrable approuvé seulement, Fact Checker, approbation) | TESTED |
+| Formats datés et sourcés, à revérifier | IMPLEMENTED — sources non consultables depuis ce conteneur |
+| API, CLI `primestone-editorial social`, bouton web | TESTED (web : lint, types, build) |
+| Scripts rédigés (hooks, voix) | NOT IMPLEMENTED — phase 10 |
+
+**Critères** : aucun fait non vérifié dans une déclinaison ✅ ; structures distinctes par
+plateforme ✅.
 
 ## Phase 10 — Maximum Storytelling
 

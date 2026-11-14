@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { checkSeverity, fetchMission, MISSION_LABELS } from "@/lib/editorial";
+import { canDecline, checkSeverity, fetchMission, MISSION_LABELS } from "@/lib/editorial";
 import { isUuid } from "@/lib/ids";
-import { decide } from "../actions";
+import { decide, decline } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +30,11 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
         {MISSION_LABELS[mission.type]} · statut : <strong>{mission.status}</strong>
         {mission.error ? ` · ${mission.error}` : ""}
       </p>
+      {canDecline(mission) && (
+        <form action={decline.bind(null, mission.id)} className="mt-2">
+          <button className="rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700">Décliner pour YouTube, TikTok, Instagram (gratuit)</button>
+        </form>
+      )}
 
       <section className="mt-6">
         <h2 className="font-semibold">Tâches des agents</h2>

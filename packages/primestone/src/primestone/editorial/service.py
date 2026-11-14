@@ -21,6 +21,7 @@ from sqlalchemy import Engine, text
 from primestone.ai_gateway import AIGateway, CompletionRequest, LLMProvider, Message
 from primestone.editorial.agents import (
     AGENTS,
+    DECLINABLE,
     MISSION_TYPES,
     WITHOUT_DOCUMENTS,
     WRITER_PROMPT_ID,
@@ -106,6 +107,20 @@ class EditorialService:
             if theory is None:
                 raise EditorialError("théorie introuvable")
             document_ids = document_ids or [UUID(d) for d in theory["document_ids"]]
+        source = None
+        if mission_type == "SOCIAL_PACKAGE":
+            try:
+                source = self.mission(UUID(str(params.get("source_mission_id"))))
+            except (ValueError, LookupError):
+                source = None
+            if source is None:
+                raise EditorialError("mission source introuvable")
+            if source["type"] not in DECLINABLE:
+                raise EditorialError("ce type de livrable ne se décline pas pour les réseaux")
+            if source["status"] != "APPROVED":
+                raise EditorialError("seul un livrable approuvé peut être décliné")
+            params = {**params, "source_mission_id": source["id"]}
+            document_ids = [UUID(d) for d in source["document_ids"]]
         if mission_type in WITHOUT_DOCUMENTS:
             if self._market is None:
                 raise EditorialError("Market Intelligence non configurée")
@@ -131,6 +146,7 @@ class EditorialService:
             "THEORY_REVIEW": f"Revue de théorie : {theory['title'] if theory else ''}",
             "RESEARCH_DOSSIER": f"Recherche : {params.get('question', '')}",
             "MARKET_BRIEF": "Note de marché EN → FR",
+            "SOCIAL_PACKAGE": f"Déclinaisons sociales : {source['title'] if source else ''}",
         }[mission_type]
         with self._engine.begin() as conn:
             mission_id: UUID = conn.execute(
@@ -225,6 +241,9 @@ class EditorialService:
             writer=self._writer(),
             lab=self._lab,
             market=self._market,
+            source_mission=self.mission(UUID(mission["params"]["source_mission_id"]))
+            if mission["params"].get("source_mission_id")
+            else None,
         )
 
     def _set_mission(self, mission_id: UUID, **fields: Any) -> None:
@@ -380,6 +399,18 @@ class EditorialService:
         searched = ctx.outputs.get("research", {}).get("search")
         if searched is not None and not searched["passages"] and not searched["observations"]:
             findings.append("Aucune source trouvée dans les pages transcrites.")
+        social = ctx.outputs.get("social")
+        if social:
+            findings.append(
+                "Formats des plateformes vérifiés le "
+                f"{next(iter(social['platforms'].values()))['spec']['checked_on']} : "
+                "à revérifier avant publication."
+            )
+            if social["excluded_unverified"]:
+                findings.append(
+                    f"{len(social['excluded_unverified'])} phrase(s) non vérifiée(s) du livrable "
+                    "source écartée(s)."
+                )
         market = ctx.outputs.get("market")
         if market is not None:
             # Une note de marché ne cite aucune page : pas de Fact Checker, mais des estimations

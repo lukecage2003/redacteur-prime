@@ -17,6 +17,7 @@ from primestone.forensic import ForensicService, fold
 from primestone.knowledge import KnowledgeService
 from primestone.lab import TheoryLab
 from primestone.market import MarketService
+from primestone.social import PLATFORMS, build_package, render
 
 
 @dataclass
@@ -33,6 +34,7 @@ class MissionContext:
     writer: Callable[[str, str], Awaitable[tuple[str, dict[str, Any]]]] | None = None
     lab: TheoryLab | None = None
     market: MarketService | None = None
+    source_mission: dict[str, Any] | None = None
 
     def corpus(self) -> Corpus:
         return Corpus(
@@ -163,6 +165,36 @@ async def market_analyst(ctx: MissionContext, inputs: dict[str, Any]) -> dict[st
         raise RuntimeError("Market Intelligence non configurée")
     return ctx.market.analysis(
         window_days=int(inputs.get("window_days", 90)), min_items=int(inputs.get("min_items", 5))
+    )
+
+
+def _market_angle(ctx: MissionContext, text: str) -> str | None:
+    """Sujet de marché chiffré présent dans le livrable (le plus fort écart EN→FR)."""
+    if ctx.market is None:
+        return None
+    folded = f" {fold(text)} "
+    for topic in ctx.market.analysis()["topics"]:
+        if topic["status"] == "SCORED" and f" {fold(topic['topic'])} " in folded:
+            return (
+                f"{topic['topic']} : écart EN→FR {topic['gap_score']}, saturation FR "
+                f"{topic['saturation_fr']}"
+            )
+    return None
+
+
+async def content_strategist(ctx: MissionContext, inputs: dict[str, Any]) -> dict[str, Any]:
+    """Déclinaisons par plateforme à partir des faits VÉRIFIÉS d'un livrable approuvé."""
+    source = ctx.source_mission
+    if source is None or source["status"] != "APPROVED":
+        raise RuntimeError("le livrable source doit être approuvé")
+    result = source["result"]
+    deliverable = result.get("deliverable") or ""
+    return build_package(
+        source_title=source["title"],
+        deliverable=deliverable,
+        checks=result["fact_check"]["checks"],
+        platforms=inputs.get("platforms") or tuple(PLATFORMS),
+        market_angle=_market_angle(ctx, deliverable),
     )
 
 
@@ -537,9 +569,10 @@ AGENTS: dict[str, AgentSpec] = {
         AgentSpec(
             "content_strategist",
             "Content Strategist",
-            "stratégie par plateforme",
-            "Social Intelligence",
+            "déclinaisons YouTube, TikTok, Reels, carrousel depuis un livrable approuvé",
+            "reprend mot pour mot les faits vérifiés ; formats datés à revérifier",
             9,
+            content_strategist,
         ),
         AgentSpec(
             "story_architect",
@@ -615,6 +648,18 @@ def plan(mission_type: str, params: dict[str, Any]) -> list[PlannedTask]:
             PlannedTask("synthesis", "chief_editor_writer", True),
             PlannedTask("fact_check", "fact_checker", True),
         ]
+    if mission_type == "SOCIAL_PACKAGE":
+        if not params.get("source_mission_id"):
+            raise ValueError("le paramètre « source_mission_id » est obligatoire")
+        social_inputs: dict[str, Any] = {}
+        if params.get("platforms"):
+            social_inputs["platforms"] = list(params["platforms"])
+        return [
+            prepare,
+            PlannedTask("social", "content_strategist", True, social_inputs),
+            PlannedTask("synthesis", "chief_editor_writer", True),
+            PlannedTask("fact_check", "fact_checker", True),
+        ]
     if mission_type == "MARKET_BRIEF":
         inputs: dict[str, Any] = {k: params[k] for k in ("window_days", "min_items") if k in params}
         return [
@@ -641,7 +686,10 @@ MISSION_TYPES = (
     "THEORY_REVIEW",
     "RESEARCH_DOSSIER",
     "MARKET_BRIEF",
+    "SOCIAL_PACKAGE",
 )
+# Livrables qu'on peut décliner pour les réseaux (ils citent des pages vérifiables).
+DECLINABLE = ("CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "THEORY_REVIEW", "RESEARCH_DOSSIER")
 # Missions qui ne portent sur aucun comic (pas de documents, pas de citations de pages).
 WITHOUT_DOCUMENTS = ("MARKET_BRIEF",)
 TEMPLATES.update(
@@ -650,4 +698,5 @@ TEMPLATES.update(
     THEORY_REVIEW=theory_template,
     RESEARCH_DOSSIER=research_template,
     MARKET_BRIEF=market_template,
+    SOCIAL_PACKAGE=lambda ctx: render(ctx.outputs["social"]),
 )

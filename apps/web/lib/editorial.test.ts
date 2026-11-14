@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { checkSeverity, MISSION_LABELS } from "./editorial";
+import { canDecline, checkSeverity, MISSION_LABELS } from "./editorial";
+
+describe("canDecline", () => {
+  it("n'autorise que les livrables approuvés et déclinables", () => {
+    expect(canDecline({ type: "CHARACTER_DOSSIER", status: "APPROVED" })).toBe(true);
+    expect(canDecline({ type: "CHARACTER_DOSSIER", status: "AWAITING_APPROVAL" })).toBe(false);
+    expect(canDecline({ type: "MARKET_BRIEF", status: "APPROVED" })).toBe(false);
+  });
+});
 
 describe("checkSeverity", () => {
   it("classe les statuts du Fact Checker", () => {
@@ -18,6 +26,7 @@ describe("checkSeverity", () => {
       "THEORY_REVIEW",
       "RESEARCH_DOSSIER",
       "MARKET_BRIEF",
+      "SOCIAL_PACKAGE",
     ]);
   });
 });
