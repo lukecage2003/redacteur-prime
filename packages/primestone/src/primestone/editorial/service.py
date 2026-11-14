@@ -26,10 +26,12 @@ from primestone.editorial.agents import (
     WRITER_PROMPT_VERSION,
     MissionContext,
     plan,
+    theory_recommendation,
 )
 from primestone.forensic import ForensicService
 from primestone.jobs import PermanentError, PostgresJobQueue
 from primestone.knowledge import KnowledgeService
+from primestone.lab import TheoryLab
 
 RUN_STEP = "editorial.run_mission"
 RUN_KIND = "editorial.mission"
@@ -52,7 +54,9 @@ class EditorialService:
         knowledge: KnowledgeService,
         queue: PostgresJobQueue,
         writer_provider: Callable[[], LLMProvider] | None = None,
+        lab: TheoryLab | None = None,
     ) -> None:
+        self._lab = lab
         self._engine = engine
         self._forensic = forensic
         self._knowledge = knowledge
@@ -87,6 +91,17 @@ class EditorialService:
     ) -> UUID:
         if mission_type not in MISSION_TYPES:
             raise EditorialError(f"type de mission inconnu : {mission_type}")
+        theory = None
+        if mission_type == "THEORY_REVIEW":
+            if self._lab is None:
+                raise EditorialError("laboratoire des théories non configuré")
+            try:
+                theory = self._lab.theory(UUID(str(params.get("theory_id"))))
+            except ValueError:
+                theory = None
+            if theory is None:
+                raise EditorialError("théorie introuvable")
+            document_ids = document_ids or [UUID(d) for d in theory["document_ids"]]
         if not document_ids:
             raise EditorialError("au moins un document est requis")
         try:
@@ -105,6 +120,8 @@ class EditorialService:
             "CHARACTER_DOSSIER": f"Dossier : {params.get('character', '')}",
             "CONTINUITY_AUDIT": "Audit de continuité",
             "FACT_CHECK": "Vérification d'un texte",
+            "THEORY_REVIEW": f"Revue de théorie : {theory['title'] if theory else ''}",
+            "RESEARCH_DOSSIER": f"Recherche : {params.get('question', '')}",
         }[mission_type]
         with self._engine.begin() as conn:
             mission_id: UUID = conn.execute(
@@ -197,6 +214,7 @@ class EditorialService:
             titles={r[0]: r[1] for r in rows},
             page_counts={r[0]: r[2] or 0 for r in rows},
             writer=self._writer(),
+            lab=self._lab,
         )
 
     def _set_mission(self, mission_id: UUID, **fields: Any) -> None:
@@ -346,6 +364,12 @@ class EditorialService:
             findings.append(
                 "Aucune présence du personnage attestée en CANON (attributions à valider)."
             )
+        reviewed = ctx.outputs.get("theory_research")
+        if reviewed:
+            findings.append(f"Théorie : {theory_recommendation(reviewed['theory'])}.")
+        searched = ctx.outputs.get("research", {}).get("search")
+        if searched is not None and not searched["passages"] and not searched["observations"]:
+            findings.append("Aucune source trouvée dans les pages transcrites.")
         check = ctx.outputs.get("fact_check", {})
         verdict = check.get("verdict", "NEEDS_REVIEW")
         if verdict == "FAIL":

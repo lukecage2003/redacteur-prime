@@ -15,6 +15,7 @@ from uuid import UUID
 from primestone.editorial.factcheck import Corpus, check_text
 from primestone.forensic import ForensicService, fold
 from primestone.knowledge import KnowledgeService
+from primestone.lab import TheoryLab
 
 
 @dataclass
@@ -29,6 +30,7 @@ class MissionContext:
     page_counts: dict[UUID, int]
     outputs: dict[str, dict[str, Any]] = field(default_factory=dict)
     writer: Callable[[str, str], Awaitable[tuple[str, dict[str, Any]]]] | None = None
+    lab: TheoryLab | None = None
 
     def corpus(self) -> Corpus:
         return Corpus(
@@ -139,6 +141,38 @@ async def fact_checker(ctx: MissionContext, inputs: dict[str, Any]) -> dict[str,
     return check_text(text, ctx.corpus()).as_dict()
 
 
+async def theory_researcher(ctx: MissionContext, inputs: dict[str, Any]) -> dict[str, Any]:
+    """Cherche preuves et contre-preuves candidates (théorie) ou sources (question)."""
+    if ctx.lab is None:
+        raise RuntimeError("laboratoire des théories non configuré")
+    if inputs.get("theory_id"):
+        theory_id = UUID(inputs["theory_id"])
+        research = ctx.lab.research(theory_id)
+        theory = ctx.lab.theory(theory_id)
+        if theory is None:
+            raise LookupError("théorie introuvable")
+        return {"theory": theory, "research": research}
+    return {"search": ctx.lab.search(inputs["question"], ctx.document_ids, limit=12)}
+
+
+THEORY_RECOMMENDATIONS = {
+    "REFUTED": "ABANDONNER OU REFORMULER (réfutée par une preuve canon)",
+    "CONTESTED": "MAINTENIR COMME CONTESTÉE (preuves dans les deux sens)",
+    "OPEN": "À INSTRUIRE (aucune preuve)",
+}
+
+
+def theory_recommendation(theory: dict[str, Any]) -> str:
+    stale = [e for e in theory["evidence"] if not e["retracted_at"] and e["still_found"] is False]
+    if stale:
+        return "À CORRIGER (extrait cité absent de la transcription actuelle)"
+    if theory["status"] in THEORY_RECOMMENDATIONS:
+        return THEORY_RECOMMENDATIONS[theory["status"]]
+    if theory["level"] == "THEORY":
+        return "MAINTENIR EN THÉORIE (soutenue, contre-preuves cherchées)"
+    return "RÉTROGRADER EN SPÉCULATION (pas de preuve canon solide)"
+
+
 # --- Rédaction (Chief Editor) -----------------------------------------------------------------
 
 
@@ -228,6 +262,81 @@ def dossier_template(ctx: MissionContext) -> str:
     return "\n".join(lines)
 
 
+def _evidence_line(ctx: MissionContext, label: str, e: dict[str, Any]) -> str:
+    cite = ctx.cite(e["document_id"], e["page_number"], e["panel_index"])
+    kind = e["level"] + ("" if e["excerpt"] else ", visuel")
+    note = f" — {e['note']}" if e.get("note") else ""
+    if e["excerpt"]:
+        return f"{label} ({kind}) : {_quote(e['excerpt'])} {cite}{note}."
+    return f"{label} ({kind}), page citée {cite}{note}."
+
+
+def theory_template(ctx: MissionContext) -> str:
+    out = ctx.outputs["theory_research"]
+    theory, research = out["theory"], out["research"]
+    active = [e for e in theory["evidence"] if not e["retracted_at"]]
+    lines = [
+        f"# Revue de théorie : {theory['title']}",
+        f"Note : énoncé étudié, jamais canon : {theory['claim']}",
+        f"Note : niveau {theory['level']}, statut {theory['status']}, confiance "
+        f"{theory['confidence']} (méthode {theory['scoring']['method']}).",
+        f"Note : recommandation : {theory_recommendation(theory)}.",
+    ]
+    for role, heading, label in (
+        ("SUPPORTS", "## Preuves pour", "Élément pour"),
+        ("REFUTES", "## Contre-preuves", "Élément contre"),
+    ):
+        items = [e for e in active if e["role"] == role]
+        lines.append(heading)
+        if not items:
+            lines.append("Note : aucune.")
+        lines.extend(_evidence_line(ctx, label, e) for e in items)
+    if theory["alternatives"]:
+        lines.append("## Explications alternatives")
+        lines.extend(f"Note : alternative : {a['text']}" for a in theory["alternatives"])
+    lines.append("## À examiner (proposé par le Theory Researcher, non classé)")
+    if not research["passages"] and not research["possible_counter_evidence"]:
+        lines.append("Note : aucun passage nouveau trouvé.")
+    for p in research["passages"][:8]:
+        lines.append(
+            f"Passage à classer : {_quote(p['content'])} "
+            f"{ctx.cite(p['document_id'], p['page'], p['panel'])}."
+        )
+    for o in research["possible_counter_evidence"]:
+        parts = [
+            f"{_quote(e['excerpt'])} {ctx.cite(e['document_id'], e['page'], e['panel'])}"
+            for e in o["evidence"]
+        ]
+        lines.append(f"Contre-preuve possible ({o['predicate']}) : " + " et ".join(parts) + ".")
+    return "\n".join(lines)
+
+
+def research_template(ctx: MissionContext) -> str:
+    found = ctx.outputs["research"]["search"]
+    lines = [f"# Dossier de recherche : {found['query']}"]
+    lines.append("Note : sources trouvées dans les pages transcrites ; aucune conclusion tirée.")
+    if not found["passages"] and not found["observations"]:
+        lines.append("Note : aucune source trouvée dans les pages transcrites.")
+    if found["passages"]:
+        lines.append("## Passages")
+    for p in found["passages"]:
+        lines.append(
+            f"Source : {_quote(p['content'])} {ctx.cite(p['document_id'], p['page'], p['panel'])}."
+        )
+    if found["observations"]:
+        lines.append("## Observations forensiques liées")
+    for o in found["observations"]:
+        e = o["evidence"][0]
+        lines.append(
+            f"Observation ({o['kind']}, {o['level']}) : {_quote(e['excerpt'])} "
+            f"{ctx.cite(e['document_id'], e['page'], e['panel'])}."
+        )
+    return "\n".join(lines)
+
+
+TEMPLATES: dict[str, Callable[[MissionContext], str]] = {}
+
+
 def audit_template(ctx: MissionContext) -> str:
     continuity = ctx.outputs["continuity"]
     lines = ["# Audit de continuité"]
@@ -266,9 +375,7 @@ WRITER_SYSTEM = (
 
 
 async def synthesis(ctx: MissionContext, _: dict[str, Any]) -> dict[str, Any]:
-    template = (
-        dossier_template(ctx) if ctx.mission_type == "CHARACTER_DOSSIER" else audit_template(ctx)
-    )
+    template = TEMPLATES[ctx.mission_type](ctx)
     result: dict[str, Any] = {"text": template, "author": "gabarit déterministe", "writer": None}
     if ctx.writer is None:
         return result
@@ -361,9 +468,10 @@ AGENTS: dict[str, AgentSpec] = {
         AgentSpec(
             "theory_researcher",
             "Theory Researcher",
-            "théories avec preuves et contre-preuves",
-            "laboratoire des théories",
+            "cherche preuves et contre-preuves candidates, sources d'une question",
+            "propose, ne classe jamais : un humain décide pour/contre",
             7,
+            theory_researcher,
         ),
         AgentSpec("market_analyst", "Market Analyst", "marchés FR/EN", "Market Intelligence", 8),
         AgentSpec(
@@ -435,7 +543,41 @@ def plan(mission_type: str, params: dict[str, Any]) -> list[PlannedTask]:
         if not draft or not str(draft).strip():
             raise ValueError("le paramètre « draft » (texte à vérifier) est obligatoire")
         return [prepare, PlannedTask("fact_check", "fact_checker", True, {"text": draft})]
+    if mission_type == "THEORY_REVIEW":
+        theory_id = params.get("theory_id")
+        if not theory_id:
+            raise ValueError("le paramètre « theory_id » est obligatoire")
+        return [
+            prepare,
+            PlannedTask(
+                "theory_research", "theory_researcher", True, {"theory_id": str(theory_id)}
+            ),
+            PlannedTask("synthesis", "chief_editor_writer", True),
+            PlannedTask("fact_check", "fact_checker", True),
+        ]
+    if mission_type == "RESEARCH_DOSSIER":
+        question = str(params.get("question") or "").strip()
+        if not question:
+            raise ValueError("le paramètre « question » est obligatoire")
+        return [
+            prepare,
+            PlannedTask("research", "theory_researcher", True, {"question": question}),
+            PlannedTask("synthesis", "chief_editor_writer", True),
+            PlannedTask("fact_check", "fact_checker", True),
+        ]
     raise ValueError(f"type de mission inconnu : {mission_type}")
 
 
-MISSION_TYPES = ("CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "FACT_CHECK")
+MISSION_TYPES = (
+    "CHARACTER_DOSSIER",
+    "CONTINUITY_AUDIT",
+    "FACT_CHECK",
+    "THEORY_REVIEW",
+    "RESEARCH_DOSSIER",
+)
+TEMPLATES.update(
+    CHARACTER_DOSSIER=dossier_template,
+    CONTINUITY_AUDIT=audit_template,
+    THEORY_REVIEW=theory_template,
+    RESEARCH_DOSSIER=research_template,
+)

@@ -22,7 +22,8 @@ apprentissage à partir des performances réelles des contenus Primestone.
 | Phase 4 — Forensic Intelligence (règles déterministes, transcription humaine, coût nul) | TESTED |
 | Phase 5 — Knowledge Intelligence (graphe prouvé, corrections, recherche hybride gratuite) | TESTED |
 | Phase 6 — Editorial Director (Chief Editor, agents, Fact Checker bloquant, validation humaine) | TESTED |
-| Phases 7 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
+| Phase 7 — Research et Theory Laboratory (preuves vérifiées, contre-preuves, confiance expliquée) | TESTED |
+| Phases 8 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
 | Infrastructure GCP | Non provisionnée (en attente d'autorisation explicite) |
 
 ## Démarrage rapide

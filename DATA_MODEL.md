@@ -81,10 +81,13 @@ Détail prévu à l'origine :
 
 Le graphe est stocké en PostgreSQL (`entity` + `relation`, requêtes récursives) — ADR-0003.
 
-## Théories 🔜 (phase 7)
+## Théories ✅ (phase 7, migration 0007)
 
-`theory` (titre, thèse, `level` THEORY/SPECULATION, confiance, `counter_evidence_searched`),
-`theory_alternative`, preuves et contre-preuves via `evidence_ref`.
+`theory` (titre, énoncé, `level` THEORY/SPECULATION — CANON interdit par contrainte —, statut
+OPEN/SUPPORTED/CONTESTED/REFUTED, confiance 0–1, documents, sujets, `counter_search_at`),
+`theory_evidence` (rôle SUPPORTS/REFUTES, document, page, case, extrait, `verified`, niveau,
+note, origine HUMAN/RESEARCHER, auteur, `retracted_at` + motif), `theory_alternative`,
+`theory_event` (journal append-only, score résultant dans `detail`).
 
 ## Éditorial ✅ (phase 6, migration 0006)
 

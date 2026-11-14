@@ -99,7 +99,13 @@ def test_headings_notes_and_questions_are_not_claims() -> None:
 
 
 def test_plan() -> None:
-    assert set(MISSION_TYPES) == {"CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "FACT_CHECK"}
+    assert set(MISSION_TYPES) == {
+        "CHARACTER_DOSSIER",
+        "CONTINUITY_AUDIT",
+        "FACT_CHECK",
+        "THEORY_REVIEW",
+        "RESEARCH_DOSSIER",
+    }
     keys = [t.key for t in plan("CHARACTER_DOSSIER", {"character": "Selina"})]
     assert keys == ["prepare", "character_research", "continuity", "synthesis", "fact_check"]
     assert [t.critical for t in plan("CONTINUITY_AUDIT", {})] == [True, False, True, True, True]
@@ -107,6 +113,12 @@ def test_plan() -> None:
         plan("CHARACTER_DOSSIER", {})
     with pytest.raises(ValueError, match="draft"):
         plan("FACT_CHECK", {"draft": "  "})
+    review = plan("THEORY_REVIEW", {"theory_id": "t"})
+    assert [t.agent for t in review][1] == "theory_researcher"
+    with pytest.raises(ValueError, match="theory_id"):
+        plan("THEORY_REVIEW", {})
+    with pytest.raises(ValueError, match="question"):
+        plan("RESEARCH_DOSSIER", {})
     with pytest.raises(ValueError, match="inconnu"):
         plan("X", {})
 

@@ -38,6 +38,7 @@ uv run primestone-vision estimate|analyze|show|benchmark-panels  # vision (phase
 uv run primestone-forensic analyze|report|observations --documents ID…  # forensique (phase 4), gratuit
 uv run primestone-knowledge build|entities|entity|graph|path|search|merge|alias|rename|retract  # phase 5
 uv run primestone-editorial agents|dossier|audit|check|show|approve|reject  # phase 6
+uv run primestone-lab create|list|show|evidence|retract|alternative|research|review|ask  # phase 7
 ```
 
 ## Architecture (résumé — détails dans ARCHITECTURE.md)
