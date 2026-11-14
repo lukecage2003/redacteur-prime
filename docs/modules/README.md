@@ -18,5 +18,5 @@ ajoutée ici au démarrage de la phase correspondante.
 | `market` | 2b, 8 | sources avec fiche, collecte publique gratuite, écart EN→FR ([fiche](market.md)) | TESTED (collecte réelle BLOCKED) |
 | `social` | 9 | déclinaisons par plateforme depuis les faits vérifiés ([fiche](social.md)) | TESTED (coût nul) |
 | `storytelling` | 10 | scripts en 13 étapes, pré-notation, veto factuel ([fiche](storytelling.md)) | TESTED (coût nul) |
-| `performance` | 11 | métriques autorisées, boucle d'apprentissage | NOT IMPLEMENTED |
+| `performance` | 11 | chaîne Primestone, import Studio, boucle d'apprentissage ([fiche](performance.md)) | TESTED (coût nul) |
 | `voice` | 12 | streaming STT/TTS, personnalités | NOT IMPLEMENTED |

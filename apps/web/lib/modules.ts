@@ -24,7 +24,7 @@ export const MODULES: readonly IntelligenceModule[] = [
   { id: "market", name: "Market Intelligence", phase: 8, summary: "Écarts EN → FR sur données publiques, niches, saturation (estimations)", status: "TESTED" },
   { id: "social", name: "Social Intelligence", phase: 9, summary: "Déclinaisons YouTube, TikTok, Instagram depuis les faits vérifiés", status: "TESTED" },
   { id: "storytelling", name: "Storytelling Intelligence", phase: 10, summary: "Scripts FR / EN en 13 étapes, pré-notation sur 100, veto factuel", status: "TESTED" },
-  { id: "performance", name: "Performance Intelligence", phase: 11, summary: "Boucle mesurer → apprendre → optimiser", status: "NOT_IMPLEMENTED" },
+  { id: "performance", name: "Performance Intelligence", phase: 11, summary: "Chaîne Primestone : repères et signaux script → rétention / CTR", status: "TESTED" },
   { id: "voice", name: "Adaptive Voice Intelligence", phase: 12, summary: "Assistant vocal temps réel, 5 personnalités", status: "NOT_IMPLEMENTED" },
 ];
 
