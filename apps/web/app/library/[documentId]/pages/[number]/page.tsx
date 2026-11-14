@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isUuid } from "@/lib/ids";
 import { notFound } from "next/navigation";
 import { boxStyle, fetchAnalysis, fetchPanels, pageImageUrl } from "@/lib/library";
 import { TEXT_KINDS } from "@/lib/transcription";
@@ -23,6 +24,7 @@ export default async function PageView({
   searchParams: Promise<{ saved?: string }>;
 }) {
   const { documentId, number } = await params;
+  if (!isUuid(documentId)) notFound();
   const { saved } = await searchParams;
   const pageNumber = Number.parseInt(number, 10);
   if (!Number.isInteger(pageNumber) || pageNumber < 1) notFound();

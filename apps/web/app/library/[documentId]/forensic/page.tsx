@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { isUuid } from "@/lib/ids";
+import { notFound } from "next/navigation";
 import { fetchForensicReport, formatPageRanges, type ForensicObservation } from "@/lib/library";
 import { runForensic } from "./actions";
 
@@ -37,6 +39,7 @@ function EvidenceList({ obs, documentId }: { obs: ForensicObservation; documentI
 
 export default async function ForensicPage({ params }: { params: Promise<{ documentId: string }> }) {
   const { documentId } = await params;
+  if (!isUuid(documentId)) notFound();
   const report = await fetchForensicReport(
     [documentId],
     fetch,

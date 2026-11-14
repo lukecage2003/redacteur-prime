@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isUuid } from "@/lib/ids";
 import { notFound } from "next/navigation";
 import { DOCUMENT_STATUS_LABELS, fetchDocument, pageImageUrl } from "@/lib/library";
 
@@ -8,6 +9,7 @@ const serverApi = () => process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_
 
 export default async function DocumentPage({ params }: { params: Promise<{ documentId: string }> }) {
   const { documentId } = await params;
+  if (!isUuid(documentId)) notFound();
   const doc = await fetchDocument(documentId, fetch, serverApi());
   if (!doc) notFound();
   return (
