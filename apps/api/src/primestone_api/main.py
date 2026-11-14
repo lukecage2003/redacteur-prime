@@ -16,6 +16,7 @@ from primestone.knowledge import knowledge_service_from_settings
 from primestone.lab import lab_from_settings
 from primestone.market import market_service_from_settings
 from primestone.storage import create_object_store
+from primestone.storytelling import storytelling_service
 from primestone.vision import vision_service_from_settings
 from primestone_api.routes import (
     editorial,
@@ -25,6 +26,7 @@ from primestone_api.routes import (
     lab,
     library,
     market,
+    scripts,
     vision,
 )
 
@@ -44,6 +46,7 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
         app.state.editorial = editorial_service_from_settings(settings, app.state.engine)
         app.state.lab = lab_from_settings(settings, app.state.engine)
         app.state.market = market_service_from_settings(settings, app.state.engine)
+        app.state.storytelling = storytelling_service(app.state.engine)
         try:
             yield
         finally:
@@ -65,6 +68,7 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
     app.include_router(editorial.router, prefix="/api/v1")
     app.include_router(lab.router, prefix="/api/v1")
     app.include_router(market.router, prefix="/api/v1")
+    app.include_router(scripts.router, prefix="/api/v1")
     return app
 
 

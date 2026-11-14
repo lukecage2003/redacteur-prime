@@ -27,6 +27,7 @@ describe("checkSeverity", () => {
       "RESEARCH_DOSSIER",
       "MARKET_BRIEF",
       "SOCIAL_PACKAGE",
+      "SCRIPT_REVIEW",
     ]);
   });
 });

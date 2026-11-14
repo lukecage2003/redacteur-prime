@@ -791,3 +791,97 @@ market_topic = Table(
     Column("author", Text, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
+
+
+# --- Maximum Storytelling (phase 10) --------------------------------------------------------
+
+SCRIPT_STEPS = (
+    "BRIEF",
+    "RESEARCH",
+    "ANGLE",
+    "HOOK",
+    "STRUCTURE",
+    "OUTLINE",
+    "DRAFT",
+    "FACT_CHECK",
+    "REWRITE",
+    "ORALITY",
+    "CRITIQUE",
+    "ADAPTATION",
+    "FINAL_VALIDATION",
+)
+
+script = Table(
+    "script",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("title", Text, nullable=False),
+    Column("language", Text, nullable=False),
+    Column("document_ids", JSONB, nullable=False, server_default=text("'[]'::jsonb")),
+    Column("step", Text, nullable=False, server_default=text("'BRIEF'")),
+    Column("status", Text, nullable=False, server_default=text("'IN_PROGRESS'")),
+    Column("adapted_from", UUID(as_uuid=True), ForeignKey("script.id", ondelete="RESTRICT")),
+    Column("author", Text, nullable=False),
+    *_ts(),
+    CheckConstraint("language IN ('fr', 'en')", name="language"),
+    CheckConstraint(_in(SCRIPT_STEPS, "step"), name="step"),
+    CheckConstraint("status IN ('IN_PROGRESS', 'VALIDATED')", name="status"),
+)
+
+script_version = Table(
+    "script_version",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "script_id",
+        UUID(as_uuid=True),
+        ForeignKey("script.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("number", Integer, nullable=False),
+    Column("step", Text, nullable=False),
+    Column("content", Text, nullable=False),
+    Column("origin", Text, nullable=False),
+    Column("author", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("script_id", "number"),
+    CheckConstraint("origin IN ('HUMAN', 'IMPORT', 'MODEL')", name="origin"),
+)
+
+script_score = Table(
+    "script_score",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "version_id",
+        UUID(as_uuid=True),
+        ForeignKey("script_version.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("method", Text, nullable=False),
+    Column("criteria", JSONB, nullable=False),
+    Column("total", Integer, nullable=False),
+    Column("factual_veto", Boolean, nullable=False),
+    Column("analysis", JSONB, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint("total >= 0 AND total <= 100", name="total"),
+    Index("ix_script_score_version_id", "version_id"),
+)
+
+script_event = Table(
+    "script_event",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "script_id",
+        UUID(as_uuid=True),
+        ForeignKey("script.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("action", Text, nullable=False),
+    Column("detail", JSONB),
+    Column("author", Text, nullable=False),
+    Column("reason", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    Index("ix_script_event_script_id", "script_id"),
+)

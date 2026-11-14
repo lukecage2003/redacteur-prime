@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from primestone.editorial.factcheck import Corpus, check_text
@@ -18,6 +18,9 @@ from primestone.knowledge import KnowledgeService
 from primestone.lab import TheoryLab
 from primestone.market import MarketService
 from primestone.social import PLATFORMS, build_package, render
+
+if TYPE_CHECKING:  # import circulaire : storytelling utilise le Fact Checker
+    from primestone.storytelling import StorytellingService
 
 
 @dataclass
@@ -35,6 +38,7 @@ class MissionContext:
     lab: TheoryLab | None = None
     market: MarketService | None = None
     source_mission: dict[str, Any] | None = None
+    storytelling: StorytellingService | None = None
 
     def corpus(self) -> Corpus:
         return Corpus(
@@ -196,6 +200,49 @@ async def content_strategist(ctx: MissionContext, inputs: dict[str, Any]) -> dic
         platforms=inputs.get("platforms") or tuple(PLATFORMS),
         market_angle=_market_angle(ctx, deliverable),
     )
+
+
+async def story_architect(ctx: MissionContext, inputs: dict[str, Any]) -> dict[str, Any]:
+    """Architecture du script : sections horodatées, durée, références d'œuvres."""
+    if ctx.storytelling is None:
+        raise RuntimeError("Storytelling non configuré")
+    script = ctx.storytelling.script(UUID(inputs["script_id"]))
+    if not script["versions"]:
+        raise LookupError("script sans version")
+    return {
+        "script_id": script["id"],
+        "title": script["title"],
+        "version": script["versions"][-1]["number"],
+    }
+
+
+async def editorial_critic(ctx: MissionContext, inputs: dict[str, Any]) -> dict[str, Any]:
+    """Pré-notation sur 100 (8 critères) avec veto factuel ; enregistrée sur la version."""
+    if ctx.storytelling is None:
+        raise RuntimeError("Storytelling non configuré")
+    return ctx.storytelling.evaluate(UUID(inputs["script_id"]))
+
+
+def script_template(ctx: MissionContext) -> str:
+    review = ctx.outputs["critique"]
+    title = ctx.outputs["architecture"]["title"]
+    analysis = review["analysis"]
+    lines = [
+        f"# Critique du script : {title} (version {review['version']})",
+        f"Note : {review['nature']} ({review['method']}).",
+        f"Note : total {review['total']}/100"
+        + (" — VETO FACTUEL : erreur factuelle majeure." if review["factual_veto"] else "."),
+        f"Note : {analysis['words']} mots, environ {analysis['estimated_minutes']} min à voix "
+        f"haute, {len(analysis['sections'])} section(s).",
+        "## Critères",
+    ]
+    for key, c in review["criteria"].items():
+        lines.append(f"Note : {key} : {c['score']}/{c['max']} — {' ; '.join(c['notes'])}.")
+    external = [w for w in analysis["works"] if w["status"] == "EXTERNAL_TO_SOURCE"]
+    if external:
+        lines.append("## Références hors bibliothèque, à sourcer")
+        lines.extend(f"Note : {w['title']} ({w['year']})." for w in external)
+    return "\n".join(lines)
 
 
 THEORY_RECOMMENDATIONS = {
@@ -577,16 +624,18 @@ AGENTS: dict[str, AgentSpec] = {
         AgentSpec(
             "story_architect",
             "Story Architect",
-            "architecture narrative des scripts",
-            "Maximum Storytelling",
+            "sections horodatées, durée, références d'œuvres (bibliothèque ou à sourcer)",
+            "analyse ; ne réécrit pas le script",
             10,
+            story_architect,
         ),
         AgentSpec(
             "editorial_critic",
             "Editorial Critic",
-            "critique et notation des scripts",
-            "Maximum Storytelling",
+            "pré-notation sur 100 (8 critères) et veto factuel",
+            "heuristique à confirmer par un humain ; le veto est absolu",
             10,
+            editorial_critic,
         ),
         AgentSpec(
             "performance_analyst",
@@ -648,6 +697,15 @@ def plan(mission_type: str, params: dict[str, Any]) -> list[PlannedTask]:
             PlannedTask("synthesis", "chief_editor_writer", True),
             PlannedTask("fact_check", "fact_checker", True),
         ]
+    if mission_type == "SCRIPT_REVIEW":
+        if not params.get("script_id"):
+            raise ValueError("le paramètre « script_id » est obligatoire")
+        script_inputs = {"script_id": str(params["script_id"])}
+        return [
+            PlannedTask("architecture", "story_architect", True, script_inputs),
+            PlannedTask("critique", "editorial_critic", True, script_inputs),
+            PlannedTask("synthesis", "chief_editor_writer", True),
+        ]
     if mission_type == "SOCIAL_PACKAGE":
         if not params.get("source_mission_id"):
             raise ValueError("le paramètre « source_mission_id » est obligatoire")
@@ -687,11 +745,12 @@ MISSION_TYPES = (
     "RESEARCH_DOSSIER",
     "MARKET_BRIEF",
     "SOCIAL_PACKAGE",
+    "SCRIPT_REVIEW",
 )
 # Livrables qu'on peut décliner pour les réseaux (ils citent des pages vérifiables).
 DECLINABLE = ("CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "THEORY_REVIEW", "RESEARCH_DOSSIER")
 # Missions qui ne portent sur aucun comic (pas de documents, pas de citations de pages).
-WITHOUT_DOCUMENTS = ("MARKET_BRIEF",)
+WITHOUT_DOCUMENTS = ("MARKET_BRIEF", "SCRIPT_REVIEW")
 TEMPLATES.update(
     CHARACTER_DOSSIER=dossier_template,
     CONTINUITY_AUDIT=audit_template,
@@ -699,4 +758,5 @@ TEMPLATES.update(
     RESEARCH_DOSSIER=research_template,
     MARKET_BRIEF=market_template,
     SOCIAL_PACKAGE=lambda ctx: render(ctx.outputs["social"]),
+    SCRIPT_REVIEW=script_template,
 )

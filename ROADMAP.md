@@ -18,7 +18,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 7 | Research et Theory Laboratory (coût nul) | TESTED | 6 |
 | 8 | Market Intelligence — analyse (coût nul) | TESTED | 2b, 6 |
 | 9 | Social Intelligence (coût nul) | TESTED | 8 |
-| 10 | Maximum Storytelling | NOT IMPLEMENTED | 6, 7 |
+| 10 | Maximum Storytelling (coût nul) | TESTED | 6, 7 |
 | 11 | Performance Intelligence | NOT IMPLEMENTED | 9, 10 |
 | 12 | Adaptive Voice | NOT IMPLEMENTED | 6 |
 | 13 | Intégration, sécurité, optimisation, production | NOT IMPLEMENTED | toutes |
@@ -176,7 +176,7 @@ Fiche : [docs/modules/editorial.md](docs/modules/editorial.md) · ADR-0013.
 | Fact Checker bloquant (citations, âges contredits, références) | TESTED |
 | Approbation humaine (refusée si erreur majeure) | TESTED (y compris navigateur + vrai worker) |
 | Rédaction par modèle local gratuit, retenue seulement si vérifiée | IMPLEMENTED — testé avec modèle simulé |
-| Agents des phases 10 et 11 | NOT IMPLEMENTED (listés, jamais simulés) ; Theory Researcher (7), Market Analyst (8), Content Strategist (9) livrés |
+| Agent de la phase 11 (Performance Analyst) | NOT IMPLEMENTED (listé, jamais simulé) ; agents des phases 7 à 10 livrés |
 | Banc d'essai STT/TTS | **BLOCKED** — gratuit possible en local (whisper.cpp, Piper) mais exige de télécharger des modèles : à faire sur la machine de l'utilisateur, phase 12 |
 
 **Critères** : mission de bout en bout ✅ ; gestion des échecs ✅ ; aucune conclusion sans
@@ -233,18 +233,24 @@ Fiche : [docs/modules/social.md](docs/modules/social.md) · ADR-0016.
 **Critères** : aucun fait non vérifié dans une déclinaison ✅ ; structures distinctes par
 plateforme ✅.
 
-## Phase 10 — Maximum Storytelling
+## Phase 10 — Maximum Storytelling (coût nul)
 
-Observation (exemples de scripts fournis le 2026-11-14) : scripts YouTube longs (18–35 min),
-en français, découpés en sections horodatées, citant leurs sources par œuvre et par histoire
-(« The Sandman: Endless Nights (2003), The Heart of a Star ») plutôt que par page, avec une part
-de savoir général hors bibliothèque. À prévoir : citations par œuvre dans le Fact Checker,
-distinction « vérifiable dans la bibliothèque » / « savoir externe à sourcer », lecture des
-horodatages comme structure.
+Fiche : [docs/modules/storytelling.md](docs/modules/storytelling.md) · ADR-0017.
 
-Workflow en 13 étapes, notation sur 100, veto factuel, versions FR et EN adaptées.
+| Élément | Statut |
+|---|---|
+| Scripts FR/EN, 13 étapes (retour possible), versions append-only, journal | TESTED |
+| Import .md / .txt / .pdf (ordre de lecture, testé sur un vrai script) | TESTED |
+| Sections horodatées (points et plages), durée estimée | TESTED |
+| Citations par page (Fact Checker) et par œuvre (bibliothèque / à sourcer) | TESTED |
+| Pré-notation sur 100, 8 critères expliqués (`script-score@1`) | TESTED — heuristique |
+| Veto factuel absolu (service, approbation, validation finale) | TESTED |
+| Adaptation FR/EN reliée | TESTED |
+| Agents Story Architect, Editorial Critic ; mission SCRIPT_REVIEW | TESTED |
+| API `/scripts`, CLI `primestone-script`, pages web `/scripts` | TESTED (web : lint, types, build) |
+| Relecture humaine en aveugle FR/EN au-dessus du seuil | NOT IMPLEMENTED — à faire par le propriétaire |
 
-**Critères** : veto factuel testé ; relecture humaine en aveugle FR/EN au-dessus du seuil.
+**Critères** : veto factuel testé ✅ ; relecture humaine en aveugle : à faire (calibrage).
 
 ## Phase 11 — Performance Intelligence
 

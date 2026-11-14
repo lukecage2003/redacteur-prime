@@ -1,6 +1,7 @@
 """Editorial Intelligence (phase 6) : Chief Editor et agents spécialisés, à coût nul."""
 
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Engine
 
@@ -9,10 +10,13 @@ from primestone.config import Settings
 from primestone.editorial.agents import AGENTS, MISSION_TYPES, MissionContext, plan
 from primestone.editorial.factcheck import Corpus, FactCheckReport, Verdict, check_text
 from primestone.editorial.service import RUN_STEP, EditorialError, EditorialService
-from primestone.forensic import forensic_service
+from primestone.forensic import ForensicService, forensic_service
 from primestone.jobs import PostgresJobQueue
 from primestone.knowledge import knowledge_service_from_settings
 from primestone.lab import TheoryLab
+
+if TYPE_CHECKING:
+    from primestone.storytelling import StorytellingService
 from primestone.market import market_service_from_settings
 
 __all__ = [
@@ -29,6 +33,12 @@ __all__ = [
     "editorial_service_from_settings",
     "plan",
 ]
+
+
+def _storytelling(engine: Engine, forensic: ForensicService) -> "StorytellingService":
+    from primestone.storytelling import StorytellingService  # import circulaire évité
+
+    return StorytellingService(engine, forensic)
 
 
 def editorial_service_from_settings(settings: Settings, engine: Engine) -> EditorialService:
@@ -52,4 +62,5 @@ def editorial_service_from_settings(settings: Settings, engine: Engine) -> Edito
         writer,
         lab=TheoryLab(engine, forensic, knowledge),
         market=market_service_from_settings(settings, engine),
+        storytelling=_storytelling(engine, forensic),
     )

@@ -27,12 +27,14 @@ class MissionIn(BaseModel):
         "RESEARCH_DOSSIER",
         "MARKET_BRIEF",
         "SOCIAL_PACKAGE",
+        "SCRIPT_REVIEW",
     ]
     # Vide pour une revue de théorie : les documents de la théorie sont repris.
     document_ids: Annotated[list[UUID], Field(max_length=200)] = []
     theory_id: UUID | None = None
     question: Annotated[str, Field(max_length=500)] | None = None
     source_mission_id: UUID | None = None
+    script_id: UUID | None = None
     platforms: (
         list[Literal["youtube_long", "tiktok", "instagram_reels", "instagram_carousel"]] | None
     ) = None
@@ -69,6 +71,8 @@ def create_mission(request: Request, body: MissionIn) -> dict[str, str]:
         params["question"] = body.question
     if body.source_mission_id:
         params["source_mission_id"] = str(body.source_mission_id)
+    if body.script_id:
+        params["script_id"] = str(body.script_id)
     if body.platforms:
         params["platforms"] = body.platforms
     try:

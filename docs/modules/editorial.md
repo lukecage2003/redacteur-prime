@@ -11,6 +11,7 @@ Code : `packages/primestone/src/primestone/editorial/` · Étape worker : `edito
 | Audit de continuité | Research Director → Comics Analyst → Continuity Editor → Chief Editor → Fact Checker | liste sourcée des contradictions candidates, variantes de noms, lacunes |
 | Vérification d'un texte | Research Director → Fact Checker | verdict phrase par phrase |
 | Revue de théorie (phase 7) | Research Director → Theory Researcher → Chief Editor → Fact Checker | preuves, contre-preuves, alternatives, candidats à classer, recommandation (maintenir, rétrograder, contestée, réfutée, à corriger) |
+| Critique de script (phase 10) | Story Architect → Editorial Critic → Chief Editor | note sur 100 expliquée, veto factuel, références à sourcer ; NE PAS VALIDER si veto |
 | Déclinaisons sociales (phase 9) | Research Director → Content Strategist → Chief Editor → Fact Checker | trames YouTube, TikTok, Reels, carrousel ; livrable source approuvé obligatoire |
 | Note de marché (phase 8) | Market Analyst → Chief Editor | écarts EN→FR chiffrés et expliqués, sources publiques, sujets sans données ; jamais « VALIDER » sans réserve (estimations) |
 | Dossier de recherche (phase 7) | Research Director → Theory Researcher → Chief Editor → Fact Checker | sources citées pour une question, sans conclusion |
