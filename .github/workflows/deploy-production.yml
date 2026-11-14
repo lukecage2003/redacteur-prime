@@ -1,0 +1,71 @@
+name: deploy-production
+
+# Promotion d'une image DÉJÀ validée en staging (même tag = même SHA de commit).
+# L'environnement GitHub `production` doit exiger une approbation humaine
+# (Settings → Environments → production → Required reviewers).
+# INACTIF tant que GCP n'est pas provisionné.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "SHA du commit déjà déployé et validé en staging"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy-production
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: production
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write # Workload Identity Federation
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: ${{ vars.GCP_REGION || 'europe-west1' }}
+      SOURCE_REGISTRY: ${{ vars.GCP_SOURCE_REGISTRY }}
+      TAG: ${{ inputs.tag }}
+    steps:
+      - name: Vérifier la configuration et l'entrée
+        run: |
+          if [ -z "$PROJECT_ID" ] || [ -z "$SOURCE_REGISTRY" ]; then
+            echo "::error::GCP production non configuré"
+            exit 1
+          fi
+          if ! printf '%s' "$TAG" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::le tag doit être un SHA de commit complet (40 caractères hexadécimaux)"
+            exit 1
+          fi
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
+      - name: Migrations (Cloud Run Job, upgrade uniquement)
+        run: |
+          gcloud run jobs deploy primestone-migrate --region "$REGION" \
+            --image "$SOURCE_REGISTRY/api:$TAG" --command alembic --args upgrade,head \
+            --service-account "primestone-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --set-secrets PRIMESTONE_DATABASE_URL=primestone-database-url:latest \
+            --set-env-vars PRIMESTONE_ENVIRONMENT=production \
+            --set-cloudsql-instances "${PROJECT_ID}:${REGION}:primestone" \
+            --execute-now --wait
+      - name: Déploiement des services
+        run: |
+          gcloud run deploy primestone-api --region "$REGION" --image "$SOURCE_REGISTRY/api:$TAG" \
+            --service-account "primestone-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --set-secrets PRIMESTONE_DATABASE_URL=primestone-database-url:latest \
+            --set-env-vars PRIMESTONE_ENVIRONMENT=production \
+            --set-cloudsql-instances "${PROJECT_ID}:${REGION}:primestone" \
+            --min-instances 0 --max-instances 3 --no-allow-unauthenticated
+          gcloud run deploy primestone-web --region "$REGION" --image "$SOURCE_REGISTRY/web:$TAG" \
+            --min-instances 0 --max-instances 3 --no-allow-unauthenticated

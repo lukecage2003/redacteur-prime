@@ -1,0 +1,73 @@
+name: deploy-staging
+
+# INACTIF tant que GCP n'est pas provisionné : le job ne s'exécute que si la variable
+# d'environnement GitHub `GCP_PROJECT_ID` est définie dans l'environnement `staging`.
+# Voir docs/operations/gcp-setup.md et docs/operations/workload-identity-federation.md.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy-staging
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: staging
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write # Workload Identity Federation — uniquement ici et dans deploy-production
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: ${{ vars.GCP_REGION || 'europe-west1' }}
+      REGISTRY: ${{ vars.GCP_REGION || 'europe-west1' }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/primestone
+      TAG: ${{ github.sha }}
+    steps:
+      - name: Vérifier la configuration
+        run: |
+          if [ -z "$PROJECT_ID" ]; then
+            echo "::error::GCP non configuré (variable GCP_PROJECT_ID absente de l'environnement staging)"
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
+      - run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+      - name: Build & push
+        run: |
+          docker build -f docker/python.Dockerfile --build-arg APP=api -t "$REGISTRY/api:$TAG" .
+          docker build -f docker/python.Dockerfile --build-arg APP=worker -t "$REGISTRY/worker:$TAG" .
+          docker build -f apps/web/Dockerfile -t "$REGISTRY/web:$TAG" .
+          docker push "$REGISTRY/api:$TAG"
+          docker push "$REGISTRY/worker:$TAG"
+          docker push "$REGISTRY/web:$TAG"
+      - name: Migrations (Cloud Run Job, upgrade uniquement)
+        run: |
+          gcloud run jobs deploy primestone-migrate --region "$REGION" \
+            --image "$REGISTRY/api:$TAG" --command alembic --args upgrade,head \
+            --service-account "primestone-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --set-secrets PRIMESTONE_DATABASE_URL=primestone-database-url:latest \
+            --set-env-vars PRIMESTONE_ENVIRONMENT=staging \
+            --set-cloudsql-instances "${PROJECT_ID}:${REGION}:primestone" \
+            --execute-now --wait
+      - name: Déploiement des services
+        run: |
+          gcloud run deploy primestone-api --region "$REGION" --image "$REGISTRY/api:$TAG" \
+            --service-account "primestone-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --set-secrets PRIMESTONE_DATABASE_URL=primestone-database-url:latest \
+            --set-env-vars PRIMESTONE_ENVIRONMENT=staging \
+            --set-cloudsql-instances "${PROJECT_ID}:${REGION}:primestone" \
+            --min-instances 0 --max-instances 2 --no-allow-unauthenticated
+          gcloud run deploy primestone-web --region "$REGION" --image "$REGISTRY/web:$TAG" \
+            --min-instances 0 --max-instances 2 --no-allow-unauthenticated

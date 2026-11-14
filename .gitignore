@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets et configuration locale — ne jamais versionner
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*-credentials.json
+service-account*.json
+gha-creds-*.json
+
+# Données : les comics et médias ne vont JAMAIS dans Git (Cloud Storage uniquement)
+data/
+*.pdf
+*.cbz
+*.cbr
+!eval/fixtures/**/*.pdf
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Divers
+.DS_Store
+.idea/
+.vscode/
+*.log
+requirements-audit.txt
