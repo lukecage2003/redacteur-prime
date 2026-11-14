@@ -16,8 +16,10 @@ RUN uv sync --frozen --no-dev --no-editable
 
 FROM python:3.13-slim AS runtime
 ARG APP=api
-ENV PYTHONUNBUFFERED=1 PATH="/app/.venv/bin:$PATH" APP=${APP} PORT=8080
-RUN useradd --system --uid 10001 --no-create-home primestone
+ENV PYTHONUNBUFFERED=1 PATH="/app/.venv/bin:$PATH" APP=${APP} PORT=8080 \
+    PRIMESTONE_STORAGE_LOCAL_ROOT=/data/storage
+RUN useradd --system --uid 10001 --no-create-home primestone \
+    && mkdir -p /data/storage && chown -R 10001 /data
 WORKDIR /app
 COPY --from=build /app/.venv /app/.venv
 COPY alembic.ini ./

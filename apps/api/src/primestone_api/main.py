@@ -7,9 +7,11 @@ from fastapi import FastAPI
 from sqlalchemy import Engine
 
 from primestone import __version__
+from primestone.comic import library_service_from_settings
 from primestone.config import Settings, get_settings
 from primestone.db import create_db_engine
-from primestone_api.routes import health
+from primestone.storage import create_object_store
+from primestone_api.routes import health, library
 
 
 def create_app(settings: Settings | None = None, engine: Engine | None = None) -> FastAPI:
@@ -19,6 +21,8 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.settings = settings
         app.state.engine = engine or create_db_engine(settings.database_url)
+        app.state.store = create_object_store(settings.storage_backend, settings.storage_local_root)
+        app.state.library = library_service_from_settings(settings, app.state.engine)
         try:
             yield
         finally:
@@ -33,6 +37,7 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
         openapi_url="/api/v1/openapi.json",
     )
     app.include_router(health.router, prefix="/api/v1")
+    app.include_router(library.router, prefix="/api/v1")
     return app
 
 

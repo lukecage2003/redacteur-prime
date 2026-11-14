@@ -208,6 +208,16 @@ class PostgresJobQueue:
                 conn.execute(_REFRESH_RUN, {"run_id": run_id})
         return len(rows)
 
+    def refresh_run(self, run_id: UUID) -> str:
+        """Recalcule le statut d'un lot (ex. lot sans nouvelle étape : SUCCEEDED immédiat)."""
+        with self._engine.begin() as conn:
+            conn.execute(_LOCK_RUN, {"run_id": run_id})
+            conn.execute(_REFRESH_RUN, {"run_id": run_id})
+            status: str = conn.execute(
+                text("SELECT status FROM pipeline_run WHERE id = :id"), {"id": run_id}
+            ).scalar_one()
+        return status
+
     def step_status(self, step_id: UUID) -> StepStatus:
         with self._engine.connect() as conn:
             value = conn.execute(

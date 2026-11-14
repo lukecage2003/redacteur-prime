@@ -19,6 +19,23 @@ documentation interactive : `/api/docs` (désactivée en production).
 |---|---|---|---|
 | GET | `/api/v1/health` | Vivacité du processus (ne touche aucune dépendance) | 200 |
 | GET | `/api/v1/health/ready` | Disponibilité : la base de données répond | 200, 503 |
+| POST | `/api/v1/library/imports` | Import d'un lot (multipart `files`, ≤ 200 fichiers ; `?label=`) — traitement asynchrone | 202, 413, 422 |
+| GET | `/api/v1/library/imports/{run_id}` | Rapport du lot : statut, durée, totaux, détail par fichier | 200, 404 |
+| GET | `/api/v1/library/documents` | Liste (`?status=`, `limit` ≤ 200, `offset`) | 200 |
+| GET | `/api/v1/library/documents/{id}` | Détail avec l'état de chaque page | 200, 404 |
+| GET | `/api/v1/library/documents/{id}/pages/{n}/image` | Page rendue (`image/webp`) | 200, 404 |
+
+Exemple de réponse d'import :
+
+```json
+POST /api/v1/library/imports?label=lot-1  →  202
+{"run_id": "…", "items": [
+  {"filename": "batman-001.pdf", "outcome": "NEW", "document_id": "…", "error": null},
+  {"filename": "notes.txt", "outcome": "REJECTED", "document_id": null,
+   "error": "format non reconnu (PDF ou CBZ attendu)"}]}
+```
+
+Le nom de fichier envoyé par le client est réduit à son nom de base (aucun chemin n'est accepté).
 
 Exemple :
 
@@ -31,7 +48,6 @@ GET /api/v1/health/ready
 
 | Phase | Ressources |
 |---|---|
-| 2 | `POST /library/imports` (lot), `GET /library/imports/{run_id}`, `GET /comics`, `GET /comics/{id}/pages` |
 | 4–5 | `GET /observations`, `GET /entities`, `GET /entities/{id}/relations`, `GET /search?q=` (hybride) |
 | 6 | `POST /missions`, `GET /missions/{id}`, `POST /approvals/{id}` |
 | 7 | `GET /theories`, `POST /theories/{id}/review` |

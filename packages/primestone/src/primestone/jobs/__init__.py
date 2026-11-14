@@ -5,6 +5,7 @@ Garanties : idempotence à l'enfilage, réservation concurrente sans doublon
 reprise après panne via expiration des baux (`recover_stale`).
 """
 
+from primestone.jobs.errors import PermanentError
 from primestone.jobs.queue import ClaimedStep, PostgresJobQueue, StepStatus
 
-__all__ = ["ClaimedStep", "PostgresJobQueue", "StepStatus"]
+__all__ = ["ClaimedStep", "PermanentError", "PostgresJobQueue", "StepStatus"]

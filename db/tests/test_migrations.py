@@ -17,7 +17,8 @@ def test_round_trip(database_url: str, migrated_engine: Engine) -> None:
     command.downgrade(cfg, "base")
     assert "pipeline_step" not in inspect(migrated_engine).get_table_names()
     command.upgrade(cfg, "head")
-    assert {"pipeline_run", "pipeline_step"} <= set(inspect(migrated_engine).get_table_names())
+    tables = set(inspect(migrated_engine).get_table_names())
+    assert {"pipeline_run", "pipeline_step", "comic", "document", "page", "import_item"} <= tables
 
 
 def test_models_match_migrations(migrated_engine: Engine) -> None:

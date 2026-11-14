@@ -22,14 +22,24 @@ Légende : ✅ implémenté (migration 0001) · 🔜 prévu (phase indiquée).
 | `pipeline_run` ✅ | Un lot / une mission de traitement | `kind`, `status` (PENDING/RUNNING/SUCCEEDED/FAILED/CANCELLED), `params` |
 | `pipeline_step` ✅ | Étape idempotente et reprenable | `idempotency_key` (unique), `status` (PENDING/RUNNING/SUCCEEDED/FAILED/DEAD), `attempts`, `max_attempts`, `available_at`, `locked_at`, `locked_by`, `payload`, `result`, `error` |
 
-## Bibliothèque 🔜 (phase 2)
+## Bibliothèque ✅ (phase 2, migration 0002)
 
 | Table | Colonnes clés |
 |---|---|
-| `series` | titre, éditeur, langue, univers |
-| `comic` | série, numéro, titre, date, langue, `expected_page_count` |
-| `document` | comic, `sha256` (unique), format, taille, `storage_uri`, statut |
-| `page` | document, `number`, `render_uri`, largeur, hauteur, statut |
+| `comic` ✅ | `title`, `series_title`, `issue_number`, `language`, `expected_page_count` (> 0) |
+| `document` ✅ | `comic_id`, `sha256` (unique, 64 car.), `format` (PDF/CBZ), `byte_size`, `storage_key`, `original_filename`, `page_count`, `status` (UPLOADED → VALIDATED → COMPLETE, ou INCOMPLETE / REJECTED / FAILED), `error` |
+| `page` ✅ | `document_id`, `number` (unique par document), `status` (PENDING/RENDERED/FAILED), `render_key`, `render_profile`, `render_sha256`, `width`, `height`, `byte_size`, `error` |
+| `import_item` ✅ | `run_id` (→ `pipeline_run`), `document_id`, `original_filename`, `outcome` (NEW/DUPLICATE/REJECTED), `error` |
+
+Règle de complétude : un document n'est `COMPLETE` que si toutes ses pages 1..N sont `RENDERED`
+et que N correspond à `expected_page_count` lorsqu'il est connu (sinon `INCOMPLETE`). Une page
+illisible rend le document `FAILED`. La série est un simple texte pour l'instant ; elle deviendra
+une entité `SERIES` du graphe en phase 5.
+
+## Vision 🔜 (phase 3)
+
+| Table | Colonnes clés |
+|---|---|
 | `panel` | page, `index`, `bbox` (normalisée), ordre de lecture |
 | `text_region` | page, panel, `kind` (dialogue/narration/onomatopée/légende), texte, langue, locuteur, `bbox`, confiance OCR |
 

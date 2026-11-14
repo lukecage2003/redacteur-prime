@@ -9,7 +9,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 |---|---|---|---|
 | 0 | Audit du dépôt et architecture | VALIDATED | — |
 | 1 | Core Platform | TESTED (socle) | 0 |
-| 2 | Comic Library | NOT IMPLEMENTED | 1 |
+| 2 | Comic Library | TESTED | 1 |
 | 2b | Market Intelligence — collecte (avancée, voir ci-dessous) | NOT IMPLEMENTED | 1 |
 | 3 | Comic Vision | NOT IMPLEMENTED | 2 |
 | 4 | Forensic Intelligence | NOT IMPLEMENTED | 3 |
@@ -57,10 +57,32 @@ détecté (gitleaks) ; déploiement staging réussi une fois GCP autorisé.
 ## Phase 2 — Comic Library
 
 Import (PDF, CBZ) → validation (hash SHA-256, doublons, intégrité, nombre de pages)
-→ extraction → rendu des pages (PNG/WebP, Cloud Storage) → statut par page.
+→ extraction → rendu des pages (WebP, stockage objet) → statut par page.
+Fiche du module : [docs/modules/comic-library.md](docs/modules/comic-library.md).
 
-**Critères** : lot de 50 comics ou plus importé ; reprise après arrêt forcé en cours de lot sans
-doublon ni perte ; une page manquante bloque `COMPLETE` ; coût et durée mesurés.
+| Élément | Statut |
+|---|---|
+| Import par lots (CLI `primestone-library`, API `POST /library/imports`) | TESTED |
+| Détection par signature, validation PDF (PDFium) et CBZ (anti-traversée, anti-bombe zip) | TESTED |
+| Déduplication SHA-256 (entre lots et dans un même lot) | TESTED |
+| Rendu WebP par page, profil versionné (ADR-0009) | TESTED |
+| Règle de complétude (pages attendues, page illisible → jamais COMPLETE) | TESTED |
+| Reprise après arrêt brutal d'un worker | TESTED |
+| Rapport de lot (statuts, pages, volumes, durée) | TESTED |
+| Vue « Bibliothèque » dans le web | TESTED |
+| Stockage Cloud Storage (adaptateur GCS, URL signées) | NOT IMPLEMENTED — requis avant déploiement |
+| Métadonnées ComicInfo.xml (série, numéro) | NOT IMPLEMENTED |
+| Validation sur la bibliothèque réelle de l'utilisateur | NOT IMPLEMENTED — passage à VALIDATED |
+
+**Critères** : lot de 50 comics ou plus importé ✅ (60 comics, 1 330 pages, voir mesures) ;
+reprise après arrêt forcé sans doublon ni perte ✅ ; une page manquante bloque `COMPLETE` ✅ ;
+durée et volumes mesurés ✅. Reste pour VALIDATED : exécution sur de vrais comics.
+
+**Mesures (2026-11-14, 4 vCPU, 4 workers, profil `webp-d2400-q85`)** : 60 comics synthétiques
+(1 325×2 050 px, 18 à 26 pages), 67 Mo d'originaux → 1 330 pages rendues en 73,6 s
+(≈ 18 pages/s), 0 échec ; ré-import du même lot : 0,25 s, 60 doublons, aucun traitement.
+Les pages synthétiques étant presque blanches, le volume rendu (15 Mo) sous-estime fortement
+celui de vrais comics (attendu : 0,3 à 0,8 Mo par page).
 
 ## Phase 2b — Market Intelligence (collecte)
 

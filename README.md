@@ -14,7 +14,8 @@ apprentissage à partir des performances réelles des contenus Primestone.
 |---|---|
 | Phase 0 — Audit et architecture | VALIDATED ([rapport](docs/audit/phase-0.md)) |
 | Phase 1 — Socle (monorepo, CI, file de tâches, passerelle IA simulée, API, web) | TESTED |
-| Phases 2 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
+| Phase 2 — Comic Library (import par lots, validation, rendu, reprise) | TESTED |
+| Phases 3 à 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
 | Infrastructure GCP | Non provisionnée (en attente d'autorisation explicite) |
 
 ## Démarrage rapide
@@ -24,6 +25,9 @@ make install       # uv sync + pnpm install
 make db            # PostgreSQL 16 + pgvector (Docker)
 make migrate       # migrations Alembic
 make check         # lint + types + tests (Python et web)
+
+# Importer et traiter un dossier de comics (PDF/CBZ) localement
+uv run primestone-library import ~/Comics --process
 ```
 
 Détails : [DEVELOPMENT.md](DEVELOPMENT.md).

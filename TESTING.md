@@ -26,6 +26,14 @@ Couverture actuelle de la file de tâches : idempotence, réservation concurrent
 (60 étapes, 6 workers), nouvelles tentatives différées, passage en DEAD, reprise après arrêt
 brutal d'un worker (bail expiré), cohérence du statut du lot sous concurrence.
 
+Couverture de la Comic Library : formats (signature, PDF corrompu, CBZ avec traversée de
+chemin, bombe zip, image géante, image illisible, tri naturel, mise à l'échelle), stockage
+(écriture atomique, clés malveillantes), pipeline complet (lot de 55 comics avec 4 workers,
+reprise après arrêt brutal, doublons inter- et intra-lot, pages manquantes, page illisible,
+fichiers rejetés), API (téléversement, rapport, navigation, image, chemins client ignorés).
+
+Les comics de test sont **synthétiques** (générés par `conftest.py`) : aucune œuvre protégée.
+
 ## Fournisseurs IA
 
 La CI n'utilise que `FakeLLMProvider` (déterministe, gratuit). Les validations réelles

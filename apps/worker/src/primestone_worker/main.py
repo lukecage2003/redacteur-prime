@@ -6,10 +6,14 @@ import os
 import signal
 import socket
 
+from sqlalchemy import Engine
+
+from primestone.comic import library_service_from_settings
 from primestone.config import Settings, get_settings
 from primestone.db import create_db_engine
 from primestone.jobs import ClaimedStep, PostgresJobQueue
-from primestone_worker.handlers import HandlerRegistry, PermanentError, registry
+from primestone_worker.handlers import HandlerRegistry, PermanentError, default_registry
+from primestone_worker.library import register_library_handlers
 
 logger = logging.getLogger("primestone.worker")
 
@@ -80,13 +84,19 @@ class Worker:
                     await asyncio.to_thread(self._queue.recover_stale, lease_seconds)
 
 
+def build_registry(settings: Settings, engine: Engine) -> HandlerRegistry:
+    registry = default_registry()
+    register_library_handlers(registry, library_service_from_settings(settings, engine))
+    return registry
+
+
 def main() -> None:
     settings: Settings = get_settings()
     logging.basicConfig(level=settings.log_level)
     engine = create_db_engine(settings.database_url)
     worker = Worker(
         PostgresJobQueue(engine),
-        registry,
+        build_registry(settings, engine),
         worker_id=f"{socket.gethostname()}:{os.getpid()}",
     )
 

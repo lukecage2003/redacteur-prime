@@ -26,6 +26,8 @@ services:
         APP: api
     environment:
       PRIMESTONE_DATABASE_URL: postgresql+psycopg://primestone:primestone@db:5432/primestone
+    volumes:
+      - storage:/data/storage
     ports:
       - "8000:8080"
     depends_on:
@@ -41,9 +43,12 @@ services:
         APP: worker
     environment:
       PRIMESTONE_DATABASE_URL: postgresql+psycopg://primestone:primestone@db:5432/primestone
+    volumes:
+      - storage:/data/storage
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   pgdata:
+  storage:

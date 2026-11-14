@@ -34,8 +34,10 @@ jamais redistribués. Les contenus produits (scripts, analyses) citent leurs sou
 - Conteneurs exécutés en utilisateur non root.
 - Base Cloud SQL sur IP privée, authentification IAM ; buckets privés, accès uniforme,
   URL signées à courte durée pour l'affichage des pages.
-- Validation stricte des entrées (Pydantic), y compris des fichiers importés (type réel, taille,
-  nombre de pages) — phase 2.
+- Fichiers importés traités comme hostiles (phase 2) : format détecté par signature, taille et
+  nombre de pages bornés, PDF ouverts avec PDFium, archives CBZ jamais extraites sur disque,
+  rejet des chemins suspects, des entrées chiffrées, des taux de compression anormaux et des
+  images géantes ; noms de fichiers client réduits à leur nom de base ; clés de stockage validées.
 - Les configurations staging/production refusent le fournisseur IA simulé et l'URL de base locale.
 
 ## Fournisseurs IA et résidence des données

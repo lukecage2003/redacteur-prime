@@ -47,6 +47,16 @@ Règles : une migration = un changement cohérent ; `downgrade` toujours écrit 
 `primestone/db/schema.py` et DATA_MODEL.md dans le même commit ; pas d'opération destructive
 sans ADR (voir docs/operations/migrations.md).
 
+## Comic Library en local
+
+```bash
+uv run primestone-library import ~/Comics --process --workers 4   # import + traitement
+uv run primestone-library status <run_id>                         # rapport du lot
+```
+
+Sans `--process`, le lot est traité par le worker (`uv run primestone-worker`). Les fichiers
+sont stockés sous `PRIMESTONE_STORAGE_LOCAL_ROOT` (défaut `data/storage`, ignoré par Git).
+
 ## Ajouter une étape de traitement
 
 1. Écrire un gestionnaire `async def handler(payload) -> dict` idempotent.

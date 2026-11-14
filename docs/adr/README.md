@@ -13,5 +13,6 @@ on le remplace par un nouvel ADR (statut « Remplacé par ADR-XXXX »).
 | [0006](0006-gcp-region-and-services.md) | GCP europe-west1 et services managés | Accepté |
 | [0007](0007-workload-identity-federation.md) | GitHub → GCP par Workload Identity Federation | Accepté |
 | [0008](0008-git-workflow.md) | Développement trunk-based | Accepté |
+| [0009](0009-content-addressed-storage.md) | Stockage adressé par contenu, profils de rendu versionnés | Accepté |
 
 Modèle : [template.md](template.md).

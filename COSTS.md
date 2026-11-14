@@ -40,6 +40,15 @@ Leviers : modèle léger pour le tri, modèle fort seulement pour les cases rich
 `(sha256, page, prompt_version)` pour ne jamais repayer une analyse identique ; traitement
 par lots asynchrones des fournisseurs quand disponible.
 
+## Mesures réelles
+
+| Date | Traitement | Volume | Durée | Ressources | Coût |
+|---|---|---|---|---|---|
+| 2026-11-14 | Rendu Comic Library (local) | 60 comics, 1 330 pages | 73,6 s | 4 vCPU | 0 (aucun service payant) |
+
+Projection Cloud Run (à valider) : ≈ 18 pages/s sur 4 vCPU, soit environ 75 s de calcul pour un
+lot de 50 comics de 25 pages : quelques centimes de calcul par lot.
+
 ## Suivi
 
 Chaque `agent_run` enregistre jetons et coût ; tableau de bord par mission, par lot, par

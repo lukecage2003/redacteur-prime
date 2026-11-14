@@ -9,7 +9,7 @@ ajoutée ici au démarrage de la phase correspondante.
 | `provenance` (transverse) | 1 | niveaux d'évidence, références, complétude, classes de données | TESTED |
 | `ai_gateway` (transverse) | 1 | fournisseurs interchangeables, budget, traçabilité | TESTED |
 | `jobs` (transverse) | 1 | file durable, reprise après panne | TESTED |
-| `comic` | 2–3 | bibliothèque, import, rendu, OCR, cases | NOT IMPLEMENTED |
+| `comic` | 2–3 | bibliothèque, import, rendu ([fiche](comic-library.md)) ; OCR, cases (phase 3) | TESTED (phase 2) |
 | `forensic` | 4 | observations prouvées par page et par case | NOT IMPLEMENTED |
 | `knowledge` | 5 | entités, relations, corrections, recherche hybride | NOT IMPLEMENTED |
 | `editorial` | 6–7 | Chief Editor, agents, théories, approbations | NOT IMPLEMENTED |

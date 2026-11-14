@@ -5,11 +5,11 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable
 from typing import Any
 
+from primestone.jobs import PermanentError
+
+__all__ = ["Handler", "HandlerRegistry", "PermanentError", "registry"]
+
 Handler = Callable[[dict[str, Any]], Awaitable[dict[str, Any]]]
-
-
-class PermanentError(Exception):
-    """Erreur non réessayable (entrée invalide, gestionnaire inconnu…) : étape marquée DEAD."""
 
 
 class HandlerRegistry:
@@ -31,11 +31,20 @@ class HandlerRegistry:
         except KeyError:
             raise PermanentError(f"aucun gestionnaire pour l'étape « {name} »") from None
 
+    def names(self) -> list[str]:
+        return sorted(self._handlers)
 
-registry = HandlerRegistry()
+
+def default_registry() -> HandlerRegistry:
+    """Registre de base (diagnostic). Les modules métier y ajoutent leurs gestionnaires."""
+    reg = HandlerRegistry()
+    reg.register("system.ping")(ping)
+    return reg
 
 
-@registry.register("system.ping")
 async def ping(payload: dict[str, Any]) -> dict[str, Any]:
     """Étape de diagnostic : vérifie la chaîne file → worker → résultat."""
     return {"pong": True, "echo": payload.get("echo")}
+
+
+registry = default_registry()
