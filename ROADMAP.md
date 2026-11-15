@@ -24,7 +24,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 13 | Intégration, sécurité, optimisation, production | IMPLEMENTED (déploiement BLOCKED : accord du propriétaire) | toutes |
 | 14 | Mesure par objectif & expérimentation scientifique (coût nul) | TESTED (données réelles : OAuth du propriétaire) | 11 |
 | 15 | Audience Intelligence & communauté (coût nul) | TESTED (données réelles : clé et OAuth du propriétaire) | 5, 8, 11, 14 |
-| 16 | Content Opportunity Engine *(proposée)* | NOT IMPLEMENTED — en attente de validation | 7, 8, 15 |
+| 16 | Content Opportunity Engine (coût nul) | TESTED | 7, 8, 15 |
 | 17 | Audience Bridge, architectures narratives, multi-plateforme FR/EN *(proposée)* | NOT IMPLEMENTED — en attente de validation | 9, 10, 15 |
 | 18 | Packaging, marque, séries & franchises *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 15, 17 |
 | 19 | Content Performance Lab & validation finale *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 18 |
@@ -332,3 +332,16 @@ ADR-0022 · fiche : [docs/modules/audience.md](docs/modules/audience.md).
 | Commentaires publics de la chaîne, identité des auteurs jamais conservée | TESTED (API simulée) |
 | Classement, récurrences, propositions (sans interaction automatisée) | TESTED |
 | Agent Audience Analyst, mission AUDIENCE_BRIEF ; API, CLI, page `/audience` | TESTED |
+
+## Phase 16 — Content Opportunity Engine (coût nul)
+
+ADR-0023 · fiche : [docs/modules/market.md](docs/modules/market.md#phase-16--opportunités-éditoriales-adr-0023).
+
+| Élément | Statut |
+|---|---|
+| Signaux croisés : marché, communauté, audiences, pages transcrites, théories | TESTED |
+| Score `opportunity@1` sur critères mesurés seulement, confiance, critères manquants listés | TESTED |
+| Popularité EN ≠ demande FR : HYPOTHESIS sans demande FR observée | TESTED |
+| Fiche complète (public, besoin, angle, preuves, concurrence, risques, formats, recommandation) | TESTED |
+| Mission OPPORTUNITY_BRIEF, API `/market/opportunities`, CLI, section web | TESTED |
+| Compatibilité avec l'identité Primestone | NOT IMPLEMENTED — phase 18 (charte, séries) |

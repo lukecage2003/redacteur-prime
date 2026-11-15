@@ -12,6 +12,8 @@
     primestone-market topics | collections
     primestone-market analysis [--window-days 90] [--min-items 5]
     primestone-market brief [--process]          (mission MARKET_BRIEF du Chief Editor)
+    primestone-market opportunities               (moteur d'opportunités, phase 16)
+    primestone-market opportunity-brief [--process]   (mission OPPORTUNITY_BRIEF)
 """
 
 from __future__ import annotations
@@ -25,7 +27,7 @@ from pathlib import Path
 from primestone.config import get_settings
 from primestone.db import create_db_engine
 from primestone.editorial import editorial_service_from_settings
-from primestone.market import market_service_from_settings
+from primestone.market import market_service_from_settings, opportunity_service_from_settings
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -60,6 +62,8 @@ def main(argv: list[str] | None = None) -> int:
     analysis.add_argument("--window-days", type=int, default=90)
     analysis.add_argument("--min-items", type=int, default=5)
     sub.add_parser("brief").add_argument("--process", action="store_true")
+    sub.add_parser("opportunities")
+    sub.add_parser("opportunity-brief").add_argument("--process", action="store_true")
     args = parser.parse_args(argv)
 
     settings = get_settings()
@@ -118,9 +122,12 @@ def main(argv: list[str] | None = None) -> int:
         }
     elif args.command == "analysis":
         out = market.analysis(window_days=args.window_days, min_items=args.min_items)
+    elif args.command == "opportunities":
+        out = opportunity_service_from_settings(settings, engine).opportunities()
     else:
         editorial = editorial_service_from_settings(settings, engine)
-        mission_id = editorial.create_mission("MARKET_BRIEF", [], {})
+        kind = "OPPORTUNITY_BRIEF" if args.command == "opportunity-brief" else "MARKET_BRIEF"
+        mission_id = editorial.create_mission(kind, [], {})
         if args.process:
             asyncio.run(editorial.run_mission({"mission_id": str(mission_id)}))
         out = editorial.mission(mission_id)

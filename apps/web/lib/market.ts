@@ -60,6 +60,28 @@ async function get<T>(path: string, base?: string): Promise<T | null> {
   }
 }
 
+export interface Opportunity {
+  topic: string;
+  topic_id: string;
+  status: "OPPORTUNITY" | "HYPOTHESIS";
+  score: number | null;
+  confidence: "HIGH" | "MEDIUM" | "LOW";
+  recommendation: string;
+  missing: string[];
+  potential_audience: string[];
+  need: string[];
+  angle: string[];
+  risks: string[];
+  formats: string[];
+}
+
+export const fetchOpportunities = (base?: string) => get<{ rule: string; opportunities: Opportunity[] }>("market/opportunities", base);
+
+/** Libellé d'une opportunité : la popularité anglophone seule reste une hypothèse. */
+export function opportunityLabel(o: Pick<Opportunity, "status" | "confidence">): string {
+  return o.status === "OPPORTUNITY" ? `opportunité (confiance ${o.confidence.toLowerCase()})` : "hypothèse : demande FR non observée";
+}
+
 export const fetchSources = (base?: string) => get<MarketSource[]>("market/sources", base);
 export const fetchAnalysis = (base?: string) => get<MarketAnalysis>("market/analysis", base);
 

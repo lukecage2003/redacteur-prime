@@ -30,6 +30,7 @@ describe("checkSeverity", () => {
       "SCRIPT_REVIEW",
       "PERFORMANCE_REVIEW",
       "AUDIENCE_BRIEF",
+      "OPPORTUNITY_BRIEF",
     ]);
   });
 });
