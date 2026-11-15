@@ -24,5 +24,6 @@ on le remplace par un nouvel ADR (statut « Remplacé par ADR-XXXX »).
 | [0017](0017-storytelling.md) | Maximum Storytelling : scripts en 13 étapes, pré-notation explicable, veto factuel | Accepté |
 | [0018](0018-performance.md) | Performance Intelligence : chaîne Primestone uniquement, import gratuit, signaux prudents | Accepté |
 | [0019](0019-adaptive-voice.md) | Adaptive Voice : fournisseurs locaux gratuits, réponses ancrées et vérifiées | Accepté |
+| [0020](0020-production-readiness.md) | Préparation à la production : IAP vérifié, GCS sans clé, intégrations, PDFium sérialisé | Accepté |
 
 Modèle : [template.md](template.md).

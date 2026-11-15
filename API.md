@@ -77,6 +77,8 @@ En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payan
 | POST | `/api/v1/performance/imports` | Export CSV YouTube Studio (texte) ; colonnes inconnues signalées | 201, 422 |
 | POST | `/api/v1/performance/links` | Relie une vidéo à son script | 201, 404 |
 | GET | `/api/v1/performance/contents` · `/report?min_items=` | Vidéos (dernières métriques, note du script) ; repères et signaux | 200 |
+| GET | `/api/v1/integrations/panel-explorer/documents/{id}/pages/{n}` | Panel Explorer (contrat 1.0) : cases, textes servis, URL de l'image | 200, 404 |
+| GET | `/api/v1/integrations/motion-studio/scripts/{id}` | Motion Studio (contrat 1.0) : script **validé** (sections horodatées, références) | 200, 404, 409 |
 | WS | `/api/v1/ws/voice` | Assistant vocal : `start`, `text`, `audio` (WAV base64), `interrupt` → `answer`, `sentence` (+ audio), `done`/`interrupted` | — |
 | GET · POST | `/api/v1/market/sources` | Sources et leur fiche ; déclaration (clé, type, accès, quota, conditions) | 200, 201, 422 |
 | POST | `/api/v1/market/sources/verifications` | Validation humaine de la fiche (préalable à toute collecte) | 201, 404 |
@@ -94,8 +96,4 @@ GET /api/v1/health/ready
 
 ## Endpoints prévus
 
-| Phase | Ressources |
-|---|---|
-| 4–5 | `GET /observations`, `GET /entities`, `GET /entities/{id}/relations`, `GET /search?q=` (hybride) |
-| 6 | `POST /missions`, `GET /missions/{id}`, `POST /approvals/{id}` |
-| 13 | `GET /integrations/panel-explorer/...`, `GET /integrations/motion-studio/...` (facultatives) |
+Aucun : toutes les ressources prévues aux phases 4 à 13 sont implémentées (voir ci-dessus).

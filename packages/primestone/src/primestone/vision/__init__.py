@@ -36,7 +36,9 @@ def vision_service_from_settings(settings: Settings, engine: Engine) -> VisionSe
 
     return VisionService(
         engine,
-        create_object_store(settings.storage_backend, settings.storage_local_root),
+        create_object_store(
+            settings.storage_backend, settings.storage_local_root, gcs_bucket=settings.gcs_bucket
+        ),
         PostgresJobQueue(engine),
         factory,
         zero_cost=settings.zero_cost,

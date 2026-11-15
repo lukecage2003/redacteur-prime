@@ -50,5 +50,7 @@ def test_missing_object(store: LocalObjectStore) -> None:
 
 def test_factory(tmp_path: Path) -> None:
     assert isinstance(create_object_store("local", tmp_path), LocalObjectStore)
-    with pytest.raises(NotImplementedError):
-        create_object_store("gcs", tmp_path)
+    with pytest.raises(ValueError, match="GCS_BUCKET"):
+        create_object_store("gcs", tmp_path)  # bucket obligatoire
+    with pytest.raises(ValueError, match="inconnu"):
+        create_object_store("s3", tmp_path)

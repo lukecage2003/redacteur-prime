@@ -40,7 +40,9 @@ __all__ = [
 def library_service_from_settings(settings: Settings, engine: Engine) -> LibraryService:
     return LibraryService(
         engine,
-        create_object_store(settings.storage_backend, settings.storage_local_root),
+        create_object_store(
+            settings.storage_backend, settings.storage_local_root, gcs_bucket=settings.gcs_bucket
+        ),
         PostgresJobQueue(engine),
         limits=Limits(
             max_file_bytes=settings.library_max_file_bytes,
