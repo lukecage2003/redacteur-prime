@@ -13,6 +13,7 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     Column,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -884,4 +885,64 @@ script_event = Table(
     Column("reason", Text),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     Index("ix_script_event_script_id", "script_id"),
+)
+
+
+# --- Performance Intelligence (phase 11) ----------------------------------------------------
+# Uniquement les contenus PUBLIÉS PAR PRIMESTONE : leurs métriques privées (CTR, rétention…)
+# sont des données PRIVATE_AUTHORIZED de la chaîne du propriétaire, jamais d'un concurrent.
+
+PERFORMANCE_METRICS = (
+    "views",
+    "impressions",
+    "ctr",
+    "avg_view_duration_s",
+    "avg_view_percentage",
+    "watch_time_min",
+    "likes",
+    "comments",
+    "subscribers_gained",
+)
+
+content_item = Table(
+    "content_item",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("platform", Text, nullable=False),
+    Column("external_id", Text, nullable=False),
+    Column("title", Text, nullable=False),
+    Column("url", Text),
+    Column("language", Text),
+    Column("published_at", DateTime(timezone=True)),
+    Column("script_id", UUID(as_uuid=True), ForeignKey("script.id", ondelete="RESTRICT")),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("platform", "external_id"),
+    CheckConstraint("language IS NULL OR language IN ('fr', 'en')", name="language"),
+)
+
+performance_metric = Table(
+    "performance_metric",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "content_id",
+        UUID(as_uuid=True),
+        ForeignKey("content_item.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("metric", Text, nullable=False),
+    Column("value", Numeric(18, 4), nullable=False),
+    Column("period_start", Date),
+    Column("period_end", Date),
+    Column("source", Text, nullable=False),
+    Column("data_class", Text, nullable=False),
+    Column("imported_by", Text, nullable=False),
+    Column("observed_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint(_in(PERFORMANCE_METRICS, "metric"), name="metric"),
+    CheckConstraint(
+        "source IN ('YOUTUBE_STUDIO_CSV', 'YOUTUBE_ANALYTICS_API', 'MANUAL')", name="source"
+    ),
+    CheckConstraint("data_class = 'PRIVATE_AUTHORIZED'", name="data_class"),
+    CheckConstraint("value >= 0", name="value"),
+    Index("ix_performance_metric_content_id", "content_id"),
 )

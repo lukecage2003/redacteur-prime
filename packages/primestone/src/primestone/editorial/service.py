@@ -35,6 +35,7 @@ from primestone.jobs import PermanentError, PostgresJobQueue
 from primestone.knowledge import KnowledgeService
 from primestone.lab import TheoryLab
 from primestone.market import MarketService
+from primestone.performance import PerformanceService
 
 if TYPE_CHECKING:  # import circulaire : storytelling utilise le Fact Checker
     from primestone.storytelling import StorytellingService
@@ -63,7 +64,9 @@ class EditorialService:
         lab: TheoryLab | None = None,
         market: MarketService | None = None,
         storytelling: StorytellingService | None = None,
+        performance: PerformanceService | None = None,
     ) -> None:
+        self._performance = performance
         self._storytelling = storytelling
         self._lab = lab
         self._market = market
@@ -128,6 +131,8 @@ class EditorialService:
             document_ids = [UUID(d) for d in source["document_ids"]]
         if mission_type == "MARKET_BRIEF" and self._market is None:
             raise EditorialError("Market Intelligence non configurée")
+        if mission_type == "PERFORMANCE_REVIEW" and self._performance is None:
+            raise EditorialError("Performance Intelligence non configurée")
         script = None
         if mission_type == "SCRIPT_REVIEW":
             if self._storytelling is None:
@@ -163,6 +168,7 @@ class EditorialService:
             "MARKET_BRIEF": "Note de marché EN → FR",
             "SOCIAL_PACKAGE": f"Déclinaisons sociales : {source['title'] if source else ''}",
             "SCRIPT_REVIEW": f"Critique du script : {script['title'] if script else ''}",
+            "PERFORMANCE_REVIEW": "Bilan de performance de la chaîne",
         }[mission_type]
         with self._engine.begin() as conn:
             mission_id: UUID = conn.execute(
@@ -258,6 +264,7 @@ class EditorialService:
             lab=self._lab,
             market=self._market,
             storytelling=self._storytelling,
+            performance=self._performance,
             source_mission=self.mission(UUID(mission["params"]["source_mission_id"]))
             if mission["params"].get("source_mission_id")
             else None,
@@ -428,6 +435,23 @@ class EditorialService:
                     f"{len(social['excluded_unverified'])} phrase(s) non vérifiée(s) du livrable "
                     "source écartée(s)."
                 )
+        performance = ctx.outputs.get("performance")
+        if performance is not None:
+            sufficient = performance["status"] == "OK"
+            if not sufficient:
+                findings.append(
+                    "Données insuffisantes : relier plus de vidéos à des scripts notés."
+                )
+            findings.append("Signaux = corrélations sur la chaîne Primestone, pas des causes.")
+            return {
+                "recommendation": "VALIDER AVEC RÉSERVES" if sufficient else "NE PAS VALIDER",
+                "summary": f"Performance : {performance['contents']} contenu(s), "
+                f"{len(performance['recommendations'])} signal(aux) net(s).",
+                "findings": findings,
+                "deliverable": synthesis.get("text"),
+                "author": synthesis.get("author", "gabarit déterministe"),
+                "fact_check": {"verdict": "NOT_APPLICABLE", "counts": {}, "checks": []},
+            }
         critique = ctx.outputs.get("critique")
         if critique is not None:
             if critique["factual_veto"]:

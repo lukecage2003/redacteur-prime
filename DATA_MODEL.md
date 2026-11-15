@@ -117,10 +117,12 @@ unités de quota, erreur), `market_item` (plateforme, identifiant externe unique
 fr/en, publication), `market_metric` (views/likes/comments uniquement, `data_class = 'PUBLIC'`,
 `observed_at`, append-only), `market_topic` (nom, mots-clés FR/EN).
 
-## Performance 🔜 (phase 11)
+## Performance ✅ (phase 11, migration 0010)
 
-`content_item`, `performance_metric` (série temporelle, comptes autorisés uniquement,
-`PRIVATE_AUTHORIZED`).
+`content_item` (contenus publiés par Primestone : plateforme, identifiant externe unique,
+titre, langue, publication, `script_id`), `performance_metric` (9 métriques, valeur, période,
+source STUDIO_CSV / ANALYTICS_API / MANUAL, `data_class = 'PRIVATE_AUTHORIZED'` imposé,
+auteur, `observed_at` ; append-only).
 
 ## Voix 🔜 (phase 12)
 

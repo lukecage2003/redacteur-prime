@@ -17,6 +17,7 @@ from primestone.forensic import ForensicService, fold
 from primestone.knowledge import KnowledgeService
 from primestone.lab import TheoryLab
 from primestone.market import MarketService
+from primestone.performance import PerformanceService
 from primestone.social import PLATFORMS, build_package, render
 
 if TYPE_CHECKING:  # import circulaire : storytelling utilise le Fact Checker
@@ -39,6 +40,7 @@ class MissionContext:
     market: MarketService | None = None
     source_mission: dict[str, Any] | None = None
     storytelling: StorytellingService | None = None
+    performance: PerformanceService | None = None
 
     def corpus(self) -> Corpus:
         return Corpus(
@@ -242,6 +244,35 @@ def script_template(ctx: MissionContext) -> str:
     if external:
         lines.append("## Références hors bibliothèque, à sourcer")
         lines.extend(f"Note : {w['title']} ({w['year']})." for w in external)
+    return "\n".join(lines)
+
+
+async def performance_analyst(ctx: MissionContext, inputs: dict[str, Any]) -> dict[str, Any]:
+    """Performances de la chaîne Primestone et signaux d'apprentissage (jamais de concurrent)."""
+    if ctx.performance is None:
+        raise RuntimeError("Performance Intelligence non configurée")
+    return ctx.performance.report(min_items=int(inputs.get("min_items", 5)))
+
+
+def performance_template(ctx: MissionContext) -> str:
+    report = ctx.outputs["performance"]
+    lines = [
+        "# Bilan de performance de la chaîne",
+        f"Note : {report['method']}, données {report['data_class']} ; {report['caveat']}",
+        f"Note : {report['contents']} contenu(s), dont "
+        f"{report['linked_to_scored_script']} relié(s) à un script noté.",
+        "## Repères (médianes de la chaîne)",
+    ]
+    lines.extend(f"Note : {m} : {v:g}." for m, v in report["benchmarks"].items())
+    lines.append("## Signaux")
+    if report["status"] != "OK":
+        lines.append(
+            f"Note : données insuffisantes (minimum {report['min_items']} contenus reliés à un "
+            "script noté) : aucun signal calculé."
+        )
+    lines.extend(f"Note : {r}" for r in report["recommendations"])
+    if report["status"] == "OK" and not report["recommendations"]:
+        lines.append("Note : aucun lien net (|rho| < 0,5) entre critères et performances.")
     return "\n".join(lines)
 
 
@@ -640,9 +671,10 @@ AGENTS: dict[str, AgentSpec] = {
         AgentSpec(
             "performance_analyst",
             "Performance Analyst",
-            "métriques des contenus publiés",
-            "Performance Intelligence",
+            "repères de la chaîne et signaux critères du script → rétention / CTR",
+            "chaîne Primestone uniquement ; corrélation ≠ causalité",
             11,
+            performance_analyst,
         ),
     )
 }
@@ -697,6 +729,16 @@ def plan(mission_type: str, params: dict[str, Any]) -> list[PlannedTask]:
             PlannedTask("synthesis", "chief_editor_writer", True),
             PlannedTask("fact_check", "fact_checker", True),
         ]
+    if mission_type == "PERFORMANCE_REVIEW":
+        return [
+            PlannedTask(
+                "performance",
+                "performance_analyst",
+                True,
+                {k: params[k] for k in ("min_items",) if k in params},
+            ),
+            PlannedTask("synthesis", "chief_editor_writer", True),
+        ]
     if mission_type == "SCRIPT_REVIEW":
         if not params.get("script_id"):
             raise ValueError("le paramètre « script_id » est obligatoire")
@@ -746,11 +788,12 @@ MISSION_TYPES = (
     "MARKET_BRIEF",
     "SOCIAL_PACKAGE",
     "SCRIPT_REVIEW",
+    "PERFORMANCE_REVIEW",
 )
 # Livrables qu'on peut décliner pour les réseaux (ils citent des pages vérifiables).
 DECLINABLE = ("CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "THEORY_REVIEW", "RESEARCH_DOSSIER")
 # Missions qui ne portent sur aucun comic (pas de documents, pas de citations de pages).
-WITHOUT_DOCUMENTS = ("MARKET_BRIEF", "SCRIPT_REVIEW")
+WITHOUT_DOCUMENTS = ("MARKET_BRIEF", "SCRIPT_REVIEW", "PERFORMANCE_REVIEW")
 TEMPLATES.update(
     CHARACTER_DOSSIER=dossier_template,
     CONTINUITY_AUDIT=audit_template,
@@ -759,4 +802,5 @@ TEMPLATES.update(
     MARKET_BRIEF=market_template,
     SOCIAL_PACKAGE=lambda ctx: render(ctx.outputs["social"]),
     SCRIPT_REVIEW=script_template,
+    PERFORMANCE_REVIEW=performance_template,
 )

@@ -239,6 +239,6 @@ def test_validation(env: SimpleNamespace) -> None:
         svc.create_mission("CONTINUITY_AUDIT", [], {})
     agents = {a["key"]: a for a in svc.agents()}
     assert agents["fact_checker"]["available"] is True
-    assert agents["performance_analyst"]["available"] is False
-    assert agents["performance_analyst"]["phase"] == 11
+    assert agents["visual_analyst"]["available"] is False  # exige un modèle de vision
+    assert agents["visual_analyst"]["phase"] == 3
     assert Decimal("0") == Decimal("0")

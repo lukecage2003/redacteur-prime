@@ -22,5 +22,6 @@ on le remplace par un nouvel ADR (statut « Remplacé par ADR-XXXX »).
 | [0015](0015-market-intelligence.md) | Market Intelligence : données publiques gratuites, fiche validée, score explicite | Accepté |
 | [0016](0016-social-intelligence.md) | Social Intelligence : déclinaisons depuis les faits vérifiés d'un livrable approuvé | Accepté |
 | [0017](0017-storytelling.md) | Maximum Storytelling : scripts en 13 étapes, pré-notation explicable, veto factuel | Accepté |
+| [0018](0018-performance.md) | Performance Intelligence : chaîne Primestone uniquement, import gratuit, signaux prudents | Accepté |
 
 Modèle : [template.md](template.md).

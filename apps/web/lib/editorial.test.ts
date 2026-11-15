@@ -28,6 +28,7 @@ describe("checkSeverity", () => {
       "MARKET_BRIEF",
       "SOCIAL_PACKAGE",
       "SCRIPT_REVIEW",
+      "PERFORMANCE_REVIEW",
     ]);
   });
 });

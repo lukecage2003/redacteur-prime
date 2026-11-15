@@ -19,7 +19,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 8 | Market Intelligence — analyse (coût nul) | TESTED | 2b, 6 |
 | 9 | Social Intelligence (coût nul) | TESTED | 8 |
 | 10 | Maximum Storytelling (coût nul) | TESTED | 6, 7 |
-| 11 | Performance Intelligence | NOT IMPLEMENTED | 9, 10 |
+| 11 | Performance Intelligence (coût nul) | TESTED | 9, 10 |
 | 12 | Adaptive Voice | NOT IMPLEMENTED | 6 |
 | 13 | Intégration, sécurité, optimisation, production | NOT IMPLEMENTED | toutes |
 
@@ -176,7 +176,7 @@ Fiche : [docs/modules/editorial.md](docs/modules/editorial.md) · ADR-0013.
 | Fact Checker bloquant (citations, âges contredits, références) | TESTED |
 | Approbation humaine (refusée si erreur majeure) | TESTED (y compris navigateur + vrai worker) |
 | Rédaction par modèle local gratuit, retenue seulement si vérifiée | IMPLEMENTED — testé avec modèle simulé |
-| Agent de la phase 11 (Performance Analyst) | NOT IMPLEMENTED (listé, jamais simulé) ; agents des phases 7 à 10 livrés |
+| Agents des phases 7 à 11 | TESTED (livrés) ; seul le Visual Analyst attend un modèle de vision |
 | Banc d'essai STT/TTS | **BLOCKED** — gratuit possible en local (whisper.cpp, Piper) mais exige de télécharger des modèles : à faire sur la machine de l'utilisateur, phase 12 |
 
 **Critères** : mission de bout en bout ✅ ; gestion des échecs ✅ ; aucune conclusion sans
@@ -252,10 +252,19 @@ Fiche : [docs/modules/storytelling.md](docs/modules/storytelling.md) · ADR-0017
 
 **Critères** : veto factuel testé ✅ ; relecture humaine en aveugle : à faire (calibrage).
 
-## Phase 11 — Performance Intelligence
+## Phase 11 — Performance Intelligence (coût nul)
 
-Boucle RESEARCH → CREATE → PUBLISH → MEASURE → LEARN → OPTIMIZE sur les comptes autorisés.
-Observations, hypothèses et causalités démontrées strictement distinguées.
+Fiche : [docs/modules/performance.md](docs/modules/performance.md) · ADR-0018.
+
+| Élément | Statut |
+|---|---|
+| Contenus Primestone + métriques PRIVATE_AUTHORIZED (contrainte en base), append-only | TESTED |
+| Import CSV YouTube Studio (FR/EN, colonnes inconnues signalées) | TESTED |
+| Client YouTube Analytics API v2 (OAuth, lecture seule) | IMPLEMENTED — testé avec API simulée ; connexion réelle BLOCKED (OAuth du propriétaire) |
+| Liaison vidéo ↔ script noté ; repères et signaux Spearman (`perf-learn@1`) | TESTED |
+| Agent Performance Analyst, mission PERFORMANCE_REVIEW | TESTED |
+| API `/performance`, CLI `primestone-performance`, page web `/performance` | TESTED (web : lint, types, build) |
+| Validation sur la vraie chaîne | NOT IMPLEMENTED — exige un export Studio réel |
 
 ## Phase 12 — Adaptive Voice
 

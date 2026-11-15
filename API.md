@@ -74,6 +74,9 @@ En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payan
 | POST | `/api/v1/lab/research` | Theory Researcher : candidats pour/contre, marque la recherche faite | 200, 404 |
 | GET · POST | `/api/v1/scripts` · GET `/{id}` | Scripts (création avec contenu et documents) ; détail (versions, notes, journal) | 200, 201, 404, 422 |
 | POST | `/api/v1/scripts/versions` · `/steps` · `/evaluations` · `/validations` · `/adaptations` | Nouvelle version ; changement d'étape ; Fact Checker + note sur 100 ; validation finale (refusée si veto ou < 70) ; adaptation FR/EN | 201, 404, 422 |
+| POST | `/api/v1/performance/imports` | Export CSV YouTube Studio (texte) ; colonnes inconnues signalées | 201, 422 |
+| POST | `/api/v1/performance/links` | Relie une vidéo à son script | 201, 404 |
+| GET | `/api/v1/performance/contents` · `/report?min_items=` | Vidéos (dernières métriques, note du script) ; repères et signaux | 200 |
 | GET · POST | `/api/v1/market/sources` | Sources et leur fiche ; déclaration (clé, type, accès, quota, conditions) | 200, 201, 422 |
 | POST | `/api/v1/market/sources/verifications` | Validation humaine de la fiche (préalable à toute collecte) | 201, 404 |
 | POST | `/api/v1/market/imports` | Relevés publics manuels (champs inconnus, dont métriques privées, refusés) | 201, 404, 422 |

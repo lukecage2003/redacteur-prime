@@ -75,6 +75,7 @@ export const MISSION_LABELS: Record<string, string> = {
   MARKET_BRIEF: "Note de marché EN → FR",
   SOCIAL_PACKAGE: "Déclinaisons sociales",
   SCRIPT_REVIEW: "Critique de script",
+  PERFORMANCE_REVIEW: "Bilan de performance",
 };
 
 /** Livrables qu'on peut décliner pour les réseaux, une fois approuvés. */
