@@ -59,6 +59,11 @@ eval/              Corpus de référence et fixtures de test
 docs/              ADR, architecture, modules, opérations
 ```
 
+## Mise en ligne gratuite (usage personnel)
+
+Oracle Cloud « Always Free » + Tailscale, accès privé et protégé par mot de passe :
+[docs/operations/self-hosting-oracle.md](docs/operations/self-hosting-oracle.md).
+
 ## Documentation
 
 [ARCHITECTURE](ARCHITECTURE.md) · [ROADMAP](ROADMAP.md) · [DATA_MODEL](DATA_MODEL.md) ·

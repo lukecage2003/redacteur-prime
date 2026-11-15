@@ -14,7 +14,7 @@ from typing import Literal
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-Environment = Literal["development", "test", "staging", "production"]
+Environment = Literal["development", "test", "staging", "production", "selfhosted"]
 
 # Identifiants de la base Docker locale uniquement (docker-compose.yml).
 _LOCAL_DATABASE_URL = "postgresql+psycopg://primestone:primestone@localhost:5432/primestone"
@@ -110,6 +110,13 @@ class Settings(BaseSettings):
                 raise ValueError("Le stockage local est interdit en staging/production (éphémère)")
             if not self.iap_audience:
                 raise ValueError("PRIMESTONE_IAP_AUDIENCE est requis hors développement")
+        if self.environment == "selfhosted":
+            # Machine personnelle (ex. Oracle Always Free) : accès privé (Tailscale + mot de
+            # passe au proxy), disque persistant ; jamais d'identifiants ni de vision factices.
+            if self.database_url == _LOCAL_DATABASE_URL:
+                raise ValueError("PRIMESTONE_DATABASE_URL (mot de passe dédié) est requis")
+            if self.vision_provider == "fake":
+                raise ValueError("Le fournisseur vision 'fake' est interdit en auto-hébergement")
         if self.storage_backend == "gcs" and not self.gcs_bucket:
             raise ValueError("PRIMESTONE_GCS_BUCKET est requis pour le stockage gcs")
         return self

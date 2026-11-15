@@ -49,3 +49,4 @@ data/
 .vscode/
 *.log
 requirements-audit.txt
+deploy/selfhost/backups/

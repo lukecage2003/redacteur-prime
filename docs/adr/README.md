@@ -36,5 +36,6 @@ on le remplace par un nouvel ADR (statut « Remplacé par ADR-XXXX »).
 | [0029](0029-brand-identity.md) | Identité indépendante : voix, visuels, règles par langue | Accepté |
 | [0030](0030-distribution-portfolio.md) | Distribution et portefeuille | Accepté |
 | [0031](0031-rights-memory-costs.md) | Droits et sources, mémoire éditoriale prouvée, coûts | Accepté |
+| [0032](0032-self-hosting.md) | Auto-hébergement gratuit (Oracle Always Free + Tailscale) | Accepté |
 
 Modèle : [template.md](template.md).
