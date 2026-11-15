@@ -176,6 +176,14 @@ obligatoire pour une voix humaine, statut PROPOSED/APPROVED/RETIRED, auteur).
 `brand_visual_profile` (marque, émission, plateforme et langue facultatives, règles, version,
 statut ACTIVE/RETIRED).
 
+## Distribution ✅ (phase 23, migration 0018)
+
+`distribution_channel` (marque, plateforme, langue, identifiant public unique par
+plateforme, nom, statut, autorisation des statistiques). `distribution_item` (canal, script,
+émission, titre, format, date prévue, statut PROPOSED/APPROVED/PUBLISHED/CANCELLED, contenu,
+URL publiée, déclarant, date de déclaration ; PUBLISHED exige contenu et déclarant).
+`content_portfolio` (marque, nom, période, parts visées). `content_item.channel_id`.
+
 ## Voix 🔜 (phase 12)
 
 `voice_session`, `voice_turn` (transcription, réponse, latences), `pronunciation_lexicon`.

@@ -98,6 +98,9 @@ En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payan
 | GET · POST | `/api/v1/identity/voices` | Voix de marque ; proposer une voix (licence obligatoire) | 200, 201, 422 |
 | GET · POST | `/api/v1/identity/visuals` · GET `/visuals/resolve?language=` | Profils visuels ; nouvelle version ; règles applicables à une langue | 200, 201, 422 |
 | POST | `/api/v1/identity/narrations` | Plan de narration par la voix approuvée | 200, 404, 422 |
+| GET · POST | `/api/v1/distribution/channels` · POST `/channels/status` · GET `/channels/performance` | Canaux ; statut ; performance par canal | 200, 201, 404, 422 |
+| GET · POST | `/api/v1/distribution/plan` · POST `/plan/declarations` | Plan de diffusion (proposé → décision) ; déclaration humaine de publication | 200, 201, 404, 422 |
+| GET · POST | `/api/v1/distribution/portfolios` · GET `/portfolios/{id}` | Portefeuilles et équilibre | 200, 201, 404, 422 |
 | POST | `/api/v1/governance/decide` | Approuver, rejeter (motif) ou annuler (motif) — rôle FOUNDER | 200, 422 |
 | GET · POST | `/api/v1/creative/series` · POST `/series/episodes` | Séries et cohérence ; ajout d'épisode | 200, 201, 404, 422 |
 | POST · GET | `/api/v1/creative/packaging` · `/packaging/{script_id}` | Packaging contrôlé d'un script évalué ; historique | 200, 201, 404, 422 |

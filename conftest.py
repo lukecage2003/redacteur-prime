@@ -55,7 +55,11 @@ def db_engine(migrated_engine: Engine) -> Engine:
         for table in ("script", "content_item", "mission", "experiment"):
             conn.execute(text(f"UPDATE {table} SET show_id = NULL"))  # noqa: S608 - liste fixe
         conn.execute(text("UPDATE script SET format_id = NULL"))
+        conn.execute(text("UPDATE content_item SET channel_id = NULL"))
         for table in (
+            "distribution_item",
+            "distribution_channel",
+            "content_portfolio",
             "brand_visual_profile",
             "brand_voice_profile",
             "show_guideline_version",

@@ -932,6 +932,9 @@ content_item = Table(
     Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
     Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
     Column("show_id", UUID(as_uuid=True), ForeignKey("series.id", ondelete="RESTRICT")),
+    Column(
+        "channel_id", UUID(as_uuid=True), ForeignKey("distribution_channel.id", ondelete="RESTRICT")
+    ),
     Column("platform", Text, nullable=False),
     Column("external_id", Text, nullable=False),
     Column("title", Text, nullable=False),
@@ -1475,4 +1478,81 @@ brand_visual_profile = Table(
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     CheckConstraint("language IS NULL OR language IN ('fr', 'en')", name="language"),
     CheckConstraint("status IN ('ACTIVE', 'RETIRED')", name="status"),
+)
+
+# --- Distribution et portefeuille (phase 23, ADR-0030) ------------------------------------
+
+distribution_channel = Table(
+    "distribution_channel",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "brand_id",
+        UUID(as_uuid=True),
+        ForeignKey("media_brand.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("platform", Text, nullable=False),
+    Column("language", Text, nullable=False),
+    Column("handle", Text, nullable=False),
+    Column("name", Text, nullable=False),
+    Column("status", Text, nullable=False, server_default=text("'ACTIVE'")),
+    Column("stats_authorization", Text, nullable=False, server_default=text("'NONE'")),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("platform", "handle"),
+    CheckConstraint("language IN ('fr', 'en')", name="language"),
+    CheckConstraint("status IN ('ACTIVE', 'PAUSED', 'RETIRED')", name="status"),
+    CheckConstraint(
+        "stats_authorization IN ('NONE', 'CSV_EXPORT', 'OAUTH_READONLY')",
+        name="stats_authorization",
+    ),
+)
+
+distribution_item = Table(
+    "distribution_item",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "channel_id",
+        UUID(as_uuid=True),
+        ForeignKey("distribution_channel.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("script_id", UUID(as_uuid=True), ForeignKey("script.id", ondelete="RESTRICT")),
+    Column("series_id", UUID(as_uuid=True), ForeignKey("series.id", ondelete="RESTRICT")),
+    Column("title", Text, nullable=False),
+    Column("format", Text),
+    Column("scheduled_for", DateTime(timezone=True)),
+    Column("status", Text, nullable=False, server_default=text("'PROPOSED'")),
+    Column("content_id", UUID(as_uuid=True), ForeignKey("content_item.id", ondelete="RESTRICT")),
+    Column("published_url", Text),
+    Column("declared_by", Text),
+    Column("declared_at", DateTime(timezone=True)),
+    Column("created_by", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint("status IN ('PROPOSED', 'APPROVED', 'PUBLISHED', 'CANCELLED')", name="status"),
+    CheckConstraint(
+        "status <> 'PUBLISHED' OR (content_id IS NOT NULL AND declared_by IS NOT NULL)",
+        name="declared",
+    ),
+)
+
+content_portfolio = Table(
+    "content_portfolio",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "brand_id",
+        UUID(as_uuid=True),
+        ForeignKey("media_brand.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("name", Text, nullable=False),
+    Column("period_start", Date, nullable=False),
+    Column("period_end", Date, nullable=False),
+    Column("targets", JSONB, nullable=False),
+    Column("created_by", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("brand_id", "name"),
+    CheckConstraint("period_end >= period_start", name="period"),
 )

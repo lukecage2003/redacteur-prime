@@ -34,5 +34,6 @@ on le remplace par un nouvel ADR (statut « Remplacé par ADR-XXXX »).
 | [0027](0027-brand-governance.md) | Marque média et gouvernance éditoriale | Accepté |
 | [0028](0028-shows-engine.md) | Moteur d'émissions gouverné | Accepté |
 | [0029](0029-brand-identity.md) | Identité indépendante : voix, visuels, règles par langue | Accepté |
+| [0030](0030-distribution-portfolio.md) | Distribution et portefeuille | Accepté |
 
 Modèle : [template.md](template.md).
