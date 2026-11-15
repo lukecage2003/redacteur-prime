@@ -13,7 +13,9 @@ jamais redistribués. Les contenus produits (scripts, analyses) citent leurs sou
 
 ## Secrets
 
-- Aucun secret dans le dépôt, les images Docker, les logs ou les messages d'erreur.
+- Aucun secret dans le dépôt, les images Docker, les logs ou les messages d'erreur. Les
+  journaux JSON masquent toute clé de champ évoquant un secret (key, token, password…) et
+  n'enregistrent ni corps ni paramètres de requête (méthode, chemin, statut, durée).
 - Développement : fichier `.env` local (ignoré par Git). Cloud : Secret Manager, monté par Cloud Run.
 - GitHub → GCP : Workload Identity Federation, **aucune clé JSON** de compte de service.
 - Détection : gitleaks à chaque PR et chaque semaine (`security.yml`).

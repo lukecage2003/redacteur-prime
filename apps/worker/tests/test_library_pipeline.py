@@ -261,3 +261,38 @@ async def test_unknown_run_report(service: LibraryService) -> None:
     from uuid import uuid4
 
     assert service.batch_report(uuid4()) is None
+
+
+COMIC_INFO = (
+    b'<?xml version="1.0"?><ComicInfo><Series>Sandman</Series><Number>1</Number>'
+    b"<LanguageISO>EN</LanguageISO><PageCount>5</PageCount></ComicInfo>"
+)
+
+
+def test_comic_info_fills_missing_metadata(
+    service: LibraryService, comic_factory: SimpleNamespace, db_engine: Engine
+) -> None:
+    with_info = comic_factory.cbz(pages=3, extra={"ComicInfo.xml": COMIC_INFO})
+    hostile = comic_factory.cbz(
+        pages=2,
+        extra={"ComicInfo.xml": b'<!DOCTYPE x [<!ENTITY a "b">]><ComicInfo>&a;</ComicInfo>'},
+    )
+    service.start_import(
+        [
+            ImportSource(path=with_info, filename="s1.cbz"),
+            ImportSource(path=hostile, filename="h.cbz", series_title="Choisi"),
+        ]
+    )
+    with db_engine.connect() as conn:
+        rows = {
+            r.title: r
+            for r in conn.execute(
+                text(
+                    "SELECT title, series_title, issue_number, language, "
+                    "expected_page_count FROM comic"
+                )
+            )
+        }
+    assert rows["Sandman #1"].language == "en"
+    assert rows["Sandman #1"].expected_page_count == 5  # 3 pages présentes : jamais COMPLETE
+    assert rows["h"].series_title == "Choisi"  # DOCTYPE ignoré, choix de l'utilisateur gardé

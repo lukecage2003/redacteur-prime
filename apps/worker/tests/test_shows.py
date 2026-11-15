@@ -142,3 +142,18 @@ def test_guidelines_formats_episodes_performance(db_engine: Engine) -> None:
     fit = shows.fit("Le mystère de Despair chez les Endless")
     assert fit["shows"][0]["name"] == "Enquêtes Endless"
     assert "endless" in fit["shows"][0]["matched"]
+
+
+def test_starter_bootstrap_is_proposed_and_idempotent(db_engine: Engine) -> None:
+    from primestone.shows.starter import STARTER_SHOWS, bootstrap
+
+    first = bootstrap(db_engine, proposed_by="système")
+    assert len(first["shows"]) == len(STARTER_SHOWS)
+    assert len(first["pillars"]) == 3
+    gov = GovernanceService(db_engine)
+    assert {p["status"] for p in gov.pillars()} == {"PROPOSED"}
+    pending = gov.decisions("PROPOSED")
+    assert len(pending) == 3 + len(STARTER_SHOWS)  # rien d'appliqué sans le fondateur
+    again = bootstrap(db_engine, proposed_by="système")
+    assert again["shows"] == []
+    assert len(again["skipped"]) == 3 + len(STARTER_SHOWS)

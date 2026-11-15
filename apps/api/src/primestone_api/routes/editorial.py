@@ -33,6 +33,7 @@ class MissionIn(BaseModel):
         "OPPORTUNITY_BRIEF",
         "PACKAGING_REVIEW",
         "VIDEO_AUTOPSY",
+        "NARRATION",
     ]
     # Vide pour une revue de théorie : les documents de la théorie sont repris.
     document_ids: Annotated[list[UUID], Field(max_length=200)] = []

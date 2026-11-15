@@ -24,9 +24,13 @@ Exemple de `voix.json` : `{"name": "Voix FR", "language": "fr", "tone": "posé",
 "kind": "SYNTHETIC", "provider": "piper", "voice": "<modèle local>", "license": "<licence
 recopiée depuis la fiche du modèle>", "allowed_use": "narration non commerciale"}`.
 
+Mission éditoriale `NARRATION` (agent Brand Narrator) : refusée sans voix approuvée dans la
+langue du script ; livrable = plan de narration par section.
+
 Web : section « Identité de marque » sur `/creative`.
 
 ## Limites
 
 - Aucune voix n'est fournie : le modèle Piper et sa licence sont à choisir par le fondateur.
+- La mission NARRATION produit le plan ; la synthèse audio reste locale (CLI `--synthesize`).
 - Le service ne juge pas la licence : il exige qu'elle soit enregistrée et approuvée.

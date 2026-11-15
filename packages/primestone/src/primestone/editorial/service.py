@@ -40,6 +40,7 @@ from primestone.performance import PerformanceService
 
 if TYPE_CHECKING:  # imports circulaires : storytelling et creative utilisent le Fact Checker
     from primestone.creative import CreativeService
+    from primestone.identity import IdentityService
     from primestone.storytelling import StorytellingService
 
 RUN_STEP = "editorial.run_mission"
@@ -70,8 +71,10 @@ class EditorialService:
         audience: AudienceService | None = None,
         opportunities: OpportunityService | None = None,
         creative: CreativeService | None = None,
+        identity: IdentityService | None = None,
     ) -> None:
         self._creative = creative
+        self._identity = identity
         self._opportunities = opportunities
         self._audience = audience
         self._performance = performance
@@ -155,6 +158,18 @@ class EditorialService:
                 raise EditorialError("script introuvable") from None
             if not script["versions"]:
                 raise EditorialError("script sans version")
+        if mission_type == "NARRATION":
+            if self._identity is None or self._storytelling is None:
+                raise EditorialError("Identité de marque non configurée")
+            try:
+                script = self._storytelling.script(UUID(str(params.get("script_id"))))
+            except (ValueError, LookupError):
+                raise EditorialError("script introuvable") from None
+            # Refus immédiat sans voix de marque approuvée dans la langue du script.
+            try:
+                self._identity.voice_for(script["language"])
+            except ValueError as exc:
+                raise EditorialError(str(exc)) from None
         if mission_type == "PACKAGING_REVIEW":
             if self._creative is None or self._storytelling is None:
                 raise EditorialError("Creative Intelligence non configurée")
@@ -190,6 +205,7 @@ class EditorialService:
             "SCRIPT_REVIEW": f"Critique du script : {script['title'] if script else ''}",
             "PERFORMANCE_REVIEW": "Bilan de performance de la chaîne",
             "VIDEO_AUTOPSY": "Autopsie de vidéo",
+            "NARRATION": f"Narration : {script['title'] if script else ''}",
             "AUDIENCE_BRIEF": "Note d'audience",
             "OPPORTUNITY_BRIEF": "Opportunités éditoriales",
             "PACKAGING_REVIEW": f"Packaging : {script['title'] if script else ''}",
@@ -292,6 +308,7 @@ class EditorialService:
             audience=self._audience,
             opportunities=self._opportunities,
             creative=self._creative,
+            identity=self._identity,
             source_mission=self.mission(UUID(mission["params"]["source_mission_id"]))
             if mission["params"].get("source_mission_id")
             else None,
@@ -462,6 +479,22 @@ class EditorialService:
                     f"{len(social['excluded_unverified'])} phrase(s) non vérifiée(s) du livrable "
                     "source écartée(s)."
                 )
+        narration = ctx.outputs.get("narration")
+        if narration is not None:
+            validated = narration["script_status"] == "VALIDATED"
+            return {
+                "recommendation": "VALIDER" if validated else "VALIDER AVEC RÉSERVES",
+                "summary": f"Narration en {len(narration['sections'])} section(s), "
+                f"~{narration['estimated_seconds']} s, voix « {narration['voice']['name']} ».",
+                "findings": [
+                    *findings,
+                    "Voix de marque approuvée et licenciée ; fondateur non requis.",
+                    *([] if validated else ["Script non encore validé : narrer après validation."]),
+                ],
+                "deliverable": synthesis.get("text"),
+                "author": synthesis.get("author", "gabarit déterministe"),
+                "fact_check": {"verdict": "NOT_APPLICABLE", "counts": {}, "checks": []},
+            }
         autopsy = ctx.outputs.get("autopsy")
         if autopsy is not None:
             observed = [f for f in autopsy["findings"] if f["evidence"] != "HYPOTHESIS"]

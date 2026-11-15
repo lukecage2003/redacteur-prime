@@ -30,6 +30,7 @@ from primestone.comic.formats import (
     RejectedDocumentError,
     detect_file_format,
     inspect_document,
+    read_comic_info,
     render_page,
 )
 from primestone.jobs import PostgresJobQueue
@@ -54,6 +55,13 @@ class DocumentStatus(StrEnum):
     INCOMPLETE = "INCOMPLETE"  # pages manquantes par rapport au nombre attendu
     REJECTED = "REJECTED"  # fichier invalide
     FAILED = "FAILED"  # au moins une page illisible
+
+
+def _comic_info_title(meta: dict[str, str | int]) -> str | None:
+    if meta.get("series") and meta.get("number"):
+        return f"{meta['series']} #{meta['number']}"
+    title = meta.get("title")
+    return str(title) if title else None
 
 
 @dataclass(frozen=True)
@@ -153,6 +161,9 @@ class LibraryService:
         if not self._store.exists(key):
             self._store.put_file(key, source.path, content_type=_content_type(fmt))
 
+        # ComicInfo.xml complète ce que l'utilisateur n'a pas précisé (jamais l'inverse).
+        meta = read_comic_info(source.path) if fmt is DocumentFormat.CBZ else {}
+
         with self._engine.begin() as conn:
             # Sérialise les imports concurrents d'un même fichier.
             conn.execute(text("SELECT pg_advisory_xact_lock(hashtext(:sha))"), {"sha": sha})
@@ -173,11 +184,13 @@ class LibraryService:
                         """
                     ),
                     {
-                        "title": source.title or Path(source.filename).stem,
-                        "series": source.series_title,
-                        "issue": source.issue_number,
-                        "lang": source.language,
-                        "expected": source.expected_page_count,
+                        "title": source.title
+                        or _comic_info_title(meta)
+                        or Path(source.filename).stem,
+                        "series": source.series_title or meta.get("series"),
+                        "issue": source.issue_number or meta.get("number"),
+                        "lang": source.language or meta.get("language"),
+                        "expected": source.expected_page_count or meta.get("page_count"),
                     },
                 ).scalar_one()
                 document_id = conn.execute(

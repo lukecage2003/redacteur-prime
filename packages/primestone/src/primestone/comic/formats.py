@@ -18,6 +18,7 @@ import zipfile
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
+from xml.etree import ElementTree
 
 import pypdfium2 as pdfium
 from PIL import Image
@@ -100,6 +101,58 @@ def _cbz_page_names(archive: zipfile.ZipFile) -> list[str]:
             raise RejectedDocumentError("taux de compression anormal (bombe zip ?)")
         names.append(info.filename)
     return sorted(names, key=natural_key)
+
+
+MAX_COMIC_INFO_BYTES = 1_000_000
+_COMIC_INFO_FIELDS = {
+    "Title": "title",
+    "Series": "series",
+    "Number": "number",
+    "LanguageISO": "language",
+    "PageCount": "page_count",
+}
+
+
+def read_comic_info(path: Path) -> dict[str, str | int]:
+    """Métadonnées ComicInfo.xml d'un CBZ (série, numéro, titre, langue, pages attendues).
+
+    Facultatif : un fichier absent, trop gros, mal formé ou porteur d'un DOCTYPE/ENTITY
+    (risque d'expansion d'entités) est ignoré, jamais bloquant.
+    """
+    try:
+        with zipfile.ZipFile(path) as archive:
+            info = next(
+                (
+                    i
+                    for i in archive.infolist()
+                    if PurePosixPath(i.filename.replace("\\", "/")).name.lower() == "comicinfo.xml"
+                ),
+                None,
+            )
+            if info is None or info.file_size > MAX_COMIC_INFO_BYTES:
+                return {}
+            data = archive.read(info)
+    except (zipfile.BadZipFile, OSError, KeyError):
+        return {}
+    if b"<!DOCTYPE" in data or b"<!ENTITY" in data:
+        return {}
+    try:
+        root = ElementTree.fromstring(data)  # noqa: S314 - DOCTYPE/ENTITY refusés ci-dessus
+    except ElementTree.ParseError:
+        return {}
+    out: dict[str, str | int] = {}
+    for tag, key in _COMIC_INFO_FIELDS.items():
+        value = (root.findtext(tag) or "").strip()
+        if not value:
+            continue
+        if key == "page_count":
+            if value.isdigit() and int(value) > 0:
+                out[key] = int(value)
+        elif key == "language":
+            out[key] = value.lower()[:2]
+        else:
+            out[key] = value[:300]
+    return out
 
 
 def inspect_document(path: Path, limits: Limits) -> DocumentInfo:

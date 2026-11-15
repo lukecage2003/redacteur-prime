@@ -13,6 +13,7 @@ from primestone.config import Settings, get_settings
 from primestone.db import create_db_engine
 from primestone.editorial import editorial_service_from_settings
 from primestone.jobs import ClaimedStep, PostgresJobQueue
+from primestone.observability import configure_logging
 from primestone.vision import vision_service_from_settings
 from primestone_worker.editorial import register_editorial_handlers
 from primestone_worker.handlers import HandlerRegistry, PermanentError, default_registry
@@ -98,7 +99,7 @@ def build_registry(settings: Settings, engine: Engine) -> HandlerRegistry:
 
 def main() -> None:
     settings: Settings = get_settings()
-    logging.basicConfig(level=settings.log_level)
+    configure_logging(settings.log_level, settings.log_format)
     engine = create_db_engine(settings.database_url)
     worker = Worker(
         PostgresJobQueue(engine),

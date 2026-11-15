@@ -63,7 +63,7 @@ jobs:
             --image "$REGISTRY/api:$TAG" --command alembic --args upgrade,head \
             --service-account "primestone-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
             --set-secrets PRIMESTONE_DATABASE_URL=primestone-database-url:latest \
-            --set-env-vars "PRIMESTONE_ENVIRONMENT=staging,PRIMESTONE_STORAGE_BACKEND=gcs,PRIMESTONE_GCS_BUCKET=$GCS_BUCKET,PRIMESTONE_IAP_AUDIENCE=$IAP_AUDIENCE,PRIMESTONE_AI_PROVIDER=$AI_PROVIDER,PRIMESTONE_VISION_PROVIDER=$VISION_PROVIDER" \
+            --set-env-vars "PRIMESTONE_ENVIRONMENT=staging,PRIMESTONE_LOG_FORMAT=json,PRIMESTONE_STORAGE_BACKEND=gcs,PRIMESTONE_GCS_BUCKET=$GCS_BUCKET,PRIMESTONE_IAP_AUDIENCE=$IAP_AUDIENCE,PRIMESTONE_AI_PROVIDER=$AI_PROVIDER,PRIMESTONE_VISION_PROVIDER=$VISION_PROVIDER" \
             --set-cloudsql-instances "${PROJECT_ID}:${REGION}:primestone" \
             --execute-now --wait
       - name: Déploiement des services
@@ -71,7 +71,7 @@ jobs:
           gcloud run deploy primestone-api --region "$REGION" --image "$REGISTRY/api:$TAG" \
             --service-account "primestone-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
             --set-secrets PRIMESTONE_DATABASE_URL=primestone-database-url:latest \
-            --set-env-vars "PRIMESTONE_ENVIRONMENT=staging,PRIMESTONE_STORAGE_BACKEND=gcs,PRIMESTONE_GCS_BUCKET=$GCS_BUCKET,PRIMESTONE_IAP_AUDIENCE=$IAP_AUDIENCE,PRIMESTONE_AI_PROVIDER=$AI_PROVIDER,PRIMESTONE_VISION_PROVIDER=$VISION_PROVIDER" \
+            --set-env-vars "PRIMESTONE_ENVIRONMENT=staging,PRIMESTONE_LOG_FORMAT=json,PRIMESTONE_STORAGE_BACKEND=gcs,PRIMESTONE_GCS_BUCKET=$GCS_BUCKET,PRIMESTONE_IAP_AUDIENCE=$IAP_AUDIENCE,PRIMESTONE_AI_PROVIDER=$AI_PROVIDER,PRIMESTONE_VISION_PROVIDER=$VISION_PROVIDER" \
             --set-cloudsql-instances "${PROJECT_ID}:${REGION}:primestone" \
             --min-instances 0 --max-instances 2 --no-allow-unauthenticated
           gcloud run deploy primestone-web --region "$REGION" --image "$REGISTRY/web:$TAG" \
