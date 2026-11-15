@@ -146,6 +146,17 @@ packaging, son, habillage), `series` (promesse, identité, segment, ton, structu
 cible, direction artistique, distribution, évolution, statut), `series_episode` (série,
 script, numéro), `packaging_set` (script, version, méthode, version de charte, contenu).
 
+## Marque et gouvernance ✅ (phase 20, migration 0015)
+
+`media_brand` (slug, nom, mission, langues, langue principale ; PRIMESTONE par défaut),
+`editorial_pillar` (marque, nom, description, règles, statut PROPOSED/ACTIVE/RETIRED, version),
+`editorial_policy` (marque, action, approbation exigée, approbateur, version),
+`editorial_decision` (marque, action, sujet, proposition et état antérieur, statut
+PROPOSED/APPROVED/REJECTED/SUPERSEDED/REVERTED, auteur, décideur, date, motif, version de
+politique). `brand_charter` gagne `brand_id`, `language`, `status` (DRAFT/APPROVED/RETIRED),
+`approved_by`, `approved_at`. `brand_id` (nullable, RESTRICT) sur `series`, `script`,
+`content_item`, `mission`, `experiment`.
+
 ## Voix 🔜 (phase 12)
 
 `voice_session`, `voice_turn` (transcription, réponse, latences), `pronunciation_lexicon`.

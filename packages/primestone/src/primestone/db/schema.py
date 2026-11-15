@@ -508,6 +508,7 @@ mission = Table(
     "mission",
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
     Column("type", Text, nullable=False),
     Column("title", Text, nullable=False),
     Column("status", Text, nullable=False, server_default=text("'PLANNED'")),
@@ -816,6 +817,7 @@ script = Table(
     "script",
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
     Column("title", Text, nullable=False),
     Column("language", Text, nullable=False),
     Column("document_ids", JSONB, nullable=False, server_default=text("'[]'::jsonb")),
@@ -925,6 +927,7 @@ content_item = Table(
     "content_item",
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
     Column("platform", Text, nullable=False),
     Column("external_id", Text, nullable=False),
     Column("title", Text, nullable=False),
@@ -1006,6 +1009,7 @@ experiment = Table(
     "experiment",
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
     Column("title", Text, nullable=False),
     Column("hypothesis", Text, nullable=False),
     Column("variable", Text, nullable=False),
@@ -1170,6 +1174,14 @@ brand_charter = Table(
     Column("author", Text, nullable=False),
     Column("note", Text),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    # Phase 20 : règles de marque (« brand guidelines ») rattachées, par langue, approuvées.
+    Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
+    Column("language", Text),
+    Column("status", Text, nullable=False, server_default=text("'APPROVED'")),
+    Column("approved_by", Text),
+    Column("approved_at", DateTime(timezone=True)),
+    CheckConstraint("status IN ('DRAFT', 'APPROVED', 'RETIRED')", name="status"),
+    CheckConstraint("language IS NULL OR language IN ('fr', 'en')", name="language"),
 )
 
 series = Table(
@@ -1190,6 +1202,7 @@ series = Table(
     Column("evolution", Text, nullable=False),
     Column("status", Text, nullable=False, server_default=text("'ACTIVE'")),
     Column("author", Text, nullable=False),
+    Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
     *_ts(),
     CheckConstraint("status IN ('ACTIVE', 'PAUSED', 'ENDED')", name="status"),
     CheckConstraint("target_minutes > 0 AND target_minutes <= 240", name="target_minutes"),
@@ -1233,4 +1246,100 @@ packaging_set = Table(
     Column("content", JSONB, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     Index("ix_packaging_set_script_id", "script_id"),
+)
+
+
+# --- Marque et gouvernance (phase 20) -------------------------------------------------------
+# PRIMESTONE est une marque média autonome ; le fondateur est directeur éditorial. Les agents
+# PROPOSENT ; seules les décisions approuvées s'appliquent ; rien n'est publié automatiquement.
+
+DECISION_STATUSES = ("PROPOSED", "APPROVED", "REJECTED", "SUPERSEDED", "REVERTED")
+
+media_brand = Table(
+    "media_brand",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("slug", Text, nullable=False, unique=True),
+    Column("name", Text, nullable=False),
+    Column("mission", Text, nullable=False),
+    Column("languages", JSONB, nullable=False),
+    Column("primary_language", Text, nullable=False),
+    Column("status", Text, nullable=False, server_default=text("'ACTIVE'")),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint("status IN ('ACTIVE', 'ARCHIVED')", name="status"),
+    CheckConstraint("primary_language IN ('fr', 'en')", name="primary_language"),
+)
+
+
+def _brand_fk() -> Column[object]:
+    return Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT"))
+
+
+editorial_pillar = Table(
+    "editorial_pillar",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "brand_id",
+        UUID(as_uuid=True),
+        ForeignKey("media_brand.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("name", Text, nullable=False),
+    Column("description", Text, nullable=False),
+    Column("rules", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column("status", Text, nullable=False, server_default=text("'PROPOSED'")),
+    Column("version", Integer, nullable=False, server_default=text("1")),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("brand_id", "name"),
+    CheckConstraint("status IN ('PROPOSED', 'ACTIVE', 'RETIRED')", name="status"),
+)
+
+editorial_policy = Table(
+    "editorial_policy",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "brand_id",
+        UUID(as_uuid=True),
+        ForeignKey("media_brand.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("action", Text, nullable=False),
+    Column("requires_approval", Boolean, nullable=False),
+    Column("approver", Text, nullable=False, server_default=text("'FOUNDER'")),
+    Column("note", Text),
+    Column("version", Integer, nullable=False, server_default=text("1")),
+    Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("brand_id", "action"),
+)
+
+editorial_decision = Table(
+    "editorial_decision",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "brand_id",
+        UUID(as_uuid=True),
+        ForeignKey("media_brand.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("action", Text, nullable=False),
+    Column("subject_type", Text, nullable=False),
+    Column("subject_id", Text),
+    Column("proposal", JSONB, nullable=False),
+    Column("status", Text, nullable=False, server_default=text("'PROPOSED'")),
+    Column("proposed_by", Text, nullable=False),
+    Column("decided_by", Text),
+    Column("decided_at", DateTime(timezone=True)),
+    Column("reason", Text),
+    Column("policy_version", Integer),
+    Column(
+        "supersedes",
+        UUID(as_uuid=True),
+        ForeignKey("editorial_decision.id", ondelete="RESTRICT"),
+    ),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint(_in(DECISION_STATUSES), name="status"),
+    Index("ix_editorial_decision_status", "status"),
 )

@@ -1,7 +1,8 @@
 """Ligne de commande Creative Intelligence (gratuite).
 
 primestone-creative charter                        (charte en vigueur)
-primestone-creative charter-publish charte.json --name "Primestone v1" [--note …]
+primestone-creative charter-publish charte.json --name "Primestone v1" [--note …]  (brouillon
+                                                   soumis au fondateur : primestone-brand)
 primestone-creative series
 primestone-creative series-create serie.json      (promesse, identité, ton, structure…)
 primestone-creative episode SERIES_ID SCRIPT_ID

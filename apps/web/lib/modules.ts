@@ -27,6 +27,7 @@ export const MODULES: readonly IntelligenceModule[] = [
   { id: "performance", name: "Performance Intelligence", phase: 11, summary: "Chaîne Primestone : repères et signaux script → rétention / CTR", status: "TESTED" },
   { id: "audience", name: "Audience Intelligence", phase: 15, summary: "Segments prouvés, graphe d'audience, communauté sans données personnelles", status: "TESTED" },
   { id: "creative", name: "Creative Intelligence", phase: 18, summary: "Packaging honnête, charte de marque versionnée, séries et franchises", status: "TESTED" },
+  { id: "governance", name: "Brand Intelligence et gouvernance", phase: 20, summary: "Marque PRIMESTONE, piliers, politiques, décisions approuvées par le fondateur, réversibles", status: "TESTED" },
   { id: "voice", name: "Adaptive Voice Intelligence", phase: 12, summary: "Assistant vocal temps réel, 5 personnalités", status: "TESTED" },
 ];
 

@@ -14,6 +14,7 @@ from primestone.creative import creative_service_from_settings
 from primestone.db import create_db_engine
 from primestone.editorial import editorial_service_from_settings
 from primestone.forensic import forensic_service
+from primestone.governance import GovernanceService
 from primestone.knowledge import knowledge_service_from_settings
 from primestone.lab import lab_from_settings
 from primestone.market import market_service_from_settings, opportunity_service_from_settings
@@ -28,6 +29,7 @@ from primestone_api.routes import (
     creative,
     editorial,
     forensic,
+    governance,
     health,
     integrations,
     knowledge,
@@ -68,6 +70,7 @@ def create_app(
         app.state.audience = AudienceService(app.state.engine)
         app.state.creative = creative_service_from_settings(settings, app.state.engine)
         app.state.opportunities = opportunity_service_from_settings(settings, app.state.engine)
+        app.state.governance = GovernanceService(app.state.engine)
         app.state.voice = VoiceRuntime(settings, app.state.engine, app.state.knowledge)
         try:
             yield
@@ -96,6 +99,7 @@ def create_app(
     app.include_router(performance.router, prefix="/api/v1")
     app.include_router(audience.router, prefix="/api/v1")
     app.include_router(creative.router, prefix="/api/v1")
+    app.include_router(governance.router, prefix="/api/v1")
     app.include_router(voice.router, prefix="/api/v1")
     app.include_router(integrations.router, prefix="/api/v1")
     return app

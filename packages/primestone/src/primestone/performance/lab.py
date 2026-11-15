@@ -15,7 +15,6 @@ from uuid import UUID
 from sqlalchemy import Connection, Engine, text
 
 from primestone.forensic import fold
-from primestone.storytelling.retention import analyze as analyze_retention
 
 METHOD = "perf-lab@1"
 LOOP = (
@@ -243,7 +242,7 @@ class PerformanceLab:
             ]
         findings: list[dict[str, str]] = []
         if script:
-            retention = analyze_retention(script["content"], curve)
+            retention = _analyze_retention(script["content"], curve)
             for drop in retention["drop_offs"]:
                 findings.append(
                     {
@@ -342,7 +341,7 @@ class PerformanceLab:
         with self._engine.connect() as conn:
             for content_id, script in conn.execute(text(_LATEST_SCRIPT)).all():
                 curve = self._curve(conn, content_id)
-                for drop in analyze_retention(script or "", curve)["drop_offs"]:
+                for drop in _analyze_retention(script or "", curve)["drop_offs"]:
                     counter[drop["section"] or "?"] += 1
         return {
             "method": METHOD,
@@ -426,3 +425,10 @@ class PerformanceLab:
             "complete": demonstrated == len(rows),
             "rule": "Complète seulement quand les 13 critères sont démontrés sur données réelles.",
         }
+
+
+def _analyze_retention(script: str, curve: Any) -> dict[str, Any]:
+    # Import différé : storytelling → editorial → performance formerait un cycle.
+    from primestone.storytelling.retention import analyze
+
+    return analyze(script, curve)

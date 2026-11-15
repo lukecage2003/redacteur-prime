@@ -13,6 +13,7 @@ from sqlalchemy import Engine, text
 from primestone.creative.brand import DEFAULT_CHARTER
 from primestone.creative.packaging import METHOD, build
 from primestone.forensic import fold
+from primestone.governance import GovernanceService
 
 TitleWriter = Callable[[str, str], Awaitable[list[str]]]
 
@@ -37,7 +38,8 @@ class CreativeService:
             row = (
                 conn.execute(
                     text(
-                        "SELECT version, name, rules, author, note, created_at FROM brand_charter "
+                        "SELECT version, name, rules, author, note, status, approved_by, "
+                        "approved_at, created_at FROM brand_charter WHERE status = 'APPROVED' "
                         "ORDER BY version DESC LIMIT 1"
                     )
                 )
@@ -55,20 +57,39 @@ class CreativeService:
         return dict(row)
 
     def publish_charter(
-        self, rules: dict[str, Any], *, name: str, author: str, note: str | None
+        self,
+        rules: dict[str, Any],
+        *,
+        name: str,
+        author: str,
+        note: str | None,
+        language: str | None = None,
     ) -> int:
+        """Crée une version BROUILLON et la soumet au fondateur (CHARTER_CHANGE).
+
+        La charte ne s'applique qu'après approbation (primestone.governance).
+        """
         for key in ("colors", "fonts", "tone", "thumbnail"):
             if key not in rules:
                 raise CreativeError(f"charte incomplète : « {key} » manquant")
         with self._engine.begin() as conn:
             version: int = conn.execute(
                 text(
-                    "INSERT INTO brand_charter (version, name, rules, author, note) VALUES "
-                    "((SELECT COALESCE(max(version), 0) + 1 FROM brand_charter), :n, "
-                    "CAST(:r AS jsonb), :a, :note) RETURNING version"
+                    "INSERT INTO brand_charter (version, name, rules, author, note, status, "
+                    "language, brand_id) VALUES ((SELECT COALESCE(max(version), 0) + 1 FROM "
+                    "brand_charter), :n, CAST(:r AS jsonb), :a, :note, 'DRAFT', :lang, "
+                    "(SELECT id FROM media_brand WHERE slug = 'primestone')) RETURNING version"
                 ),
-                {"n": name, "r": _json(rules), "a": author, "note": note},
+                {"n": name, "r": _json(rules), "a": author, "note": note, "lang": language},
             ).scalar_one()
+            GovernanceService(self._engine).propose_in(
+                conn,
+                "CHARTER_CHANGE",
+                subject_type="brand_charter",
+                subject_id=str(version),
+                proposal={"charter_version": version, "name": name, "note": note},
+                proposed_by=author,
+            )
         return version
 
     # --- Séries -------------------------------------------------------------------------

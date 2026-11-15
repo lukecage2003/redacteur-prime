@@ -28,7 +28,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 17 | Audience Bridge, architectures narratives, multi-plateforme FR/EN (coût nul) | TESTED | 9, 10, 15 |
 | 18 | Packaging, marque, séries & franchises (coût nul) | TESTED (charte réelle : à fournir par le propriétaire) | 14, 15, 17 |
 | 19 | Content Performance Lab & validation finale (coût nul) | TESTED — validation réelle : 0/13 tant que les données réelles manquent | 14, 18 |
-| 20 | Marque et gouvernance *(proposée)* | NOT IMPLEMENTED — en attente de validation | 18 |
+| 20 | Marque et gouvernance (coût nul) | TESTED (piliers et charte réels : à approuver par le fondateur) | 18 |
 | 21 | Moteur d'émissions (shows, formats, cycle de vie) *(proposée)* | NOT IMPLEMENTED — en attente de validation | 20 |
 | 22 | Identité indépendante (voix, visuels, langues) *(proposée)* | NOT IMPLEMENTED — en attente de validation | 20, 21 |
 | 23 | Distribution et portefeuille *(proposée)* | NOT IMPLEMENTED — en attente de validation | 21 |
@@ -393,3 +393,17 @@ ADR-0026 · fiche : [docs/modules/performance.md](docs/modules/performance.md#ph
 | Hook Laboratory, Drop-off Analysis, Returning Audience | TESTED (NON FOURNI / INSUFFISANT sans données) |
 | Mission VIDEO_AUTOPSY ; API `/performance/lab/*` ; CLI ; validation sur `/performance` | TESTED |
 | **13 critères de complétude de l'extension** | **NOT YET (0/13 en base vide)** : à démontrer sur données réelles (`primestone-performance validation`) |
+
+## Phase 20 — Marque et gouvernance (coût nul)
+
+ADR-0027 · fiche : [docs/modules/governance.md](docs/modules/governance.md).
+
+| Élément | Statut |
+|---|---|
+| `media_brand` PRIMESTONE (FR principal, EN), `brand_id` sur séries, scripts, contenus, missions, expériences, chartes | TESTED (migration 0015 réversible) |
+| Piliers éditoriaux, politiques par action, journal des décisions | TESTED |
+| Approbation, rejet, annulation réservés au fondateur ; agents refusés côté serveur | TESTED |
+| Annulation exacte (état antérieur mémorisé) | TESTED |
+| Charte : brouillon soumis, seule la version approuvée s'applique | TESTED |
+| API `/governance/*`, CLI `primestone-brand`, page `/governance` | TESTED |
+
