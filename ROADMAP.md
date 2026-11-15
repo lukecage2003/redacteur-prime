@@ -27,7 +27,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 16 | Content Opportunity Engine (coût nul) | TESTED | 7, 8, 15 |
 | 17 | Audience Bridge, architectures narratives, multi-plateforme FR/EN (coût nul) | TESTED | 9, 10, 15 |
 | 18 | Packaging, marque, séries & franchises (coût nul) | TESTED (charte réelle : à fournir par le propriétaire) | 14, 15, 17 |
-| 19 | Content Performance Lab & validation finale *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 18 |
+| 19 | Content Performance Lab & validation finale (coût nul) | TESTED — validation réelle : 0/13 tant que les données réelles manquent | 14, 18 |
 
 Extension validée par le propriétaire le 2026-11-15 (« je valide tout »). Analyse des dépendances et
 justification de l'ordre dans [docs/audit/extension-audience-growth.md](docs/audit/extension-audience-growth.md).
@@ -372,3 +372,15 @@ ADR-0025 · fiche : [docs/modules/creative.md](docs/modules/creative.md).
 | Séries et franchises : promesse, identité, structure, durée, cohérence des épisodes | TESTED |
 | Agent Brand & Packaging Editor, mission PACKAGING_REVIEW ; API, CLI, pages web | TESTED |
 | Titres proposés par modèle local | IMPLEMENTED (facultatif, mêmes contrôles) |
+
+## Phase 19 — Content Performance Lab & validation finale (coût nul)
+
+ADR-0026 · fiche : [docs/modules/performance.md](docs/modules/performance.md#phase-19--content-performance-lab-adr-0026).
+
+| Élément | Statut |
+|---|---|
+| Boucle RESEARCH → … → OPTIMIZE suivie par sujet | TESTED |
+| Video Autopsy (OBSERVED / HYPOTHESIS / DEMONSTRATED, manques listés) | TESTED |
+| Hook Laboratory, Drop-off Analysis, Returning Audience | TESTED (NON FOURNI / INSUFFISANT sans données) |
+| Mission VIDEO_AUTOPSY ; API `/performance/lab/*` ; CLI ; validation sur `/performance` | TESTED |
+| **13 critères de complétude de l'extension** | **NOT YET (0/13 en base vide)** : à démontrer sur données réelles (`primestone-performance validation`) |

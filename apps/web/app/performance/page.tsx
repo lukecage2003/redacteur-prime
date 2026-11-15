@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { experimentVerdict, fetchContents, fetchExperiments, fetchReport, METRIC_LABELS, OBJECTIVE_LABELS, signalStrength } from "@/lib/performance";
+import { experimentVerdict, fetchContents, fetchExperiments, fetchReport, fetchValidation, METRIC_LABELS, OBJECTIVE_LABELS, signalStrength } from "@/lib/performance";
 import { fetchScripts } from "@/lib/scripts";
 import { importStudio, linkScript, setObjective } from "./actions";
 
@@ -16,6 +16,7 @@ export default async function PerformancePage() {
     fetchScripts(api()),
     fetchExperiments(api()),
   ]);
+  const validation = await fetchValidation(api());
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <Link href="/" className="text-sm text-amber-700 hover:underline">
@@ -45,6 +46,23 @@ export default async function PerformancePage() {
             {report.signals.slice(0, 6).map((s) => (
               <li key={`${s.criterion}-${s.target}`}>
                 {s.criterion} ↔ {METRIC_LABELS[s.target] ?? s.target} : rho {s.rho.toFixed(2)} ({signalStrength(s.rho)}, n = {s.n})
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {validation && (
+        <section className="mt-6">
+          <h2 className="font-semibold">
+            Validation de la plateforme : {validation.demonstrated}/{validation.total} critères démontrés
+          </h2>
+          <p className="text-xs text-zinc-500">{validation.rule}</p>
+          <ul className="mt-2 grid gap-1 text-xs sm:grid-cols-2">
+            {validation.criteria.map((c) => (
+              <li key={c.criterion} className={c.status === "DEMONSTRATED" ? "text-emerald-700" : "text-zinc-500"}>
+                {c.status === "DEMONSTRATED" ? "✓" : "○"} {c.criterion}
+                {c.needed ? ` — il manque : ${c.needed}` : ""}
               </li>
             ))}
           </ul>

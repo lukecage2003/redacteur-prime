@@ -60,6 +60,16 @@ export function experimentVerdict(e: Pick<Experiment, "status" | "result">): str
   return "en cours";
 }
 
+export interface Validation {
+  criteria: { criterion: string; status: "DEMONSTRATED" | "NOT YET"; needed: string | null }[];
+  demonstrated: number;
+  total: number;
+  complete: boolean;
+  rule: string;
+}
+
+export const fetchValidation = (base?: string) => get<Validation>("performance/lab/validation", base);
+
 export const fetchExperiments = (base?: string) => get<Experiment[]>("performance/experiments", base);
 export const fetchContents = (base?: string) => get<ContentPerf[]>("performance/contents", base);
 export const fetchReport = (base?: string) => get<PerfReport>("performance/report", base);
