@@ -66,6 +66,14 @@ class Settings(BaseSettings):
     youtube_daily_quota_units: int = Field(default=10_000, ge=0)
     market_http_timeout_seconds: float = Field(default=20.0, gt=0)
 
+    # Adaptive Voice (phase 12) : fournisseurs GRATUITS. "fake" (tests) ou serveurs LOCAUX :
+    # whisper.cpp (`server`, STT) et Piper (`piper.http_server`, TTS) — modèles à installer
+    # par le propriétaire sur sa machine ; rien n'est téléchargé par la plateforme.
+    voice_stt: Literal["fake", "whisper_cpp"] = "fake"
+    voice_tts: Literal["fake", "piper", "none"] = "fake"
+    whisper_cpp_url: str = "http://localhost:8080"
+    piper_url: str = "http://localhost:5000"
+
     # Stockage objet : "local" (développement) ou "gcs" (cloud, phase 13 — non implémenté).
     storage_backend: Literal["local", "gcs"] = "local"
     storage_local_root: Path = Path("data/storage")
