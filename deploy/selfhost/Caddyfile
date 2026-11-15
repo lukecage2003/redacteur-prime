@@ -1,0 +1,21 @@
+# Point d'entrée unique : /api/* (et le WebSocket vocal) vers l'API, le reste vers le web.
+# Mot de passe obligatoire en plus de Tailscale (défense en profondeur).
+:80 {
+	basic_auth {
+		{$PRIMESTONE_WEB_USER} {$PRIMESTONE_WEB_PASSWORD_HASH}
+	}
+	encode zstd gzip
+	request_body /api/v1/library/* {
+		max_size 1GB
+	}
+	handle /api/* {
+		reverse_proxy api:8080
+	}
+	handle {
+		reverse_proxy web:8080
+	}
+	log {
+		output stdout
+		format json
+	}
+}

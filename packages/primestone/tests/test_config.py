@@ -29,3 +29,16 @@ def test_fake_ai_forbidden_in_cloud(env: str) -> None:
 def test_env_prefix(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("PRIMESTONE_LOG_LEVEL", "DEBUG")
     assert Settings(_env_file=None).log_level == "DEBUG"
+
+
+def test_selfhosted_requires_db_password_and_real_vision() -> None:
+    url = "postgresql+psycopg://primestone:secret@db:5432/primestone"
+    with pytest.raises(ValidationError, match="DATABASE_URL"):
+        Settings(_env_file=None, environment="selfhosted", vision_provider="ollama")
+    with pytest.raises(ValidationError, match="fake"):
+        Settings(_env_file=None, environment="selfhosted", database_url=url)
+    ok = Settings(
+        _env_file=None, environment="selfhosted", database_url=url, vision_provider="ollama"
+    )
+    assert ok.storage_backend == "local"  # disque persistant de la machine
+    assert ok.iap_audience is None  # accès protégé par Tailscale et le proxy

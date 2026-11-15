@@ -1,0 +1,125 @@
+# PRIMESTONE auto-hébergé (ex. Oracle Cloud « Always Free », ARM). Usage personnel, privé.
+# Aucun port public : Caddy n'écoute que sur 127.0.0.1 ; l'accès passe par Tailscale
+# (`tailscale serve`) puis par un mot de passe. Voir docs/operations/self-hosting-oracle.md.
+#
+#   cp .env.example .env   # puis remplir
+#   docker compose up -d --build
+name: primestone
+
+x-python: &python
+  build:
+    context: ../..
+    dockerfile: docker/python.Dockerfile
+  restart: unless-stopped
+  env_file: .env
+  environment: &python-env
+    PRIMESTONE_ENVIRONMENT: selfhosted
+    PRIMESTONE_DATABASE_URL: postgresql+psycopg://primestone:${POSTGRES_PASSWORD:?}@db:5432/primestone
+    PRIMESTONE_LOG_FORMAT: json
+    PRIMESTONE_STORAGE_BACKEND: local
+    PRIMESTONE_STORAGE_LOCAL_ROOT: /data/storage
+    PRIMESTONE_VISION_PROVIDER: ollama
+    PRIMESTONE_OLLAMA_URL: http://ollama:11434
+    PRIMESTONE_ZERO_COST: "true"
+  volumes:
+    - storage:/data/storage
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: primestone
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?définir POSTGRES_PASSWORD dans .env}
+      POSTGRES_DB: primestone
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U primestone"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    <<: *python
+    build:
+      context: ../..
+      dockerfile: docker/python.Dockerfile
+      args:
+        APP: api
+    restart: "no"
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    <<: *python
+    build:
+      context: ../..
+      dockerfile: docker/python.Dockerfile
+      args:
+        APP: api
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    <<: *python
+    build:
+      context: ../..
+      dockerfile: docker/python.Dockerfile
+      args:
+        APP: worker
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: http://api:8080
+    depends_on:
+      - api
+
+  # Modèles locaux gratuits (vision, rédaction, plongements). Les modèles se téléchargent
+  # explicitement : docker compose exec ollama ollama pull qwen2.5vl:7b
+  ollama:
+    image: ollama/ollama:0.12.6
+    restart: unless-stopped
+    volumes:
+      - ollama:/root/.ollama
+
+  proxy:
+    image: caddy:2.10.0
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8080:80"  # jamais exposé publiquement
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - web
+      - api
+
+  # Sauvegarde quotidienne de la base (14 jours conservés) dans ./backups.
+  backup:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+    volumes:
+      - ./backups:/backups
+      - ./backup.sh:/backup.sh:ro
+    entrypoint: ["sh", "/backup.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  storage:
+  ollama:

@@ -464,3 +464,13 @@ ADR-0031 · fiche : [docs/modules/memory.md](docs/modules/memory.md).
 **Plan « média autonome » (phases 20 à 24) : TESTED.** Validation réelle (VALIDATED) : à
 démontrer sur la chaîne du fondateur (émissions, voix choisie, publications déclarées).
 
+## Auto-hébergement gratuit (ADR-0032)
+
+Guide : [docs/operations/self-hosting-oracle.md](docs/operations/self-hosting-oracle.md).
+
+| Élément | Statut |
+|---|---|
+| Environnement `selfhosted` (mot de passe de base exigé, vision réelle, sans IAP) | TESTED |
+| `deploy/selfhost` : Compose complet, Caddy (mot de passe), sauvegarde quotidienne | IMPLEMENTED (configuration validée par `docker compose config`) |
+| Déploiement réel sur Oracle Always Free + Tailscale | NOT IMPLEMENTED — à faire par le propriétaire (compte Oracle) |
+
