@@ -1556,3 +1556,67 @@ content_portfolio = Table(
     UniqueConstraint("brand_id", "name"),
     CheckConstraint("period_end >= period_start", name="period"),
 )
+
+# --- Droits, mémoire éditoriale (phase 24, ADR-0031) --------------------------------------
+
+RIGHTS_KINDS = ("PANEL_QUOTE", "IMAGE", "MUSIC", "VOICE", "VIDEO", "TEXT")
+RIGHTS_BASES = ("QUOTATION", "LICENSE", "PERMISSION", "OWN_WORK", "PUBLIC_DOMAIN")
+
+rights_record = Table(
+    "rights_record",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "brand_id",
+        UUID(as_uuid=True),
+        ForeignKey("media_brand.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("kind", Text, nullable=False),
+    Column("subject", Text, nullable=False),
+    Column("script_id", UUID(as_uuid=True), ForeignKey("script.id", ondelete="RESTRICT")),
+    Column("document_title", Text),
+    Column("page_number", Integer),
+    Column("panel_number", Integer),
+    Column("source", Text, nullable=False),
+    Column("basis", Text, nullable=False),
+    Column("license", Text),
+    Column("proof", Text, nullable=False),
+    Column("limits", Text, nullable=False),
+    Column("expires_on", Date),
+    Column("status", Text, nullable=False, server_default=text("'ACTIVE'")),
+    Column("recorded_by", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint(_in(RIGHTS_KINDS, "kind"), name="kind"),
+    CheckConstraint(_in(RIGHTS_BASES, "basis"), name="basis"),
+    CheckConstraint("status IN ('ACTIVE', 'WITHDRAWN')", name="status"),
+    CheckConstraint(
+        "kind <> 'PANEL_QUOTE' OR (page_number IS NOT NULL AND panel_number IS NOT NULL)",
+        name="panel",
+    ),
+)
+
+editorial_lesson = Table(
+    "editorial_lesson",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "brand_id",
+        UUID(as_uuid=True),
+        ForeignKey("media_brand.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("series_id", UUID(as_uuid=True), ForeignKey("series.id", ondelete="RESTRICT")),
+    Column("lesson", Text, nullable=False),
+    Column("evidence_level", Text, nullable=False),
+    Column("source_type", Text, nullable=False),
+    Column("source_id", UUID(as_uuid=True), nullable=False),
+    Column("evidence", JSONB, nullable=False),
+    Column("status", Text, nullable=False, server_default=text("'ACTIVE'")),
+    Column("recorded_by", Text, nullable=False),
+    Column("retracted_reason", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint("evidence_level IN ('OBSERVED', 'DEMONSTRATED')", name="evidence_level"),
+    CheckConstraint("source_type IN ('content_item', 'experiment')", name="source_type"),
+    CheckConstraint("status IN ('ACTIVE', 'RETRACTED')", name="status"),
+)

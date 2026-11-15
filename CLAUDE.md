@@ -45,6 +45,7 @@ uv run primestone-brand brands|policies|pillars|decisions|pillar|policy|approve|
 uv run primestone-shows show|transition|guidelines|history|format|production|final-validation|published|performance|fit  # phase 21
 uv run primestone-identity voices|voice-propose|visuals|visual-add|visual-resolve|narrate  # phase 22
 uv run primestone-distribution channels|channel-add|channel-status|plan|propose|declare|portfolio-create|portfolio|portfolios|performance  # phase 23
+uv run primestone-memory rights|rights-add|rights-withdraw|rights-check|lessons|lesson|lesson-retract|journal|costs  # phase 24
 uv run primestone-creative charter|charter-publish|series|series-create|episode|package|review  # phase 18
 uv run primestone-audience segments|segment|evidence|link|collect|community|brief  # phase 15
 uv run primestone-performance import|contents|link|report|review|authorize|sync|objective|objectives|experiment-*|autopsy|hooks|drop-offs|returning|loop|validation  # phases 11, 14, 19

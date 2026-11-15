@@ -41,6 +41,12 @@ def test_voice_websocket_text_and_audio(client: TestClient) -> None:
         assert ws.receive_json()["type"] == "answer"
         ws.send_json({"type": "interrupt"})
         ws.send_json({"type": "nope"})
-        events = [ws.receive_json() for _ in range(3)]
-        assert any(e["type"] in ("done", "interrupted") for e in events)
-        assert any(e.get("detail", "").startswith("type de message inconnu") for e in events)
+        # L'interruption peut arriver avant ou après les premières phrases : on lit jusqu'à
+        # obtenir la fin du tour ET l'erreur, sans supposer un nombre fixe d'événements.
+        events: list[dict[str, str]] = []
+        while not (
+            any(e["type"] in ("done", "interrupted") for e in events)
+            and any(e.get("detail", "").startswith("type de message inconnu") for e in events)
+        ):
+            assert len(events) < 50, events
+            events.append(ws.receive_json())

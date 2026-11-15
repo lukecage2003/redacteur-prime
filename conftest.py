@@ -57,6 +57,8 @@ def db_engine(migrated_engine: Engine) -> Engine:
         conn.execute(text("UPDATE script SET format_id = NULL"))
         conn.execute(text("UPDATE content_item SET channel_id = NULL"))
         for table in (
+            "rights_record",
+            "editorial_lesson",
             "distribution_item",
             "distribution_channel",
             "content_portfolio",

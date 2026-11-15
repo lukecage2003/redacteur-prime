@@ -20,6 +20,7 @@ from primestone.identity import IdentityService
 from primestone.knowledge import knowledge_service_from_settings
 from primestone.lab import lab_from_settings
 from primestone.market import market_service_from_settings, opportunity_service_from_settings
+from primestone.memory import MemoryService
 from primestone.performance import PerformanceService
 from primestone.security import IAPMiddleware, PublicKeys
 from primestone.shows import ShowService
@@ -41,6 +42,7 @@ from primestone_api.routes import (
     lab,
     library,
     market,
+    memory,
     performance,
     scripts,
     shows,
@@ -80,6 +82,7 @@ def create_app(
         app.state.shows = ShowService(app.state.engine)
         app.state.identity = IdentityService(app.state.engine)
         app.state.distribution = DistributionService(app.state.engine)
+        app.state.memory = MemoryService(app.state.engine, zero_cost=settings.zero_cost)
         app.state.voice = VoiceRuntime(settings, app.state.engine, app.state.knowledge)
         try:
             yield
@@ -112,6 +115,7 @@ def create_app(
     app.include_router(shows.router, prefix="/api/v1")
     app.include_router(identity.router, prefix="/api/v1")
     app.include_router(distribution.router, prefix="/api/v1")
+    app.include_router(memory.router, prefix="/api/v1")
     app.include_router(voice.router, prefix="/api/v1")
     app.include_router(integrations.router, prefix="/api/v1")
     return app

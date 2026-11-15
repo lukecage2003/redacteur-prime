@@ -24,3 +24,4 @@ ajoutée ici au démarrage de la phase correspondante.
 | `shows` | 21 | émissions gouvernées, formats, règles versionnées, épisodes ([fiche](shows.md)) | TESTED (coût nul) |
 | `identity` | 22 | voix de marque sous licence, visuels, règles par langue, narration ([fiche](identity.md)) | TESTED (coût nul) |
 | `distribution` | 23 | canaux, plan de diffusion, publication déclarée, portefeuille ([fiche](distribution.md)) | TESTED (coût nul) |
+| `memory` | 24 | droits et sources, leçons prouvées, coûts ([fiche](memory.md)) | TESTED (coût nul) |
