@@ -34,15 +34,22 @@ class CreativeService:
 
     # --- Charte -------------------------------------------------------------------------
 
-    def charter(self) -> dict[str, Any]:
+    def charter(self, language: str | None = None) -> dict[str, Any]:
+        """Charte approuvée : celle de la langue demandée, sinon la charte sans langue.
+
+        Une charte FR ne s'applique jamais à un contenu EN (ADR-0029).
+        """
         with self._engine.connect() as conn:
             row = (
                 conn.execute(
                     text(
                         "SELECT version, name, rules, author, note, status, approved_by, "
-                        "approved_at, created_at FROM brand_charter WHERE status = 'APPROVED' "
-                        "ORDER BY version DESC LIMIT 1"
-                    )
+                        "approved_at, created_at, language FROM brand_charter "
+                        "WHERE status = 'APPROVED' AND (language IS NULL OR language = "
+                        "CAST(:l AS text)) ORDER BY (language IS NOT NULL) DESC, version DESC "
+                        "LIMIT 1"
+                    ),
+                    {"l": language},
                 )
                 .mappings()
                 .one_or_none()
@@ -229,7 +236,7 @@ class CreativeService:
                 conn.execute(
                     text(
                         """
-                SELECT s.title, s.level, v.number, v.content,
+                SELECT s.title, s.level, s.language, v.number, v.content,
                        (SELECT ss.analysis -> 'fact_check' -> 'checks' FROM script_score ss
                          WHERE ss.version_id = v.id ORDER BY ss.created_at DESC LIMIT 1) AS checks
                   FROM script s JOIN script_version v ON v.script_id = s.id
@@ -248,7 +255,7 @@ class CreativeService:
                 "évaluer d'abord le script : le packaging repose sur ses faits vérifiés"
             )
         facts = [c["sentence"] for c in row["checks"] if c["status"] == "VERIFIED"]
-        charter = self.charter()
+        charter = self.charter(row["language"])
         extra: Sequence[str] = []
         if self._title_writer is not None:
             try:

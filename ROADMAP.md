@@ -30,7 +30,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 19 | Content Performance Lab & validation finale (coût nul) | TESTED — validation réelle : 0/13 tant que les données réelles manquent | 14, 18 |
 | 20 | Marque et gouvernance (coût nul) | TESTED (piliers et charte réels : à approuver par le fondateur) | 18 |
 | 21 | Moteur d'émissions (shows, formats, cycle de vie) (coût nul) | TESTED | 20 |
-| 22 | Identité indépendante (voix, visuels, langues) *(proposée)* | NOT IMPLEMENTED — en attente de validation | 20, 21 |
+| 22 | Identité indépendante (voix, visuels, langues) (coût nul) | TESTED (voix réelle : modèle Piper et licence à choisir par le fondateur) | 20, 21 |
 | 23 | Distribution et portefeuille *(proposée)* | NOT IMPLEMENTED — en attente de validation | 21 |
 | 24 | Droits, mémoire éditoriale, coûts *(proposée)* | NOT IMPLEMENTED — en attente de validation | 20 à 23 |
 
@@ -420,4 +420,18 @@ ADR-0028 · fiche : [docs/modules/shows.md](docs/modules/shows.md).
 | Validation finale d'épisode (script validé exigé), publication déclarée sans automatisme | TESTED |
 | Performance par émission, langue, format ; adéquation sujet → émissions et piliers | TESTED |
 | API `/shows/*`, CLI `primestone-shows`, page `/shows/[id]` | TESTED |
+
+## Phase 22 — Identité indépendante (coût nul)
+
+ADR-0029 · fiche : [docs/modules/identity.md](docs/modules/identity.md).
+
+| Élément | Statut |
+|---|---|
+| Profils de voix : licence et usage autorisé obligatoires, voix humaine sur autorisation écrite | TESTED |
+| Approbation VOICE_PROFILE ; seule une voix approuvée est utilisable | TESTED |
+| Profils visuels versionnés par émission, plateforme, langue | TESTED |
+| Règles par langue (charte, visuels, voix) : aucune règle FR sur un contenu EN | TESTED |
+| Plan de narration et synthèse locale sans voix ni visage du fondateur | TESTED (FakeTTS) ; Piper réel : à installer |
+| Mission éditoriale NARRATION | NOT IMPLEMENTED (service, API et CLI disponibles) |
+| API `/identity/*`, CLI `primestone-identity`, section web `/creative` | TESTED |
 
