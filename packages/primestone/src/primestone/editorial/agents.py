@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
+from primestone.audience import AudienceService
 from primestone.editorial.factcheck import Corpus, check_text
 from primestone.forensic import ForensicService, fold
 from primestone.knowledge import KnowledgeService
@@ -41,6 +42,7 @@ class MissionContext:
     source_mission: dict[str, Any] | None = None
     storytelling: StorytellingService | None = None
     performance: PerformanceService | None = None
+    audience: AudienceService | None = None
 
     def corpus(self) -> Corpus:
         return Corpus(
@@ -273,6 +275,35 @@ def performance_template(ctx: MissionContext) -> str:
     lines.extend(f"Note : {r}" for r in report["recommendations"])
     if report["status"] == "OK" and not report["recommendations"]:
         lines.append("Note : aucun lien net (|rho| < 0,5) entre critères et performances.")
+    return "\n".join(lines)
+
+
+async def audience_analyst(ctx: MissionContext, _: dict[str, Any]) -> dict[str, Any]:
+    """Segments (prouvés ou hypothétiques) et voix de la communauté, sans données personnelles."""
+    if ctx.audience is None:
+        raise RuntimeError("Audience Intelligence non configurée")
+    return {"segments": ctx.audience.segments(), "community": ctx.audience.community()}
+
+
+def audience_template(ctx: MissionContext) -> str:
+    out = ctx.outputs["audience"]
+    lines = [
+        "# Note d'audience",
+        "Note : segments définis par motivations et niveau de connaissance, jamais par l'âge.",
+        "## Segments",
+    ]
+    if not out["segments"]:
+        lines.append("Note : aucun segment défini.")
+    for s in out["segments"]:
+        kinds = sorted({e["kind"] for e in s["evidence"]})
+        lines.append(
+            f"Note : {s['name']} ({s['status']}) — motivations : {', '.join(s['motivations'])} ; "
+            f"preuves : {', '.join(kinds) or 'aucune'}."
+        )
+    community = out["community"]
+    lines.append("## Communauté (commentaires publics de la chaîne)")
+    lines.append(f"Note : {community['comments']} commentaire(s) : {community['by_kind']}.")
+    lines.extend(f"Note : proposition : {p}" for p in community["proposals"])
     return "\n".join(lines)
 
 
@@ -669,6 +700,14 @@ AGENTS: dict[str, AgentSpec] = {
             editorial_critic,
         ),
         AgentSpec(
+            "audience_analyst",
+            "Audience Analyst",
+            "segments prouvés ou hypothétiques, questions et demandes de la communauté",
+            "jamais d'âge, jamais d'identité de commentateur ; propose sans publier",
+            15,
+            audience_analyst,
+        ),
+        AgentSpec(
             "performance_analyst",
             "Performance Analyst",
             "repères de la chaîne et signaux critères du script → rétention / CTR",
@@ -728,6 +767,11 @@ def plan(mission_type: str, params: dict[str, Any]) -> list[PlannedTask]:
             ),
             PlannedTask("synthesis", "chief_editor_writer", True),
             PlannedTask("fact_check", "fact_checker", True),
+        ]
+    if mission_type == "AUDIENCE_BRIEF":
+        return [
+            PlannedTask("audience", "audience_analyst", True),
+            PlannedTask("synthesis", "chief_editor_writer", True),
         ]
     if mission_type == "PERFORMANCE_REVIEW":
         return [
@@ -789,11 +833,12 @@ MISSION_TYPES = (
     "SOCIAL_PACKAGE",
     "SCRIPT_REVIEW",
     "PERFORMANCE_REVIEW",
+    "AUDIENCE_BRIEF",
 )
 # Livrables qu'on peut décliner pour les réseaux (ils citent des pages vérifiables).
 DECLINABLE = ("CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "THEORY_REVIEW", "RESEARCH_DOSSIER")
 # Missions qui ne portent sur aucun comic (pas de documents, pas de citations de pages).
-WITHOUT_DOCUMENTS = ("MARKET_BRIEF", "SCRIPT_REVIEW", "PERFORMANCE_REVIEW")
+WITHOUT_DOCUMENTS = ("MARKET_BRIEF", "SCRIPT_REVIEW", "PERFORMANCE_REVIEW", "AUDIENCE_BRIEF")
 TEMPLATES.update(
     CHARACTER_DOSSIER=dossier_template,
     CONTINUITY_AUDIT=audit_template,
@@ -803,4 +848,5 @@ TEMPLATES.update(
     SOCIAL_PACKAGE=lambda ctx: render(ctx.outputs["social"]),
     SCRIPT_REVIEW=script_template,
     PERFORMANCE_REVIEW=performance_template,
+    AUDIENCE_BRIEF=audience_template,
 )

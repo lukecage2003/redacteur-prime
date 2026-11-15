@@ -23,7 +23,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 12 | Adaptive Voice (coût nul) | TESTED (banc réel BLOCKED) | 6 |
 | 13 | Intégration, sécurité, optimisation, production | IMPLEMENTED (déploiement BLOCKED : accord du propriétaire) | toutes |
 | 14 | Mesure par objectif & expérimentation scientifique (coût nul) | TESTED (données réelles : OAuth du propriétaire) | 11 |
-| 15 | Audience Intelligence & communauté *(proposée)* | NOT IMPLEMENTED — en attente de validation | 5, 8, 11, 14 |
+| 15 | Audience Intelligence & communauté (coût nul) | TESTED (données réelles : clé et OAuth du propriétaire) | 5, 8, 11, 14 |
 | 16 | Content Opportunity Engine *(proposée)* | NOT IMPLEMENTED — en attente de validation | 7, 8, 15 |
 | 17 | Audience Bridge, architectures narratives, multi-plateforme FR/EN *(proposée)* | NOT IMPLEMENTED — en attente de validation | 9, 10, 15 |
 | 18 | Packaging, marque, séries & franchises *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 15, 17 |
@@ -319,3 +319,16 @@ ADR-0021 · fiche : [docs/modules/performance.md](docs/modules/performance.md#ph
 | Niveaux de preuve OBSERVED / HYPOTHESIS / DEMONSTRATED | TESTED |
 | OAuth « application installée » (loopback), synchronisation de la chaîne | IMPLEMENTED — autorisation réelle : action du propriétaire |
 | API, CLI, page `/performance` (objectifs, expériences) | TESTED |
+
+## Phase 15 — Audience Intelligence & communauté (coût nul)
+
+ADR-0022 · fiche : [docs/modules/audience.md](docs/modules/audience.md).
+
+| Élément | Statut |
+|---|---|
+| Segments par motivations et niveau (âge refusé) ; statut calculé HYPOTHESIS / CONFIRMED | TESTED |
+| Preuves d'audience (METRIC, COMMENT_CLUSTER, MARKET, DECLARED), retrait et recalcul | TESTED |
+| Graphe d'audience relié au graphe de connaissances et aux sujets, arêtes prouvées | TESTED |
+| Commentaires publics de la chaîne, identité des auteurs jamais conservée | TESTED (API simulée) |
+| Classement, récurrences, propositions (sans interaction automatisée) | TESTED |
+| Agent Audience Analyst, mission AUDIENCE_BRIEF ; API, CLI, page `/audience` | TESTED |

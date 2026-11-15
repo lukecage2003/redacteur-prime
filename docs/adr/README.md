@@ -26,5 +26,6 @@ on le remplace par un nouvel ADR (statut « Remplacé par ADR-XXXX »).
 | [0019](0019-adaptive-voice.md) | Adaptive Voice : fournisseurs locaux gratuits, réponses ancrées et vérifiées | Accepté |
 | [0020](0020-production-readiness.md) | Préparation à la production : IAP vérifié, GCS sans clé, intégrations, PDFium sérialisé | Accepté |
 | [0021](0021-measurement-experiments.md) | Mesure par objectif, expériences rigoureuses, OAuth de la chaîne | Accepté |
+| [0022](0022-audience-intelligence.md) | Audience Intelligence : segments prouvés, graphe d'audience distinct, communauté anonyme | Accepté |
 
 Modèle : [template.md](template.md).

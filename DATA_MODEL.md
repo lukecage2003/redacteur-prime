@@ -130,6 +130,14 @@ COMMUNITY) et `format` ; 7 métriques de plus ; `performance_metric.dimension` e
 `experiment` (hypothèse, variable, audience, format, métrique, période, statut, résultat,
 conclusion, prochaine expérience) ; `experiment_variant` (comptes ou part rapportée, source).
 
+## Audience ✅ (phase 15, migration 0012)
+
+`audience_segment` (nom, description, motivations ≥ 1, niveau de connaissance, statut
+HYPOTHESIS/CONFIRMED calculé — aucun champ d'âge), `audience_evidence` (nature, énoncé,
+données, classe, retrait), `audience_link` (segment → ENTITY/TOPIC/FORMAT/PLATFORM, relation,
+preuve obligatoire du même segment), `community_comment` (texte public, nature, likes,
+publication — **aucune identité d'auteur**).
+
 ## Voix 🔜 (phase 12)
 
 `voice_session`, `voice_turn` (transcription, réponse, latences), `pronunciation_lexicon`.

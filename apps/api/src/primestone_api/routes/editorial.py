@@ -29,6 +29,7 @@ class MissionIn(BaseModel):
         "SOCIAL_PACKAGE",
         "SCRIPT_REVIEW",
         "PERFORMANCE_REVIEW",
+        "AUDIENCE_BRIEF",
     ]
     # Vide pour une revue de théorie : les documents de la théorie sont repris.
     document_ids: Annotated[list[UUID], Field(max_length=200)] = []

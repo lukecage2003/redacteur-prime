@@ -1046,3 +1046,107 @@ experiment_variant = Table(
         name="reported_share",
     ),
 )
+
+
+# --- Audience Intelligence & communauté (phase 15) ------------------------------------------
+# Segments fondés sur motivations et niveau de connaissance (jamais l'âge). Un segment n'est
+# CONFIRMED qu'avec des preuves observées d'au moins deux natures différentes. Aucun
+# commentaire ne conserve l'identité de son auteur.
+
+AUDIENCE_KNOWLEDGE_LEVELS = ("NOVICE", "INTERMEDIATE", "EXPERT")
+AUDIENCE_EVIDENCE_KINDS = ("METRIC", "COMMENT_CLUSTER", "MARKET", "DECLARED")
+AUDIENCE_LINK_TARGETS = ("ENTITY", "TOPIC", "FORMAT", "PLATFORM")
+COMMENT_KINDS = ("QUESTION", "THEORY", "REQUEST", "CONTROVERSY", "PRAISE", "OTHER")
+
+audience_segment = Table(
+    "audience_segment",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("name", Text, nullable=False, unique=True),
+    Column("description", Text, nullable=False),
+    Column("motivations", JSONB, nullable=False),
+    Column("knowledge_level", Text),
+    Column("status", Text, nullable=False, server_default=text("'HYPOTHESIS'")),
+    Column("author", Text, nullable=False),
+    *_ts(),
+    CheckConstraint("status IN ('HYPOTHESIS', 'CONFIRMED')", name="status"),
+    CheckConstraint(
+        "knowledge_level IS NULL OR " + _in(AUDIENCE_KNOWLEDGE_LEVELS, "knowledge_level"),
+        name="knowledge_level",
+    ),
+    CheckConstraint("jsonb_array_length(motivations) >= 1", name="motivations"),
+)
+
+audience_evidence = Table(
+    "audience_evidence",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "segment_id",
+        UUID(as_uuid=True),
+        ForeignKey("audience_segment.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("kind", Text, nullable=False),
+    Column("statement", Text, nullable=False),
+    Column("data", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column("data_class", Text, nullable=False),
+    Column("added_by", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    Column("retracted_at", DateTime(timezone=True)),
+    CheckConstraint(_in(AUDIENCE_EVIDENCE_KINDS, "kind"), name="kind"),
+    CheckConstraint(
+        "data_class IN ('PUBLIC', 'PRIVATE_AUTHORIZED', 'ESTIMATE', 'HYPOTHESIS')",
+        name="data_class",
+    ),
+    Index("ix_audience_evidence_segment_id", "segment_id"),
+)
+
+audience_link = Table(
+    "audience_link",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "segment_id",
+        UUID(as_uuid=True),
+        ForeignKey("audience_segment.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("target_kind", Text, nullable=False),
+    Column("target", Text, nullable=False),
+    Column("relation", Text, nullable=False),
+    Column(
+        "evidence_id",
+        UUID(as_uuid=True),
+        ForeignKey("audience_evidence.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("segment_id", "target_kind", "target", "relation"),
+    CheckConstraint(_in(AUDIENCE_LINK_TARGETS, "target_kind"), name="target_kind"),
+    CheckConstraint(
+        "relation IN ('INTERESTED_IN', 'PREFERS', 'USES', 'ASKS_ABOUT', 'FRUSTRATED_BY')",
+        name="relation",
+    ),
+)
+
+community_comment = Table(
+    "community_comment",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("platform", Text, nullable=False),
+    Column("external_id", Text, nullable=False),
+    Column(
+        "content_id",
+        UUID(as_uuid=True),
+        ForeignKey("content_item.id", ondelete="RESTRICT"),
+    ),
+    Column("text", Text, nullable=False),
+    Column("language", Text),
+    Column("kind", Text, nullable=False),
+    Column("like_count", Integer, nullable=False, server_default=text("0")),
+    Column("published_at", DateTime(timezone=True)),
+    Column("fetched_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("platform", "external_id"),
+    CheckConstraint(_in(COMMENT_KINDS, "kind"), name="kind"),
+)
