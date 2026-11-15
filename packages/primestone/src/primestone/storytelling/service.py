@@ -53,11 +53,14 @@ def read_script_file(path: Path) -> str:
     if path.suffix.lower() == ".pdf":
         import pypdfium2 as pdfium
 
-        pdf = pdfium.PdfDocument(path)
-        try:
-            return "\n".join(line for i in range(len(pdf)) for line in _page_lines(pdf[i]))
-        finally:
-            pdf.close()
+        from primestone.comic.formats import PDFIUM_LOCK  # PDFium n'est pas thread-safe
+
+        with PDFIUM_LOCK:
+            pdf = pdfium.PdfDocument(path)
+            try:
+                return "\n".join(line for i in range(len(pdf)) for line in _page_lines(pdf[i]))
+            finally:
+                pdf.close()
     return path.read_text(encoding="utf-8")
 
 
