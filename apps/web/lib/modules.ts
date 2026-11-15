@@ -29,6 +29,7 @@ export const MODULES: readonly IntelligenceModule[] = [
   { id: "creative", name: "Creative Intelligence", phase: 18, summary: "Packaging honnête, charte de marque versionnée, séries et franchises", status: "TESTED" },
   { id: "governance", name: "Brand Intelligence et gouvernance", phase: 20, summary: "Marque PRIMESTONE, piliers, politiques, décisions approuvées par le fondateur, réversibles", status: "TESTED" },
   { id: "shows", name: "Moteur d'émissions", phase: 21, summary: "Cycle de vie gouverné, formats, règles versionnées, épisodes conformes", status: "TESTED" },
+  { id: "identity", name: "Identité indépendante", phase: 22, summary: "Voix de marque sous licence, visuels et règles par langue, narration sans le fondateur", status: "TESTED" },
   { id: "voice", name: "Adaptive Voice Intelligence", phase: 12, summary: "Assistant vocal temps réel, 5 personnalités", status: "TESTED" },
 ];
 

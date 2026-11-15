@@ -1,12 +1,18 @@
 import Link from "next/link";
 import { fetchCharter, fetchSeries } from "@/lib/creative";
+import { brandVoice, fetchVisuals, fetchVoices } from "@/lib/identity";
 
 export const dynamic = "force-dynamic";
 
 const api = () => process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default async function CreativePage() {
-  const [charter, series] = await Promise.all([fetchCharter(api()), fetchSeries(api())]);
+  const [charter, series, voices, visuals] = await Promise.all([
+    fetchCharter(api()),
+    fetchSeries(api()),
+    fetchVoices(api()),
+    fetchVisuals(api()),
+  ]);
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <Link href="/" className="text-sm text-amber-700 hover:underline">
@@ -46,6 +52,27 @@ export default async function CreativePage() {
             </li>
           ))}
           {series?.length === 0 && <li className="text-zinc-500">Aucune série : primestone-creative series-create serie.json</li>}
+        </ul>
+      </section>
+      <section className="mt-8">
+        <h2 className="font-semibold">Identité de marque (sans le fondateur)</h2>
+        <p className="text-xs text-zinc-500">
+          Voix FR : {brandVoice(voices ?? [], "fr")?.name ?? "aucune approuvée"} · Voix EN : {brandVoice(voices ?? [], "en")?.name ?? "aucune approuvée"}
+        </p>
+        <ul className="mt-2 space-y-1 text-sm">
+          {(voices ?? []).map((v) => (
+            <li key={v.id}>
+              {v.name} <span className="text-xs text-zinc-500">· {v.language} · {v.kind} · {v.provider} · licence : {v.license} · {v.status}</span>
+            </li>
+          ))}
+          {voices?.length === 0 && <li className="text-zinc-500">Aucune voix : primestone-identity voice-propose voix.json (licence obligatoire)</li>}
+        </ul>
+        <ul className="mt-2 space-y-1 text-xs text-zinc-600 dark:text-zinc-400">
+          {(visuals ?? []).filter((v) => v.status === "ACTIVE").map((v) => (
+            <li key={v.id}>
+              Visuel v{v.version} · {v.language ?? "toutes langues"} · {v.platform ?? "toutes plateformes"}{v.series_id ? " · émission" : ""} : {Object.keys(v.rules).join(", ")}
+            </li>
+          ))}
         </ul>
       </section>
     </main>

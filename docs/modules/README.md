@@ -22,3 +22,4 @@ ajoutée ici au démarrage de la phase correspondante.
 | `voice` | 12 | STT/TTS locaux, 5 personnalités, réponses vérifiées ([fiche](voice.md)) | TESTED (banc réel BLOCKED) |
 | `governance` | 20 | marque, piliers, politiques, décisions du fondateur ([fiche](governance.md)) | TESTED (coût nul) |
 | `shows` | 21 | émissions gouvernées, formats, règles versionnées, épisodes ([fiche](shows.md)) | TESTED (coût nul) |
+| `identity` | 22 | voix de marque sous licence, visuels, règles par langue, narration ([fiche](identity.md)) | TESTED (coût nul) |

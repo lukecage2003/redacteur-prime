@@ -38,9 +38,18 @@ def register_handler(action: str, handler: Handler) -> None:
     _HANDLERS[action] = handler
 
 
+RejectHook = Callable[[Connection, dict[str, Any]], None]
+_REJECT_HOOKS: dict[str, RejectHook] = {}
+
+
+def register_reject_hook(action: str, hook: RejectHook) -> None:
+    _REJECT_HOOKS[action] = hook
+
+
 def _handler(action: str) -> Handler | None:
     # Les modules métier enregistrent leurs gestionnaires à l'import ; chargement différé
     # pour éviter les cycles (gouvernance ← émissions).
+    import primestone.identity
     import primestone.shows  # noqa: F401
 
     return _HANDLERS.get(action)
@@ -378,6 +387,10 @@ class GovernanceService:
                     text("UPDATE editorial_pillar SET status = 'RETIRED' WHERE id = :id"),
                     {"id": decision["subject_id"]},
                 )
+            _handler(decision["action"])  # charge les modules qui enregistrent leurs crochets
+            hook = _REJECT_HOOKS.get(decision["action"])
+            if hook is not None:
+                hook(conn, decision)
             self._close(conn, decision_id, "REJECTED", decided_by, reason)
             return self._load(conn, decision_id)
 

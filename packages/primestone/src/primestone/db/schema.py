@@ -1418,3 +1418,61 @@ editorial_decision = Table(
     CheckConstraint(_in(DECISION_STATUSES), name="status"),
     Index("ix_editorial_decision_status", "status"),
 )
+
+# --- Identité indépendante (phase 22, ADR-0029) -------------------------------------------
+
+brand_voice_profile = Table(
+    "brand_voice_profile",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "brand_id",
+        UUID(as_uuid=True),
+        ForeignKey("media_brand.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("name", Text, nullable=False),
+    Column("language", Text, nullable=False),
+    Column("tone", Text, nullable=False),
+    Column("kind", Text, nullable=False),
+    Column("provider", Text, nullable=False),
+    Column("voice", Text, nullable=False),
+    Column("license", Text, nullable=False),
+    Column("license_url", Text),
+    Column("allowed_use", Text, nullable=False),
+    Column("consent_reference", Text),
+    Column("status", Text, nullable=False, server_default=text("'PROPOSED'")),
+    Column("created_by", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("brand_id", "name"),
+    CheckConstraint("language IN ('fr', 'en')", name="language"),
+    CheckConstraint("kind IN ('SYNTHETIC', 'HUMAN_LICENSED')", name="kind"),
+    CheckConstraint("status IN ('PROPOSED', 'APPROVED', 'RETIRED')", name="status"),
+    CheckConstraint("length(trim(license)) > 0", name="license"),
+    CheckConstraint(
+        "kind = 'SYNTHETIC' OR length(trim(coalesce(consent_reference, ''))) > 0",
+        name="consent",
+    ),
+)
+
+brand_visual_profile = Table(
+    "brand_visual_profile",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "brand_id",
+        UUID(as_uuid=True),
+        ForeignKey("media_brand.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("series_id", UUID(as_uuid=True), ForeignKey("series.id", ondelete="RESTRICT")),
+    Column("platform", Text),
+    Column("language", Text),
+    Column("rules", JSONB, nullable=False),
+    Column("version", Integer, nullable=False, server_default=text("1")),
+    Column("status", Text, nullable=False, server_default=text("'ACTIVE'")),
+    Column("created_by", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    CheckConstraint("language IS NULL OR language IN ('fr', 'en')", name="language"),
+    CheckConstraint("status IN ('ACTIVE', 'RETIRED')", name="status"),
+)

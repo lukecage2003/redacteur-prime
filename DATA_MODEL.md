@@ -168,6 +168,14 @@ statut). `series_episode` gagne `format_id`, `language`, `status`
 `show_id` sur `script`, `content_item`, `mission`, `experiment` ; `format_id` sur `script` ;
 `language` sur `experiment`.
 
+## Identité ✅ (phase 22, migration 0017)
+
+`brand_voice_profile` (marque, nom, langue, ton, nature SYNTHETIC/HUMAN_LICENSED,
+fournisseur, voix, licence non vide, lien, usage autorisé, référence d'autorisation
+obligatoire pour une voix humaine, statut PROPOSED/APPROVED/RETIRED, auteur).
+`brand_visual_profile` (marque, émission, plateforme et langue facultatives, règles, version,
+statut ACTIVE/RETIRED).
+
 ## Voix 🔜 (phase 12)
 
 `voice_session`, `voice_turn` (transcription, réponse, latences), `pronunciation_lexicon`.
