@@ -14,6 +14,8 @@ from primestone.market.connectors import (
     language_of,
     parse_feed,
 )
+from primestone.market.opportunity import score_topic
+from primestone.market.opportunity_service import OpportunityService
 from primestone.market.service import MarketError, MarketService
 
 __all__ = [
@@ -22,6 +24,7 @@ __all__ = [
     "Item",
     "MarketError",
     "MarketService",
+    "OpportunityService",
     "Topic",
     "YouTubeClient",
     "analyze",
@@ -29,7 +32,9 @@ __all__ = [
     "language_of",
     "market_service_from_settings",
     "matches",
+    "opportunity_service_from_settings",
     "parse_feed",
+    "score_topic",
 ]
 
 
@@ -41,4 +46,14 @@ def market_service_from_settings(settings: Settings, engine: Engine) -> MarketSe
         youtube=(lambda: YouTubeClient(key, timeout=timeout)) if key else None,
         youtube_daily_quota=settings.youtube_daily_quota_units,
         fetch_feed=partial(fetch_feed, timeout=timeout),
+    )
+
+
+def opportunity_service_from_settings(settings: Settings, engine: Engine) -> OpportunityService:
+    from primestone.knowledge import knowledge_service_from_settings  # dépendance tardive
+
+    return OpportunityService(
+        engine,
+        market_service_from_settings(settings, engine),
+        knowledge_service_from_settings(settings, engine).embedder,
     )

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { fetchAnalysis, fetchSources, gapLabel } from "@/lib/market";
+import { fetchAnalysis, fetchOpportunities, fetchSources, gapLabel, opportunityLabel } from "@/lib/market";
 import { addTopic, launchBrief, verifySource } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ const button = "rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white 
 const fmt = (n: number | null) => (n === null ? "—" : n.toLocaleString("fr-FR"));
 
 export default async function MarketPage() {
-  const [analysis, sources] = await Promise.all([fetchAnalysis(api()), fetchSources(api())]);
+  const [analysis, sources, opps] = await Promise.all([fetchAnalysis(api()), fetchSources(api()), fetchOpportunities(api())]);
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <Link href="/" className="text-sm text-amber-700 hover:underline">
@@ -88,6 +88,27 @@ export default async function MarketPage() {
             </table>
           </div>
           {analysis.niches.length > 0 && <p className="mt-2 text-sm">Niches : {analysis.niches.join(", ")}</p>}
+        </section>
+      )}
+
+      {opps && opps.opportunities.length > 0 && (
+        <section className="mt-8">
+          <h2 className="font-semibold">Opportunités éditoriales</h2>
+          <p className="text-xs text-zinc-500">{opps.rule}</p>
+          <ul className="mt-2 space-y-2 text-sm">
+            {opps.opportunities.map((o) => (
+              <li key={o.topic_id} className="rounded border border-zinc-200 p-2 dark:border-zinc-800">
+                <span className="font-medium">{o.topic}</span> — {o.recommendation}{" "}
+                <span className="text-xs text-zinc-500">
+                  · {opportunityLabel(o)} · score {o.score ?? "—"} · non mesuré : {o.missing.join(", ") || "rien"}
+                </span>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                  Besoin : {o.need.join(" ; ")} · Angle : {o.angle.join(" ; ")} · Formats : {o.formats.join(" ; ")}
+                </p>
+                {o.risks.length > 0 && <p className="text-xs text-red-700">Risques : {o.risks.join(" ; ")}</p>}
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { gapLabel, splitKeywords } from "./market";
+import { gapLabel, opportunityLabel, splitKeywords } from "./market";
+
+describe("opportunityLabel", () => {
+  it("distingue opportunité et hypothèse", () => {
+    expect(opportunityLabel({ status: "HYPOTHESIS", confidence: "HIGH" })).toContain("non observée");
+    expect(opportunityLabel({ status: "OPPORTUNITY", confidence: "MEDIUM" })).toBe("opportunité (confiance medium)");
+  });
+});
 
 describe("gapLabel", () => {
   it("ne chiffre jamais sans données", () => {

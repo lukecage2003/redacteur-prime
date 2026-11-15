@@ -35,7 +35,7 @@ from primestone.forensic import ForensicService
 from primestone.jobs import PermanentError, PostgresJobQueue
 from primestone.knowledge import KnowledgeService
 from primestone.lab import TheoryLab
-from primestone.market import MarketService
+from primestone.market import MarketService, OpportunityService
 from primestone.performance import PerformanceService
 
 if TYPE_CHECKING:  # import circulaire : storytelling utilise le Fact Checker
@@ -67,7 +67,9 @@ class EditorialService:
         storytelling: StorytellingService | None = None,
         performance: PerformanceService | None = None,
         audience: AudienceService | None = None,
+        opportunities: OpportunityService | None = None,
     ) -> None:
+        self._opportunities = opportunities
         self._audience = audience
         self._performance = performance
         self._storytelling = storytelling
@@ -134,6 +136,8 @@ class EditorialService:
             document_ids = [UUID(d) for d in source["document_ids"]]
         if mission_type == "MARKET_BRIEF" and self._market is None:
             raise EditorialError("Market Intelligence non configurée")
+        if mission_type == "OPPORTUNITY_BRIEF" and self._opportunities is None:
+            raise EditorialError("moteur d'opportunités non configuré")
         if mission_type == "AUDIENCE_BRIEF" and self._audience is None:
             raise EditorialError("Audience Intelligence non configurée")
         if mission_type == "PERFORMANCE_REVIEW" and self._performance is None:
@@ -175,6 +179,7 @@ class EditorialService:
             "SCRIPT_REVIEW": f"Critique du script : {script['title'] if script else ''}",
             "PERFORMANCE_REVIEW": "Bilan de performance de la chaîne",
             "AUDIENCE_BRIEF": "Note d'audience",
+            "OPPORTUNITY_BRIEF": "Opportunités éditoriales",
         }[mission_type]
         with self._engine.begin() as conn:
             mission_id: UUID = conn.execute(
@@ -272,6 +277,7 @@ class EditorialService:
             storytelling=self._storytelling,
             performance=self._performance,
             audience=self._audience,
+            opportunities=self._opportunities,
             source_mission=self.mission(UUID(mission["params"]["source_mission_id"]))
             if mission["params"].get("source_mission_id")
             else None,
@@ -442,6 +448,22 @@ class EditorialService:
                     f"{len(social['excluded_unverified'])} phrase(s) non vérifiée(s) du livrable "
                     "source écartée(s)."
                 )
+        found = ctx.outputs.get("opportunities")
+        if found is not None:
+            real = [o for o in found["opportunities"] if o["status"] == "OPPORTUNITY"]
+            findings.append(
+                f"{len(real)} opportunité(s) avec demande FR observée ; "
+                f"{len(found['opportunities']) - len(real)} hypothèse(s)."
+            )
+            return {
+                "recommendation": "VALIDER AVEC RÉSERVES" if real else "NE PAS VALIDER",
+                "summary": f"Opportunités : {len(real)} étayée(s) sur "
+                f"{len(found['opportunities'])} sujet(s).",
+                "findings": findings,
+                "deliverable": synthesis.get("text"),
+                "author": synthesis.get("author", "gabarit déterministe"),
+                "fact_check": {"verdict": "NOT_APPLICABLE", "counts": {}, "checks": []},
+            }
         audience = ctx.outputs.get("audience")
         if audience is not None:
             confirmed = [s for s in audience["segments"] if s["status"] == "CONFIRMED"]

@@ -15,7 +15,7 @@ from primestone.editorial import editorial_service_from_settings
 from primestone.forensic import forensic_service
 from primestone.knowledge import knowledge_service_from_settings
 from primestone.lab import lab_from_settings
-from primestone.market import market_service_from_settings
+from primestone.market import market_service_from_settings, opportunity_service_from_settings
 from primestone.performance import PerformanceService
 from primestone.security import IAPMiddleware, PublicKeys
 from primestone.storage import create_object_store
@@ -64,6 +64,7 @@ def create_app(
         app.state.storytelling = storytelling_service(app.state.engine)
         app.state.performance = PerformanceService(app.state.engine)
         app.state.audience = AudienceService(app.state.engine)
+        app.state.opportunities = opportunity_service_from_settings(settings, app.state.engine)
         app.state.voice = VoiceRuntime(settings, app.state.engine, app.state.knowledge)
         try:
             yield

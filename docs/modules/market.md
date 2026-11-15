@@ -90,3 +90,17 @@ travaille que sur des **données publiques**, et chaque chiffre est expliqué.
   traces d'échec, mission.
 - `apps/api/tests/test_market_api.py`.
 - `apps/web/lib/market.test.ts`.
+
+## Phase 16 — Opportunités éditoriales (ADR-0023)
+
+`uv run primestone-market opportunities`, la section « Opportunités » de `/market`, ou la
+mission `primestone-market opportunity-brief --process`.
+
+Pour chaque sujet suivi, la fiche donne :
+- le public potentiel, le besoin identifié, l'angle différenciant ;
+- les preuves disponibles (pages transcrites) et la concurrence francophone ;
+- les risques, les formats possibles, une recommandation ;
+- un score expliqué et un niveau de confiance.
+
+Sans demande francophone **observée**, le sujet reste une hypothèse, quelle que soit sa
+popularité en anglais.

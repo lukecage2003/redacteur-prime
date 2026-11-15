@@ -17,7 +17,7 @@ from primestone.editorial.factcheck import Corpus, check_text
 from primestone.forensic import ForensicService, fold
 from primestone.knowledge import KnowledgeService
 from primestone.lab import TheoryLab
-from primestone.market import MarketService
+from primestone.market import MarketService, OpportunityService
 from primestone.performance import PerformanceService
 from primestone.social import PLATFORMS, build_package, render
 
@@ -43,6 +43,7 @@ class MissionContext:
     storytelling: StorytellingService | None = None
     performance: PerformanceService | None = None
     audience: AudienceService | None = None
+    opportunities: OpportunityService | None = None
 
     def corpus(self) -> Corpus:
         return Corpus(
@@ -169,6 +170,10 @@ async def theory_researcher(ctx: MissionContext, inputs: dict[str, Any]) -> dict
 
 async def market_analyst(ctx: MissionContext, inputs: dict[str, Any]) -> dict[str, Any]:
     """Écarts EN→FR sur données publiques collectées : estimations, jamais de métrique privée."""
+    if inputs.get("mode") == "opportunities":
+        if ctx.opportunities is None:
+            raise RuntimeError("moteur d'opportunités non configuré")
+        return ctx.opportunities.opportunities()
     if ctx.market is None:
         raise RuntimeError("Market Intelligence non configurée")
     return ctx.market.analysis(
@@ -486,6 +491,32 @@ def research_template(ctx: MissionContext) -> str:
     return "\n".join(lines)
 
 
+def opportunity_template(ctx: MissionContext) -> str:
+    report = ctx.outputs["opportunities"]
+    lines = [
+        "# Opportunités éditoriales",
+        f"Note : {report['method']}, {report['data_class']} ; {report['rule']}",
+    ]
+    if not report["opportunities"]:
+        lines.append("Note : aucun sujet suivi (ajouter des sujets dans Marché).")
+    for o in report["opportunities"]:
+        lines.append(f"## {o['topic']} — {o['status']} — {o['recommendation']}")
+        lines.append(
+            f"Note : score {o['score']} (confiance {o['confidence']}, critères mesurés "
+            f"{o['measured_weight']:.0%} ; non mesurés : {', '.join(o['missing']) or 'aucun'})."
+        )
+        lines.append(f"Note : public potentiel : {', '.join(o['potential_audience'])}.")
+        lines.append(f"Note : besoin : {'; '.join(o['need'])}.")
+        lines.append(f"Note : angle : {'; '.join(o['angle'])}.")
+        lines.append(
+            f"Note : preuves : {o['evidence']['pages']} page(s) transcrite(s) ; concurrence FR : "
+            f"{o['competition']['fr_items']} contenu(s)."
+        )
+        lines.extend(f"Note : risque : {r}." for r in o["risks"])
+        lines.extend(f"Note : format : {f}." for f in o["formats"])
+    return "\n".join(lines)
+
+
 def market_template(ctx: MissionContext) -> str:
     analysis = ctx.outputs["market"]
     lines = [
@@ -768,6 +799,11 @@ def plan(mission_type: str, params: dict[str, Any]) -> list[PlannedTask]:
             PlannedTask("synthesis", "chief_editor_writer", True),
             PlannedTask("fact_check", "fact_checker", True),
         ]
+    if mission_type == "OPPORTUNITY_BRIEF":
+        return [
+            PlannedTask("opportunities", "market_analyst", True, {"mode": "opportunities"}),
+            PlannedTask("synthesis", "chief_editor_writer", True),
+        ]
     if mission_type == "AUDIENCE_BRIEF":
         return [
             PlannedTask("audience", "audience_analyst", True),
@@ -834,11 +870,18 @@ MISSION_TYPES = (
     "SCRIPT_REVIEW",
     "PERFORMANCE_REVIEW",
     "AUDIENCE_BRIEF",
+    "OPPORTUNITY_BRIEF",
 )
 # Livrables qu'on peut décliner pour les réseaux (ils citent des pages vérifiables).
 DECLINABLE = ("CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "THEORY_REVIEW", "RESEARCH_DOSSIER")
 # Missions qui ne portent sur aucun comic (pas de documents, pas de citations de pages).
-WITHOUT_DOCUMENTS = ("MARKET_BRIEF", "SCRIPT_REVIEW", "PERFORMANCE_REVIEW", "AUDIENCE_BRIEF")
+WITHOUT_DOCUMENTS = (
+    "MARKET_BRIEF",
+    "SCRIPT_REVIEW",
+    "PERFORMANCE_REVIEW",
+    "AUDIENCE_BRIEF",
+    "OPPORTUNITY_BRIEF",
+)
 TEMPLATES.update(
     CHARACTER_DOSSIER=dossier_template,
     CONTINUITY_AUDIT=audit_template,
@@ -849,4 +892,5 @@ TEMPLATES.update(
     SCRIPT_REVIEW=script_template,
     PERFORMANCE_REVIEW=performance_template,
     AUDIENCE_BRIEF=audience_template,
+    OPPORTUNITY_BRIEF=opportunity_template,
 )

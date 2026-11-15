@@ -18,7 +18,7 @@ from primestone.lab import TheoryLab
 if TYPE_CHECKING:
     from primestone.storytelling import StorytellingService
 from primestone.audience import AudienceService
-from primestone.market import market_service_from_settings
+from primestone.market import market_service_from_settings, opportunity_service_from_settings
 from primestone.performance import PerformanceService
 
 __all__ = [
@@ -67,4 +67,5 @@ def editorial_service_from_settings(settings: Settings, engine: Engine) -> Edito
         storytelling=_storytelling(engine, forensic),
         performance=PerformanceService(engine),
         audience=AudienceService(engine),
+        opportunities=opportunity_service_from_settings(settings, engine),
     )

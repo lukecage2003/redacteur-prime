@@ -7,7 +7,7 @@ from typing import Annotated, Any, Literal
 from fastapi import APIRouter, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
-from primestone.market import MarketError, MarketService
+from primestone.market import MarketError, MarketService, OpportunityService
 
 router = APIRouter(prefix="/market", tags=["market"])
 
@@ -176,3 +176,14 @@ def analysis(
     min_items: Annotated[int, Query(ge=1, le=1000)] = 5,
 ) -> dict[str, Any]:
     return _market(request).analysis(window_days=window_days, min_items=min_items)
+
+
+@router.get("/opportunities")
+def opportunities(
+    request: Request,
+    window_days: Annotated[int, Query(ge=1, le=3650)] = 90,
+    min_items: Annotated[int, Query(ge=1, le=1000)] = 5,
+) -> dict[str, Any]:
+    """Opportunités éditoriales expliquées (`opportunity@1`) ; ESTIMATE."""
+    service: OpportunityService = request.app.state.opportunities
+    return service.opportunities(window_days=window_days, min_items=min_items)
