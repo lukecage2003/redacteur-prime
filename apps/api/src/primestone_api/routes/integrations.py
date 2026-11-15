@@ -12,11 +12,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, status
 
-from primestone.storytelling import StorytellingService, sections
+from primestone.storytelling import StorytellingService, motion_intents, sections
 from primestone.vision.service import VisionService
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
-CONTRACT = "1.0"
+CONTRACT = "1.1"  # 1.1 : intentions narratives et moments visuels (compatible 1.0)
 
 
 @router.get("/panel-explorer/documents/{document_id}/pages/{number}")
@@ -61,6 +61,9 @@ def motion_studio_script(request: Request, script_id: UUID) -> dict[str, Any]:
             for s in sections(version["content"])
         ],
         "works": score["analysis"]["works"],
+        "intents": motion_intents(score["analysis"]["retention"])
+        if "retention" in score["analysis"]
+        else [],
         "adapted_from": script["adapted_from"],
         "adaptations": script["adaptations"],
     }

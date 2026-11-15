@@ -107,7 +107,8 @@ jetons, coût, erreur).
 `script` (titre, langue fr/en, documents, étape parmi 13, statut IN_PROGRESS/VALIDATED,
 `adapted_from`), `script_version` (numéro, étape, contenu, origine HUMAN/IMPORT/MODEL ; ajout
 seul), `script_score` (méthode, 8 critères JSON, total 0–100, `factual_veto`, analyse),
-`script_event` (journal).
+`script_event` (journal). Phase 17 (migration 0013) : `script.level`
+(DISCOVERY/EXPLORATION/EXPERTISE) et `script.level_of` (variante d'un même sujet).
 
 ## Marché ✅ (phases 2b, 8, migration 0008)
 

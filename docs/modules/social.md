@@ -35,3 +35,10 @@ Code : `packages/primestone/src/primestone/social/` · ADR-0016 · coût : **nul
 - `packages/primestone/tests/test_social_strategy.py`
 - `apps/worker/tests/test_social_pipeline.py`
 - `apps/web/lib/editorial.test.ts`
+
+## Phase 17 — Nouveaux formats
+
+YouTube Shorts (angle distinct de TikTok), publication communautaire (un fait sourcé et une
+question, jamais de réponse automatique), podcast et dossier écrit (parties du dossier,
+sources en fin). L'adaptation anglaise passe par `primestone-script adapt` : une réécriture
+culturellement adaptée, pas une traduction.

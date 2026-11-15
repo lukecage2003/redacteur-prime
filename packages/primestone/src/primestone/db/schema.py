@@ -822,9 +822,15 @@ script = Table(
     Column("step", Text, nullable=False, server_default=text("'BRIEF'")),
     Column("status", Text, nullable=False, server_default=text("'IN_PROGRESS'")),
     Column("adapted_from", UUID(as_uuid=True), ForeignKey("script.id", ondelete="RESTRICT")),
+    # Phase 17 : niveau de connaissance visé et variante d'un même sujet à un autre niveau.
+    Column("level", Text),
+    Column("level_of", UUID(as_uuid=True), ForeignKey("script.id", ondelete="RESTRICT")),
     Column("author", Text, nullable=False),
     *_ts(),
     CheckConstraint("language IN ('fr', 'en')", name="language"),
+    CheckConstraint(
+        "level IS NULL OR level IN ('DISCOVERY', 'EXPLORATION', 'EXPERTISE')", name="level"
+    ),
     CheckConstraint(_in(SCRIPT_STEPS, "step"), name="step"),
     CheckConstraint("status IN ('IN_PROGRESS', 'VALIDATED')", name="status"),
 )

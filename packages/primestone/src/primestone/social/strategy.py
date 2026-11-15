@@ -114,7 +114,7 @@ def build_package(
     used: set[str] = set()
     for key in platforms:
         spec = PLATFORMS[key]
-        if key == "youtube_long":
+        if key in ("youtube_long", "podcast", "written_dossier"):
             chapters: dict[str, list[Beat]] = {}
             for b in pool:
                 chapters.setdefault(b.section, []).append(b)
@@ -127,6 +127,14 @@ def build_package(
                 "warnings": []
                 if len(chapters) >= 3
                 else ["moins de 3 chapitres : YouTube n'affichera pas de chapitres"],
+            }
+        elif key == "community_post":
+            picked = _pick_short(pool, used)
+            used.add(picked[0].text)
+            content = {
+                "post": picked[0].text,
+                "question": "Et vous, comment l'interprétez-vous ?",
+                "rule": "aucune réponse automatique : la discussion reste humaine",
             }
         elif key == "instagram_carousel":
             facts = pool[:MAX_CAROUSEL_FACTS]
@@ -171,12 +179,22 @@ def render(package: dict[str, Any]) -> str:
             f"Note : rôle : {spec['role']} ; cible : {spec['editorial_target']} ; formats vérifiés "
             f"le {spec['checked_on']}, à revérifier."
         )
-        if key == "youtube_long":
+        if key in ("youtube_long", "podcast", "written_dossier"):
+            label = {
+                "youtube_long": "Chapitre",
+                "podcast": "Segment audio",
+                "written_dossier": "Partie",
+            }[key]
             for n, chapter in enumerate(content["chapters"], start=1):
-                lines.append(f"### Chapitre {n} — {chapter['title']}")
+                lines.append(f"### {label} {n} — {chapter['title']}")
                 lines.extend(chapter["facts"])
             lines.append("### Description : sources")
             lines.extend(f"Note : {source}" for source in content["sources"])
+        elif key == "community_post":
+            lines.append("### Publication")
+            lines.append(content["post"])
+            lines.append(f"### Question\n{content['question']}")
+            lines.append(f"Note : {content['rule']}.")
         elif key == "instagram_carousel":
             lines.append(f"### Carte 1 — couverture : {content['cover']}")
             for n, card in enumerate(content["cards"], start=2):

@@ -15,6 +15,9 @@ from primestone.db.schema import SCRIPT_STEPS
 from primestone.editorial.factcheck import Corpus, check_text
 from primestone.forensic import ForensicService
 from primestone.storytelling.analysis import score, work_citations
+from primestone.storytelling.levels import LEVELS
+from primestone.storytelling.levels import check as check_level
+from primestone.storytelling.retention import analyze as analyze_retention
 
 PASS_MARK = 70  # note minimale pour la validation finale (en plus de l'absence de veto)
 MAX_SCRIPT_CHARS = 400_000
@@ -105,9 +108,13 @@ class StorytellingService:
         document_ids: Sequence[UUID] = (),
         origin: str = "HUMAN",
         adapted_from: UUID | None = None,
+        level: str | None = None,
+        level_of: UUID | None = None,
     ) -> UUID:
         if language not in ("fr", "en"):
             raise ScriptError("langue attendue : fr ou en")
+        if level is not None and level not in LEVELS:
+            raise ScriptError(f"niveau inconnu : {level}")
         if not title.strip() or not author.strip():
             raise ScriptError("titre et auteur obligatoires")
         with self._engine.begin() as conn:
@@ -120,8 +127,9 @@ class StorytellingService:
                     raise ScriptError("document inconnu")
             script_id: UUID = conn.execute(
                 text(
-                    "INSERT INTO script (title, language, document_ids, adapted_from, author) "
-                    "VALUES (:t, :l, CAST(:d AS jsonb), :a, :author) RETURNING id"
+                    "INSERT INTO script (title, language, document_ids, adapted_from, author, "
+                    "level, level_of) VALUES (:t, :l, CAST(:d AS jsonb), :a, :author, :lv, :lo) "
+                    "RETURNING id"
                 ),
                 {
                     "t": title.strip(),
@@ -129,6 +137,8 @@ class StorytellingService:
                     "d": _json([str(d) for d in dict.fromkeys(document_ids)]),
                     "a": adapted_from,
                     "author": author,
+                    "lv": level,
+                    "lo": level_of,
                 },
             ).scalar_one()
             self._log(conn, script_id, "CREATED", author, {"language": language})
@@ -227,7 +237,28 @@ class StorytellingService:
             raise ScriptError("aucune version à évaluer")
         documents = [UUID(d) for d in row.document_ids]
         report = check_text(v.content, self._corpus(documents))
-        result = score(v.content, report, work_citations(v.content, library_titles))
+        works = work_citations(v.content, library_titles)
+        result = score(v.content, report, works)
+        if row.level:
+            result["analysis"]["level_checks"] = check_level(row.level, v.content, report, works)
+        with self._engine.connect() as conn:
+            curve = [
+                {"elapsed_ratio": float(r[0]), "audience_watch_ratio": float(r[1])}
+                for r in conn.execute(
+                    text(
+                        """
+                        SELECT p.elapsed_ratio, p.audience_watch_ratio FROM retention_point p
+                          JOIN content_item c ON c.id = p.content_id
+                         WHERE c.script_id = :s AND p.observed_at = (
+                               SELECT max(observed_at) FROM retention_point
+                                WHERE content_id = c.id)
+                         ORDER BY p.elapsed_ratio
+                        """
+                    ),
+                    {"s": script_id},
+                ).all()
+            ]
+        result["analysis"]["retention"] = analyze_retention(v.content, curve)
         with self._engine.begin() as conn:
             conn.execute(
                 text(
@@ -309,6 +340,23 @@ class StorytellingService:
             )
         return new_id
 
+    def variant(
+        self, script_id: UUID, *, level: str, content: str, title: str | None, author: str
+    ) -> UUID:
+        """Même sujet, autre niveau (DISCOVERY / EXPLORATION / EXPERTISE) : script à part
+        entière, relié, soumis au MÊME Fact Checker."""
+        with self._engine.connect() as conn:
+            row = self._row(conn, script_id)
+        return self.create(
+            title=title or f"{row.title} — {level.lower()}",
+            language=row.language,
+            content=content,
+            author=author,
+            document_ids=[UUID(d) for d in row.document_ids],
+            level=level,
+            level_of=script_id,
+        )
+
     def scripts(self) -> list[dict[str, Any]]:
         with self._engine.connect() as conn:
             return [
@@ -375,6 +423,7 @@ class StorytellingService:
             **data,
             "id": str(data["id"]),
             "adapted_from": str(data["adapted_from"]) if data["adapted_from"] else None,
+            "level_of": str(data["level_of"]) if data["level_of"] else None,
             "steps": list(SCRIPT_STEPS),
             "pass_mark": PASS_MARK,
             "versions": versions,

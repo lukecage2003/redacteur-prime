@@ -53,7 +53,7 @@ def test_integrations(ctx: SimpleNamespace, comic_factory: SimpleNamespace) -> N
     doc = item["document_id"]
     ctx.drain()
     page = client.get(f"/api/v1/integrations/panel-explorer/documents/{doc}/pages/1").json()
-    assert (page["contract"], page["transcribed"], page["texts"]) == ("1.0", False, [])
+    assert (page["contract"], page["transcribed"], page["texts"]) == ("1.1", False, [])
     assert page["panels"]
     client.post(
         "/api/v1/transcriptions",
@@ -90,3 +90,4 @@ def test_integrations(ctx: SimpleNamespace, comic_factory: SimpleNamespace) -> N
     export = client.get(f"/api/v1/integrations/motion-studio/scripts/{script_id}").json()
     assert [s["start_seconds"] for s in export["sections"]] == [0, 60, 120]
     assert export["score"] >= 70
+    assert export["intents"][1]["visual_moments"][0].startswith("Montrer la case citée")
