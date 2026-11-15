@@ -40,7 +40,7 @@ uv run primestone-knowledge build|entities|entity|graph|path|search|merge|alias|
 uv run primestone-editorial agents|dossier|audit|check|social|show|approve|reject  # phases 6, 9
 uv run primestone-lab create|list|show|evidence|retract|alternative|research|review|ask  # phase 7
 uv run primestone-market sources|add-source|verify|import|collect|snapshot|topic|analysis|brief|opportunities|opportunity-brief  # phases 8, 16
-uv run primestone-script list|show|create|version|step|evaluate|review|validate|adapt  # phase 10
+uv run primestone-script list|show|create|version|step|evaluate|review|validate|adapt|variant|architectures|techniques  # phases 10, 17
 uv run primestone-audience segments|segment|evidence|link|collect|community|brief  # phase 15
 uv run primestone-performance import|contents|link|report|review|authorize|sync|objective|objectives|experiment-*  # phases 11, 14
 ```

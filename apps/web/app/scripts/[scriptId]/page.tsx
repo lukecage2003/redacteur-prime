@@ -71,6 +71,37 @@ export default async function ScriptPage({ params }: { params: Promise<{ scriptI
               </li>
             ))}
           </ul>
+          {score.analysis.level_checks && (
+            <div className="mt-3 text-sm">
+              <h3 className="font-medium">Niveau {score.analysis.level_checks.level}</h3>
+              <ul className="list-disc pl-5 text-xs">
+                {score.analysis.level_checks.checks.map((c) => (
+                  <li key={c.check} className={c.ok ? "text-emerald-700" : "text-amber-700"}>
+                    {c.check} : {c.detail}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {score.analysis.retention && (
+            <div className="mt-3 text-sm">
+              <h3 className="font-medium">Rétention (repères du script{score.analysis.retention.drop_offs.length ? " + décrochages observés" : ""})</h3>
+              <ul className="list-disc pl-5 text-xs">
+                {score.analysis.retention.sections
+                  .filter((s) => s.flags.length > 0)
+                  .map((s) => (
+                    <li key={s.title}>
+                      {s.title} : {s.flags.join(" ; ")}
+                    </li>
+                  ))}
+                {score.analysis.retention.drop_offs.map((d) => (
+                  <li key={d.at_ratio} className="text-red-700">
+                    Décrochage observé à {Math.round(d.at_ratio * 100)} % ({d.section ?? "?"})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {score.analysis.works.length > 0 && (
             <p className="mt-2 text-xs text-zinc-500">
               Œuvres citées :{" "}

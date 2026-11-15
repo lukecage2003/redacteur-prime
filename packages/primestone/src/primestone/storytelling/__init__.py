@@ -12,6 +12,9 @@ from primestone.storytelling.analysis import (
     sections,
     work_citations,
 )
+from primestone.storytelling.architectures import ARCHITECTURES, propose, techniques
+from primestone.storytelling.levels import LEVELS
+from primestone.storytelling.retention import motion_intents
 from primestone.storytelling.service import (
     PASS_MARK,
     ScriptError,
@@ -20,16 +23,21 @@ from primestone.storytelling.service import (
 )
 
 __all__ = [
+    "ARCHITECTURES",
+    "LEVELS",
     "METHOD",
     "PASS_MARK",
     "WEIGHTS",
     "ScriptError",
     "Section",
     "StorytellingService",
+    "motion_intents",
+    "propose",
     "read_script_file",
     "score",
     "sections",
     "storytelling_service",
+    "techniques",
     "work_citations",
 ]
 

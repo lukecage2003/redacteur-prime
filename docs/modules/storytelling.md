@@ -53,3 +53,18 @@ validations, adaptations).
 - `packages/primestone/tests/test_storytelling_analysis.py`
 - `apps/worker/tests/test_storytelling_pipeline.py`
 - `apps/web/lib/scripts.test.ts`
+
+## Phase 17 — Niveaux, architectures, rétention (ADR-0024)
+
+```bash
+uv run primestone-script variant ID discovery.md --level DISCOVERY   # même sujet, autre niveau
+uv run primestone-script architectures --subject "Despair" --fact "« … » [Titre, p. 3]." --level EXPERTISE
+uv run primestone-script techniques
+uv run primestone-script evaluate ID   # + contrôles de niveau + rétention (et décrochages réels)
+```
+
+- Les contrôles de niveau ne remplacent jamais le Fact Checker : le veto s'applique à tous
+  les niveaux.
+- La rétention du script est une **hypothèse** ; les décrochages viennent de la courbe réelle
+  (`primestone-performance sync`) quand la vidéo est reliée au script.
+- Motion Studio reçoit, avec le contrat 1.1, les intentions de chaque section.

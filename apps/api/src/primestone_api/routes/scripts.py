@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
 from primestone.db.schema import SCRIPT_STEPS
-from primestone.storytelling import ScriptError, StorytellingService
+from primestone.storytelling import ScriptError, StorytellingService, propose, techniques
 
 router = APIRouter(prefix="/scripts", tags=["scripts"])
 
@@ -126,3 +126,48 @@ def adapt(request: Request, body: AdaptIn) -> dict[str, str]:
         author=body.author,
     )
     return {"script_id": str(new_id)}
+
+
+# --- Phase 17 : niveaux, architectures, techniques ------------------------------------------
+
+Level = Literal["DISCOVERY", "EXPLORATION", "EXPERTISE"]
+
+
+class VariantIn(BaseModel):
+    script_id: UUID
+    level: Level
+    content: Content
+    title: Annotated[str, Field(max_length=300)] | None = None
+    author: Name = "propriétaire"
+
+
+class ArchitectureIn(BaseModel):
+    subject: Annotated[str, Field(min_length=1, max_length=300)]
+    facts: Annotated[list[Annotated[str, Field(max_length=2000)]], Field(max_length=50)] = []
+    level: Level | None = None
+
+
+@router.post("/variants", status_code=status.HTTP_201_CREATED)
+def create_variant(request: Request, body: VariantIn) -> dict[str, str]:
+    """Même sujet à un autre niveau ; même Fact Checker et même veto."""
+    new_id = _call(
+        _svc(request).variant,
+        body.script_id,
+        level=body.level,
+        content=body.content,
+        title=body.title,
+        author=body.author,
+    )
+    return {"script_id": str(new_id)}
+
+
+@router.post("/architectures")
+def architectures(body: ArchitectureIn) -> list[dict[str, Any]]:
+    """Plusieurs architectures narratives pour un sujet ; faits placés mot pour mot."""
+    return propose(body.subject, body.facts, level=body.level)
+
+
+@router.get("/techniques")
+def list_techniques() -> list[dict[str, str]]:
+    """Bibliothèque de principes narratifs (aucun contenu d'autres créateurs)."""
+    return techniques()

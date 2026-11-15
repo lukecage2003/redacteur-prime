@@ -25,7 +25,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 14 | Mesure par objectif & expérimentation scientifique (coût nul) | TESTED (données réelles : OAuth du propriétaire) | 11 |
 | 15 | Audience Intelligence & communauté (coût nul) | TESTED (données réelles : clé et OAuth du propriétaire) | 5, 8, 11, 14 |
 | 16 | Content Opportunity Engine (coût nul) | TESTED | 7, 8, 15 |
-| 17 | Audience Bridge, architectures narratives, multi-plateforme FR/EN *(proposée)* | NOT IMPLEMENTED — en attente de validation | 9, 10, 15 |
+| 17 | Audience Bridge, architectures narratives, multi-plateforme FR/EN (coût nul) | TESTED | 9, 10, 15 |
 | 18 | Packaging, marque, séries & franchises *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 15, 17 |
 | 19 | Content Performance Lab & validation finale *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 18 |
 
@@ -345,3 +345,16 @@ ADR-0023 · fiche : [docs/modules/market.md](docs/modules/market.md#phase-16--op
 | Fiche complète (public, besoin, angle, preuves, concurrence, risques, formats, recommandation) | TESTED |
 | Mission OPPORTUNITY_BRIEF, API `/market/opportunities`, CLI, section web | TESTED |
 | Compatibilité avec l'identité Primestone | NOT IMPLEMENTED — phase 18 (charte, séries) |
+
+## Phase 17 — Audience Bridge, architectures, rétention, multi-plateforme (coût nul)
+
+ADR-0024 · fiches : [storytelling](docs/modules/storytelling.md#phase-17--niveaux-architectures-rétention-adr-0024), [social](docs/modules/social.md#phase-17--nouveaux-formats).
+
+| Élément | Statut |
+|---|---|
+| Niveaux DISCOVERY / EXPLORATION / EXPERTISE, variantes reliées, contrôles par niveau, veto identique | TESTED |
+| Bibliothèque de techniques et 6 architectures (principes seulement), plans avec faits mot pour mot | TESTED |
+| Rétention du script (longueurs, transitions, répétitions, révélations, visuels) + décrochages réels | TESTED |
+| Motion Studio contrat 1.1 (intentions par section) | TESTED |
+| Shorts, publication communautaire, podcast, dossier écrit | TESTED |
+| Adaptation FR/EN culturelle (réécriture humaine reliée) | TESTED (phase 10) ; rédaction assistée : NOT IMPLEMENTED |

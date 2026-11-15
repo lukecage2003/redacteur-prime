@@ -8,6 +8,9 @@ primestone-script evaluate ID                         (Fact Checker + note sur 1
 primestone-script review ID [--process]               (mission SCRIPT_REVIEW du Chief Editor)
 primestone-script validate ID                         (validation finale humaine)
 primestone-script adapt ID FICHIER [--title "…"]      (version dans l'autre langue)
+primestone-script variant ID FICHIER --level DISCOVERY|EXPLORATION|EXPERTISE
+primestone-script architectures --subject "…" [--fact "…"]… [--level …]
+primestone-script techniques
 """
 
 from __future__ import annotations
@@ -22,7 +25,13 @@ from primestone.config import get_settings
 from primestone.db import create_db_engine
 from primestone.db.schema import SCRIPT_STEPS
 from primestone.editorial import editorial_service_from_settings
-from primestone.storytelling import read_script_file, storytelling_service
+from primestone.storytelling import (
+    LEVELS,
+    propose,
+    read_script_file,
+    storytelling_service,
+    techniques,
+)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -51,6 +60,16 @@ def main(argv: list[str] | None = None) -> int:
     adapt.add_argument("script_id", type=UUID)
     adapt.add_argument("file", type=Path)
     adapt.add_argument("--title")
+    var = sub.add_parser("variant")
+    var.add_argument("script_id", type=UUID)
+    var.add_argument("file", type=Path)
+    var.add_argument("--level", choices=LEVELS, required=True)
+    var.add_argument("--title")
+    arch = sub.add_parser("architectures")
+    arch.add_argument("--subject", required=True)
+    arch.add_argument("--fact", action="append", default=[])
+    arch.add_argument("--level", choices=LEVELS)
+    sub.add_parser("techniques")
     args = parser.parse_args(argv)
 
     settings = get_settings()
@@ -86,6 +105,22 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "validate":
         svc.validate(args.script_id, author=args.author)
         out = {"validated": str(args.script_id)}
+    elif args.command == "variant":
+        out = {
+            "script_id": str(
+                svc.variant(
+                    args.script_id,
+                    level=args.level,
+                    content=read_script_file(args.file),
+                    title=args.title,
+                    author=args.author,
+                )
+            )
+        }
+    elif args.command == "architectures":
+        out = propose(args.subject, args.fact, level=args.level)
+    elif args.command == "techniques":
+        out = techniques()
     elif args.command == "adapt":
         out = {
             "script_id": str(

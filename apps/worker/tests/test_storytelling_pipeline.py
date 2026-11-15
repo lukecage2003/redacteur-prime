@@ -168,3 +168,30 @@ def test_script_review_mission(env: SimpleNamespace, db_engine: Engine) -> None:
         )
     with pytest.raises(EditorialError, match="introuvable"):
         editorial.create_mission("SCRIPT_REVIEW", [], {"script_id": "nope"})
+
+
+def test_level_variants_share_the_same_fact_check(env: SimpleNamespace) -> None:
+    svc = env.service
+    base = svc.create(
+        title="Aveu",
+        language="fr",
+        content=GOOD,
+        author="moi",
+        document_ids=[env.doc],
+        level="EXPLORATION",
+    )
+    discovery = svc.variant(
+        base,
+        level="DISCOVERY",
+        content=GOOD.replace("Catwoman", "Batman"),
+        title=None,
+        author="moi",
+    )
+    detail = svc.script(discovery)
+    assert (detail["level"], detail["level_of"]) == ("DISCOVERY", str(base))
+    result = svc.evaluate(discovery)
+    assert result["factual_veto"] is True  # l'accessibilité n'excuse jamais une erreur
+    assert result["analysis"]["level_checks"]["level"] == "DISCOVERY"
+    assert result["analysis"]["retention"]["method"] == "script-retention@1"
+    with pytest.raises(ScriptError, match="niveau"):
+        svc.create(title="x", language="fr", content="x", author="moi", level="EXPERT")

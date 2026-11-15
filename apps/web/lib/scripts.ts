@@ -23,7 +23,20 @@ export interface ScriptDetail extends Omit<ScriptSummary, "versions"> {
   adapted_from: string | null;
   adaptations: string[];
   versions: { id: string; number: number; step: string; origin: string; author: string; created_at: string; content: string }[];
-  scores: { version: number; total: number; factual_veto: boolean; criteria: Record<string, Criterion>; analysis: { words: number; estimated_minutes: number; works: { title: string; year: number; status: string }[] } }[];
+  level: string | null;
+  scores: {
+    version: number;
+    total: number;
+    factual_veto: boolean;
+    criteria: Record<string, Criterion>;
+    analysis: {
+      words: number;
+      estimated_minutes: number;
+      works: { title: string; year: number; status: string }[];
+      level_checks?: { level: string; ok: boolean; checks: { check: string; ok: boolean; detail: string }[] };
+      retention?: { sections: { title: string; flags: string[]; visual_moments: string[] }[]; drop_offs: { at_ratio: number; section: string | null }[] };
+    };
+  }[];
   events: { action: string; author: string; reason: string | null; created_at: string }[];
 }
 
