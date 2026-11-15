@@ -22,6 +22,17 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 11 | Performance Intelligence (coût nul) | TESTED | 9, 10 |
 | 12 | Adaptive Voice (coût nul) | TESTED (banc réel BLOCKED) | 6 |
 | 13 | Intégration, sécurité, optimisation, production | IMPLEMENTED (déploiement BLOCKED : accord du propriétaire) | toutes |
+| 14 | Mesure par objectif & expérimentation scientifique *(proposée)* | NOT IMPLEMENTED — en attente de validation | 11 |
+| 15 | Audience Intelligence & communauté *(proposée)* | NOT IMPLEMENTED — en attente de validation | 5, 8, 11, 14 |
+| 16 | Content Opportunity Engine *(proposée)* | NOT IMPLEMENTED — en attente de validation | 7, 8, 15 |
+| 17 | Audience Bridge, architectures narratives, multi-plateforme FR/EN *(proposée)* | NOT IMPLEMENTED — en attente de validation | 9, 10, 15 |
+| 18 | Packaging, marque, séries & franchises *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 15, 17 |
+| 19 | Content Performance Lab & validation finale *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 18 |
+
+Extension « Audience, Growth & Creative Intelligence » : analyse des dépendances et
+justification de l'ordre dans [docs/audit/extension-audience-growth.md](docs/audit/extension-audience-growth.md).
+La plateforme n'est **complète** qu'une fois les 13 critères de validation de l'extension
+démontrés sur données réelles.
 
 ### Changements d'ordre (justifiés)
 
