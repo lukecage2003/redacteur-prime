@@ -24,7 +24,7 @@ from primestone.governance.service import (
     register_handler,
     register_reject_hook,
 )
-from primestone.shows.service import aggregate
+from primestone.shows.service import _require_rights, aggregate
 
 METHOD = "portfolio@1"
 DIMENSIONS = ("pillar", "level", "language", "show")
@@ -44,7 +44,7 @@ def _plan(conn: Connection, decision: dict[str, Any], forward: bool) -> dict[str
     row = (
         conn.execute(
             text(
-                "SELECT d.status, s.status AS script_status FROM distribution_item d "
+                "SELECT d.status, d.script_id, s.status AS script_status FROM distribution_item d "
                 "LEFT JOIN script s ON s.id = d.script_id WHERE d.id = :id FOR UPDATE OF d"
             ),
             {"id": item_id},
@@ -57,6 +57,8 @@ def _plan(conn: Connection, decision: dict[str, Any], forward: bool) -> dict[str
             raise GovernanceError(f"élément déjà {row['status']}")
         if row["script_status"] not in (None, "VALIDATED"):
             raise GovernanceError("diffusion refusée : le script n'est pas validé")
+        if row["script_id"] is not None:
+            _require_rights(conn, row["script_id"])
         target = "APPROVED"
     else:
         if row["status"] == "PUBLISHED":

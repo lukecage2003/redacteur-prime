@@ -15,6 +15,7 @@ from sqlalchemy import Connection, Engine, text
 
 from primestone.forensic import fold
 from primestone.governance.service import GovernanceError, GovernanceService, register_handler
+from primestone.memory.rights import missing_rights
 
 TRANSITIONS = {
     ("DRAFT", "TESTING"),
@@ -67,6 +68,15 @@ def _set_fields(conn: Connection, series_id: Any, fields: dict[str, Any]) -> Non
 # --- Gestionnaires de gouvernance ------------------------------------------------------------
 
 
+def _require_rights(conn: Connection, script_id: Any) -> None:
+    """Toute citation de case utilisée en production exige un droit enregistré (ADR-0031)."""
+    missing = missing_rights(conn, script_id)
+    if missing:
+        raise GovernanceError(
+            "droits manquants pour : " + ", ".join(m["citation"] for m in missing)
+        )
+
+
 def _lifecycle(conn: Connection, decision: dict[str, Any], forward: bool) -> dict[str, Any] | None:
     start, end = decision["proposal"]["from"], decision["proposal"]["to"]
     expected, target = (start, end) if forward else (end, start)
@@ -116,7 +126,8 @@ def _final_validation(
         row = (
             conn.execute(
                 text(
-                    "SELECT e.status, s.status AS script_status FROM series_episode e "
+                    "SELECT e.status, e.script_id, s.status AS script_status "
+                    "FROM series_episode e "
                     "JOIN script s ON s.id = e.script_id WHERE e.id = :id FOR UPDATE OF e"
                 ),
                 {"id": episode_id},
@@ -128,6 +139,7 @@ def _final_validation(
             raise GovernanceError(
                 "le script de l'épisode n'est pas validé (vérification factuelle)"
             )
+        _require_rights(conn, row["script_id"])
         if row["status"] not in ("PROPOSED", "IN_PRODUCTION"):
             raise GovernanceError(f"épisode déjà {row['status']}")
         conn.execute(

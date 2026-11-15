@@ -184,6 +184,13 @@ plateforme, nom, statut, autorisation des statistiques). `distribution_item` (ca
 URL publiée, déclarant, date de déclaration ; PUBLISHED exige contenu et déclarant).
 `content_portfolio` (marque, nom, période, parts visées). `content_item.channel_id`.
 
+## Droits et mémoire ✅ (phase 24, migration 0019)
+
+`rights_record` (marque, nature, sujet, script, document, page, case — obligatoires pour une
+case citée —, source, base, licence, preuve, limites, échéance, statut).
+`editorial_lesson` (marque, émission, leçon, niveau de preuve OBSERVED/DEMONSTRATED
+seulement, source contenu ou expérience, preuve copiée, statut, motif de retrait).
+
 ## Voix 🔜 (phase 12)
 
 `voice_session`, `voice_turn` (transcription, réponse, latences), `pronunciation_lexicon`.

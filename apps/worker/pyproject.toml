@@ -24,6 +24,7 @@ primestone-creative = "primestone_worker.cli_creative:main"
 primestone-shows = "primestone_worker.cli_shows:main"
 primestone-identity = "primestone_worker.cli_identity:main"
 primestone-distribution = "primestone_worker.cli_distribution:main"
+primestone-memory = "primestone_worker.cli_memory:main"
 
 [tool.uv.sources]
 primestone = { workspace = true }
