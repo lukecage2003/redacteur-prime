@@ -30,6 +30,8 @@ class Settings(BaseSettings):
 
     environment: Environment = "development"
     log_level: str = "INFO"
+    # "json" en staging/production (Cloud Logging), "text" en développement.
+    log_format: Literal["text", "json"] = "text"
     database_url: str = _LOCAL_DATABASE_URL
 
     # Passerelle IA : "fake" est le seul fournisseur autorisé en CI.

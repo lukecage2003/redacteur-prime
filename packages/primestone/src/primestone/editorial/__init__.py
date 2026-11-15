@@ -17,6 +17,7 @@ from primestone.lab import TheoryLab
 
 if TYPE_CHECKING:
     from primestone.creative import CreativeService
+    from primestone.identity import IdentityService
     from primestone.storytelling import StorytellingService
 from primestone.audience import AudienceService
 from primestone.market import market_service_from_settings, opportunity_service_from_settings
@@ -36,6 +37,12 @@ __all__ = [
     "editorial_service_from_settings",
     "plan",
 ]
+
+
+def _identity(engine: Engine) -> "IdentityService":
+    from primestone.identity import IdentityService  # import circulaire évité
+
+    return IdentityService(engine)
 
 
 def _creative(settings: Settings, engine: Engine) -> "CreativeService":
@@ -76,4 +83,5 @@ def editorial_service_from_settings(settings: Settings, engine: Engine) -> Edito
         audience=AudienceService(engine),
         opportunities=opportunity_service_from_settings(settings, engine),
         creative=_creative(settings, engine),
+        identity=_identity(engine),
     )

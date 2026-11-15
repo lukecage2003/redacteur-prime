@@ -4,6 +4,7 @@ primestone-brand brands | policies | pillars
 primestone-brand decisions [--status PROPOSED]       (journal des décisions)
 primestone-brand pillar NAME "description" [--rules rules.json]   (proposition)
 primestone-brand policy ACTION --required|--automatic [--note …]  (proposition)
+primestone-brand bootstrap                           (piliers et 4 émissions proposés)
 primestone-brand approve DECISION_ID
 primestone-brand reject DECISION_ID --reason "…"
 primestone-brand revert DECISION_ID --reason "…"
@@ -21,13 +22,14 @@ from uuid import UUID
 from primestone.config import get_settings
 from primestone.db import create_db_engine
 from primestone.governance import FOUNDER, GovernanceError, GovernanceService
+from primestone.shows.starter import bootstrap
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="primestone-brand")
     parser.add_argument("--author", default="propriétaire")
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("brands", "policies", "pillars"):
+    for name in ("brands", "policies", "pillars", "bootstrap"):
         sub.add_parser(name)
     sub.add_parser("decisions").add_argument("--status")
     pillar = sub.add_parser("pillar")
@@ -47,7 +49,8 @@ def main(argv: list[str] | None = None) -> int:
             decide.add_argument("--reason", required=True)
     args = parser.parse_args(argv)
 
-    svc = GovernanceService(create_db_engine(get_settings().database_url))
+    engine = create_db_engine(get_settings().database_url)
+    svc = GovernanceService(engine)
     out: object
     try:
         if args.command == "brands":
@@ -56,6 +59,8 @@ def main(argv: list[str] | None = None) -> int:
             out = svc.policies()
         elif args.command == "pillars":
             out = svc.pillars()
+        elif args.command == "bootstrap":
+            out = bootstrap(engine, proposed_by=args.author)
         elif args.command == "decisions":
             out = svc.decisions(args.status)
         elif args.command == "pillar":

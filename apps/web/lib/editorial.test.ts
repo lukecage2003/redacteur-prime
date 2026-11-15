@@ -33,6 +33,7 @@ describe("checkSeverity", () => {
       "OPPORTUNITY_BRIEF",
       "PACKAGING_REVIEW",
       "VIDEO_AUTOPSY",
+      "NARRATION",
     ]);
   });
 });

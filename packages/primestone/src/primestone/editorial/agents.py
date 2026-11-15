@@ -23,6 +23,7 @@ from primestone.social import PLATFORMS, build_package, render
 
 if TYPE_CHECKING:  # imports circulaires : storytelling et creative utilisent le Fact Checker
     from primestone.creative import CreativeService
+    from primestone.identity import IdentityService
     from primestone.storytelling import StorytellingService
 
 
@@ -46,6 +47,7 @@ class MissionContext:
     audience: AudienceService | None = None
     opportunities: OpportunityService | None = None
     creative: CreativeService | None = None
+    identity: IdentityService | None = None
 
     def corpus(self) -> Corpus:
         return Corpus(
@@ -338,6 +340,29 @@ async def brand_editor(ctx: MissionContext, inputs: dict[str, Any]) -> dict[str,
     if ctx.creative is None:
         raise RuntimeError("Creative Intelligence non configurée")
     return await ctx.creative.package(UUID(inputs["script_id"]))
+
+
+async def narrator(ctx: MissionContext, inputs: dict[str, Any]) -> dict[str, Any]:
+    """Plan de narration par la voix de marque approuvée (jamais la voix du fondateur)."""
+    if ctx.identity is None:
+        raise RuntimeError("Identité de marque non configurée")
+    return ctx.identity.narrate(UUID(inputs["script_id"]))
+
+
+def narration_template(ctx: MissionContext) -> str:
+    n = ctx.outputs["narration"]
+    voice = n["voice"]
+    lines = [
+        f"# Narration : version {n['script_version']} ({n['language']})",
+        f"Note : voix de marque « {voice['name']} » ({voice['kind']}, {voice['provider']}), "
+        f"licence : {voice['license']} ; usage autorisé : {voice['allowed_use']}.",
+        f"Note : durée estimée {n['estimated_seconds']} s ; script {n['script_status']}.",
+        f"Note : {n['rule']}",
+    ]
+    for s in n["sections"]:
+        lines.append(f"## {s['index']}. {s['title']} (~{s['estimated_seconds']} s)")
+        lines.append(f"Note : {s['text']}")
+    return "\n".join(lines)
 
 
 def packaging_template(ctx: MissionContext) -> str:
@@ -789,6 +814,14 @@ AGENTS: dict[str, AgentSpec] = {
             brand_editor,
         ),
         AgentSpec(
+            "narrator",
+            "Brand Narrator",
+            "plan de narration par section, voix de marque approuvée et licenciée",
+            "jamais la voix ni le visage du fondateur ; aucune publication",
+            8,
+            narrator,
+        ),
+        AgentSpec(
             "audience_analyst",
             "Audience Analyst",
             "segments prouvés ou hypothétiques, questions et demandes de la communauté",
@@ -875,6 +908,13 @@ def plan(mission_type: str, params: dict[str, Any]) -> list[PlannedTask]:
             PlannedTask("audience", "audience_analyst", True),
             PlannedTask("synthesis", "chief_editor_writer", True),
         ]
+    if mission_type == "NARRATION":
+        if not params.get("script_id"):
+            raise ValueError("le paramètre « script_id » est obligatoire")
+        return [
+            PlannedTask("narration", "narrator", True, {"script_id": str(params["script_id"])}),
+            PlannedTask("synthesis", "chief_editor_writer", True),
+        ]
     if mission_type == "VIDEO_AUTOPSY":
         if not params.get("content_id"):
             raise ValueError("le paramètre « content_id » est obligatoire")
@@ -948,6 +988,7 @@ MISSION_TYPES = (
     "OPPORTUNITY_BRIEF",
     "PACKAGING_REVIEW",
     "VIDEO_AUTOPSY",
+    "NARRATION",
 )
 # Livrables qu'on peut décliner pour les réseaux (ils citent des pages vérifiables).
 DECLINABLE = ("CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "THEORY_REVIEW", "RESEARCH_DOSSIER")
@@ -959,6 +1000,7 @@ WITHOUT_DOCUMENTS = (
     "AUDIENCE_BRIEF",
     "OPPORTUNITY_BRIEF",
     "VIDEO_AUTOPSY",
+    "NARRATION",
 )
 TEMPLATES.update(
     CHARACTER_DOSSIER=dossier_template,
@@ -973,4 +1015,5 @@ TEMPLATES.update(
     OPPORTUNITY_BRIEF=opportunity_template,
     PACKAGING_REVIEW=packaging_template,
     VIDEO_AUTOPSY=autopsy_template,
+    NARRATION=narration_template,
 )

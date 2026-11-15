@@ -68,8 +68,8 @@ démontrés sur données réelles.
 | Images Docker api, worker, web | TESTED localement (non-root, sondes de santé OK) |
 | Workflows de déploiement staging/production (WIF) | IMPLEMENTED, inactifs (GCP non provisionné) |
 | Authentification utilisateur (Identity-Aware Proxy) | TESTED côté application (vérification du jeton, phase 13) ; IAP lui-même à provisionner |
-| Journalisation JSON structurée, traçage | NOT IMPLEMENTED |
-| Adaptateurs réels de fournisseurs IA | NOT IMPLEMENTED (après benchmark, phase 3) |
+| Journalisation JSON structurée (Cloud Logging), identifiant de requête `X-Request-ID` | TESTED (JSON en staging/production via `PRIMESTONE_LOG_FORMAT`) |
+| Adaptateurs réels de fournisseurs IA | Ollama local (gratuit) : TESTED (API simulée) ; fournisseurs payants : NOT IMPLEMENTED (mode zéro coût) |
 
 **Critères de validation** : CI verte sur GitHub ; migrations aller-retour ; aucun secret
 détecté (gitleaks) ; déploiement staging réussi une fois GCP autorisé.
@@ -90,8 +90,8 @@ Fiche du module : [docs/modules/comic-library.md](docs/modules/comic-library.md)
 | Reprise après arrêt brutal d'un worker | TESTED |
 | Rapport de lot (statuts, pages, volumes, durée) | TESTED |
 | Vue « Bibliothèque » dans le web | TESTED |
-| Stockage Cloud Storage (adaptateur GCS, URL signées) | NOT IMPLEMENTED — requis avant déploiement |
-| Métadonnées ComicInfo.xml (série, numéro) | NOT IMPLEMENTED |
+| Stockage Cloud Storage (adaptateur GCS) | TESTED (phase 13, API simulée) ; URL signées : NOT IMPLEMENTED (non requises, lecture via l'API) |
+| Métadonnées ComicInfo.xml (série, numéro, langue, pages attendues) | TESTED (complète seulement ce que l'utilisateur n'a pas précisé ; DOCTYPE refusé) |
 | Validation sur la bibliothèque réelle de l'utilisateur | EN COURS — 3 vrais numéros (79 pages) importés et rendus sans erreur ; lot de 50 réels à faire |
 
 **Critères** : lot de 50 comics ou plus importé ✅ (60 comics, 1 330 pages, voir mesures) ;
@@ -120,7 +120,7 @@ sans fiche validée ✅. Livrée avec la phase 8, voir ci-dessous.
 | Flux RSS / Atom (HTTPS, DOCTYPE refusé) | IMPLEMENTED — testé hors ligne |
 | Import manuel CSV / API (métriques privées refusées) | TESTED |
 | Instantanés horodatés, append-only, idempotents ; `snapshot` quotidien | TESTED (planification : cron local ; Cloud Scheduler en phase 13) |
-| YouTube Analytics (chaîne Primestone, OAuth) | NOT IMPLEMENTED — phase 11 |
+| YouTube Analytics (chaîne Primestone, OAuth) | IMPLEMENTED en phases 11 et 14 (voir ces phases) ; connexion réelle BLOCKED (OAuth du propriétaire) |
 | Reddit | NOT IMPLEMENTED — application OAuth approuvée exigée |
 | Collecte réelle | **BLOCKED** — clé YouTube gratuite à créer par le propriétaire + hôtes réseau à autoriser |
 
@@ -248,7 +248,7 @@ Fiche : [docs/modules/social.md](docs/modules/social.md) · ADR-0016.
 | Mission SOCIAL_PACKAGE (livrable approuvé seulement, Fact Checker, approbation) | TESTED |
 | Formats datés et sourcés, à revérifier | IMPLEMENTED — sources non consultables depuis ce conteneur |
 | API, CLI `primestone-editorial social`, bouton web | TESTED (web : lint, types, build) |
-| Scripts rédigés (hooks, voix) | NOT IMPLEMENTED — phase 10 |
+| Scripts rédigés (hooks, voix) | TESTED en phases 10, 17 et 22 (scripts, accroches, narration) |
 
 **Critères** : aucun fait non vérifié dans une déclinaison ✅ ; structures distinctes par
 plateforme ✅.
@@ -353,7 +353,7 @@ ADR-0023 · fiche : [docs/modules/market.md](docs/modules/market.md#phase-16--op
 | Popularité EN ≠ demande FR : HYPOTHESIS sans demande FR observée | TESTED |
 | Fiche complète (public, besoin, angle, preuves, concurrence, risques, formats, recommandation) | TESTED |
 | Mission OPPORTUNITY_BRIEF, API `/market/opportunities`, CLI, section web | TESTED |
-| Compatibilité avec l'identité Primestone | NOT IMPLEMENTED — phase 18 (charte, séries) |
+| Compatibilité avec l'identité Primestone | TESTED en phase 21 (`show-fit@1` : adéquation aux émissions et piliers) |
 
 ## Phase 17 — Audience Bridge, architectures, rétention, multi-plateforme (coût nul)
 
@@ -420,6 +420,7 @@ ADR-0028 · fiche : [docs/modules/shows.md](docs/modules/shows.md).
 | Validation finale d'épisode (script validé exigé), publication déclarée sans automatisme | TESTED |
 | Performance par émission, langue, format ; adéquation sujet → émissions et piliers | TESTED |
 | API `/shows/*`, CLI `primestone-shows`, page `/shows/[id]` | TESTED |
+| Propositions de départ (`primestone-brand bootstrap`) : 3 piliers, 4 émissions en brouillon | TESTED (tout reste soumis au fondateur) |
 
 ## Phase 22 — Identité indépendante (coût nul)
 
@@ -432,7 +433,7 @@ ADR-0029 · fiche : [docs/modules/identity.md](docs/modules/identity.md).
 | Profils visuels versionnés par émission, plateforme, langue | TESTED |
 | Règles par langue (charte, visuels, voix) : aucune règle FR sur un contenu EN | TESTED |
 | Plan de narration et synthèse locale sans voix ni visage du fondateur | TESTED (FakeTTS) ; Piper réel : à installer |
-| Mission éditoriale NARRATION | NOT IMPLEMENTED (service, API et CLI disponibles) |
+| Mission éditoriale NARRATION (agent Brand Narrator, refus sans voix approuvée) | TESTED |
 | API `/identity/*`, CLI `primestone-identity`, section web `/creative` | TESTED |
 
 ## Phase 23 — Distribution et portefeuille (coût nul)

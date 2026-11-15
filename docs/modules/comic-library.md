@@ -41,7 +41,13 @@ import (synchrone)            empreinte SHA-256 → stockage originals/… → d
 Taille par fichier (1 Gio), pages par document (2 000), pixels par image (150 M), entrée d'archive
 (200 Mio), taux de compression (200:1), 200 fichiers par requête API. Voir SECURITY.md.
 
-## Hors périmètre (phases suivantes)
+## Métadonnées ComicInfo.xml
 
-OCR, cases, bulles (phase 3) ; adaptateur Cloud Storage et URL signées (avant déploiement) ;
-lecture de ComicInfo.xml ; édition des métadonnées depuis le web.
+Pour un CBZ, `ComicInfo.xml` (≤ 1 Mo) complète ce que l'utilisateur n'a pas précisé : titre
+(« Série #Numéro »), série, numéro, langue et **nombre de pages attendu** (un document plus
+court ne sera jamais COMPLETE). Un fichier absent, mal formé ou porteur d'un DOCTYPE/ENTITY est
+ignoré, jamais bloquant.
+
+## Hors périmètre
+
+URL signées Cloud Storage (lecture via l'API) ; édition des métadonnées depuis le web.

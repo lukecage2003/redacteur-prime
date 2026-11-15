@@ -113,6 +113,7 @@ def test_plan() -> None:
         "OPPORTUNITY_BRIEF",
         "PACKAGING_REVIEW",
         "VIDEO_AUTOPSY",
+        "NARRATION",
     }
     assert [t.agent for t in plan("SCRIPT_REVIEW", {"script_id": "x"})][:2] == [
         "story_architect",

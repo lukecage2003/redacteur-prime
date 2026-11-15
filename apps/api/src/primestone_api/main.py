@@ -21,6 +21,7 @@ from primestone.knowledge import knowledge_service_from_settings
 from primestone.lab import lab_from_settings
 from primestone.market import market_service_from_settings, opportunity_service_from_settings
 from primestone.memory import MemoryService
+from primestone.observability import RequestIdMiddleware, configure_logging
 from primestone.performance import PerformanceService
 from primestone.security import IAPMiddleware, PublicKeys
 from primestone.shows import ShowService
@@ -90,6 +91,8 @@ def create_app(
             if engine is None:
                 app.state.engine.dispose()
 
+    if settings.log_format == "json":
+        configure_logging(settings.log_level, "json")
     app = FastAPI(
         title="PRIMESTONE EDITORIAL API",
         version=__version__,
@@ -99,6 +102,7 @@ def create_app(
     )
     if settings.iap_audience:  # obligatoire hors développement (voir Settings)
         app.add_middleware(IAPMiddleware, audience=settings.iap_audience, keys=iap_keys)
+    app.add_middleware(RequestIdMiddleware)  # le plus externe : trace aussi les refus IAP
     app.include_router(health.router, prefix="/api/v1")
     app.include_router(library.router, prefix="/api/v1")
     app.include_router(vision.router, prefix="/api/v1")

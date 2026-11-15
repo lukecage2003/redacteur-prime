@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 import pytest
@@ -87,3 +88,33 @@ def test_narration_without_founder(db_engine: Engine, tmp_path: Path) -> None:
     assert "[p. 12]" not in plan["sections"][0]["text"]
     assert store.exists(plan["sections"][0]["audio_key"])
     assert narration_text("Voir (p. 4) puis [note]  fin") == "Voir puis fin"
+
+
+def test_narration_mission(db_engine: Engine) -> None:
+    from primestone.editorial import EditorialError, EditorialService
+    from primestone.jobs import PostgresJobQueue
+    from primestone.knowledge import KnowledgeService
+
+    forensic = forensic_service(db_engine)
+    stories = StorytellingService(db_engine, forensic)
+    identity, gov = IdentityService(db_engine), GovernanceService(db_engine)
+    editorial = EditorialService(
+        db_engine,
+        forensic,
+        KnowledgeService(db_engine, forensic),
+        PostgresJobQueue(db_engine),
+        storytelling=stories,
+        identity=identity,
+    )
+    script_id = stories.create(title="Despair", language="fr", content=SCRIPT, author="moi")
+    with pytest.raises(EditorialError, match="aucune voix"):
+        editorial.create_mission("NARRATION", [], {"script_id": str(script_id)})
+    proposed = identity.propose_voice(name="Voix FR", language="fr", proposed_by="agent", **VOICE)
+    gov.approve(proposed["decision_id"], decided_by="moi", role=FOUNDER)
+    mission_id = editorial.create_mission("NARRATION", [], {"script_id": str(script_id)})
+    asyncio.run(editorial.run_mission({"mission_id": str(mission_id)}))
+    mission = editorial.mission(mission_id)
+    assert mission["title"] == "Narration : Despair"
+    assert mission["result"]["deliverable"].startswith("# Narration")
+    assert "fondateur non requis" in " ".join(mission["result"]["findings"])
+    assert mission["result"]["recommendation"] == "VALIDER AVEC RÉSERVES"  # script non validé

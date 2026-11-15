@@ -41,7 +41,7 @@ uv run primestone-editorial agents|dossier|audit|check|social|show|approve|rejec
 uv run primestone-lab create|list|show|evidence|retract|alternative|research|review|ask  # phase 7
 uv run primestone-market sources|add-source|verify|import|collect|snapshot|topic|analysis|brief|opportunities|opportunity-brief  # phases 8, 16
 uv run primestone-script list|show|create|version|step|evaluate|review|validate|adapt|variant|architectures|techniques  # phases 10, 17
-uv run primestone-brand brands|policies|pillars|decisions|pillar|policy|approve|reject|revert  # phase 20
+uv run primestone-brand brands|policies|pillars|decisions|pillar|policy|bootstrap|approve|reject|revert  # phase 20
 uv run primestone-shows show|transition|guidelines|history|format|production|final-validation|published|performance|fit  # phase 21
 uv run primestone-identity voices|voice-propose|visuals|visual-add|visual-resolve|narrate  # phase 22
 uv run primestone-distribution channels|channel-add|channel-status|plan|propose|declare|portfolio-create|portfolio|portfolios|performance  # phase 23

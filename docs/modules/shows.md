@@ -15,6 +15,10 @@ ADR-0028 · paquet `primestone.shows` · migration 0016.
 
 ## Utilisation
 
+Pour démarrer : `uv run primestone-brand bootstrap` propose 3 piliers (Enquêtes, Comprendre,
+Théories et débats) et 4 émissions en brouillon (PRIMESTONE COSMOS, THE COMIC FILES, BEYOND
+THE PANEL, THE VERDICT) — des concepts à reprendre, chacun soumis à ta décision.
+
 ```bash
 uv run primestone-creative series-create serie.json      # brouillon + décision DRAFT → TESTING
 uv run primestone-brand approve DECISION_ID
