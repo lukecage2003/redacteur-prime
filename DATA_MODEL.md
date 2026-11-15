@@ -139,6 +139,13 @@ données, classe, retrait), `audience_link` (segment → ENTITY/TOPIC/FORMAT/PLA
 preuve obligatoire du même segment), `community_comment` (texte public, nature, likes,
 publication — **aucune identité d'auteur**).
 
+## Creative ✅ (phase 18, migration 0014)
+
+`brand_charter` (version unique croissante, règles JSON : couleurs, polices, ton, miniatures,
+packaging, son, habillage), `series` (promesse, identité, segment, ton, structure, durée
+cible, direction artistique, distribution, évolution, statut), `series_episode` (série,
+script, numéro), `packaging_set` (script, version, méthode, version de charte, contenu).
+
 ## Voix 🔜 (phase 12)
 
 `voice_session`, `voice_turn` (transcription, réponse, latences), `pronunciation_lexicon`.

@@ -57,3 +57,9 @@ export async function validate(rawId: string): Promise<void> {
   await post("scripts/validations", { script_id: id });
   revalidatePath(`/scripts/${id}`);
 }
+
+export async function packageScript(rawId: string): Promise<void> {
+  const id = requireUuid(rawId);
+  await post("creative/packaging", { script_id: id });
+  revalidatePath(`/scripts/${id}`);
+}

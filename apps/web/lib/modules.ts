@@ -26,6 +26,7 @@ export const MODULES: readonly IntelligenceModule[] = [
   { id: "storytelling", name: "Storytelling Intelligence", phase: 10, summary: "Scripts FR / EN en 13 étapes, pré-notation sur 100, veto factuel", status: "TESTED" },
   { id: "performance", name: "Performance Intelligence", phase: 11, summary: "Chaîne Primestone : repères et signaux script → rétention / CTR", status: "TESTED" },
   { id: "audience", name: "Audience Intelligence", phase: 15, summary: "Segments prouvés, graphe d'audience, communauté sans données personnelles", status: "TESTED" },
+  { id: "creative", name: "Creative Intelligence", phase: 18, summary: "Packaging honnête, charte de marque versionnée, séries et franchises", status: "TESTED" },
   { id: "voice", name: "Adaptive Voice Intelligence", phase: 12, summary: "Assistant vocal temps réel, 5 personnalités", status: "TESTED" },
 ];
 

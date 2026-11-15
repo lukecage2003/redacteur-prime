@@ -38,7 +38,8 @@ from primestone.lab import TheoryLab
 from primestone.market import MarketService, OpportunityService
 from primestone.performance import PerformanceService
 
-if TYPE_CHECKING:  # import circulaire : storytelling utilise le Fact Checker
+if TYPE_CHECKING:  # imports circulaires : storytelling et creative utilisent le Fact Checker
+    from primestone.creative import CreativeService
     from primestone.storytelling import StorytellingService
 
 RUN_STEP = "editorial.run_mission"
@@ -68,7 +69,9 @@ class EditorialService:
         performance: PerformanceService | None = None,
         audience: AudienceService | None = None,
         opportunities: OpportunityService | None = None,
+        creative: CreativeService | None = None,
     ) -> None:
+        self._creative = creative
         self._opportunities = opportunities
         self._audience = audience
         self._performance = performance
@@ -142,7 +145,7 @@ class EditorialService:
             raise EditorialError("Audience Intelligence non configurée")
         if mission_type == "PERFORMANCE_REVIEW" and self._performance is None:
             raise EditorialError("Performance Intelligence non configurée")
-        script = None
+        script: dict[str, Any] | None = None
         if mission_type == "SCRIPT_REVIEW":
             if self._storytelling is None:
                 raise EditorialError("Storytelling non configuré")
@@ -152,9 +155,17 @@ class EditorialService:
                 raise EditorialError("script introuvable") from None
             if not script["versions"]:
                 raise EditorialError("script sans version")
+        if mission_type == "PACKAGING_REVIEW":
+            if self._creative is None or self._storytelling is None:
+                raise EditorialError("Creative Intelligence non configurée")
+            try:
+                script = self._storytelling.script(UUID(str(params.get("script_id"))))
+            except (ValueError, LookupError):
+                raise EditorialError("script introuvable") from None
+            document_ids = [UUID(d) for d in script["document_ids"]]
         if mission_type in WITHOUT_DOCUMENTS:
             document_ids = []
-        elif not document_ids:
+        elif not document_ids and mission_type != "PACKAGING_REVIEW":
             raise EditorialError("au moins un document est requis")
         try:
             tasks = plan(mission_type, params)
@@ -180,6 +191,7 @@ class EditorialService:
             "PERFORMANCE_REVIEW": "Bilan de performance de la chaîne",
             "AUDIENCE_BRIEF": "Note d'audience",
             "OPPORTUNITY_BRIEF": "Opportunités éditoriales",
+            "PACKAGING_REVIEW": f"Packaging : {script['title'] if script else ''}",
         }[mission_type]
         with self._engine.begin() as conn:
             mission_id: UUID = conn.execute(
@@ -278,6 +290,7 @@ class EditorialService:
             performance=self._performance,
             audience=self._audience,
             opportunities=self._opportunities,
+            creative=self._creative,
             source_mission=self.mission(UUID(mission["params"]["source_mission_id"]))
             if mission["params"].get("source_mission_id")
             else None,
@@ -448,6 +461,14 @@ class EditorialService:
                     f"{len(social['excluded_unverified'])} phrase(s) non vérifiée(s) du livrable "
                     "source écartée(s)."
                 )
+        packaging = ctx.outputs.get("packaging")
+        if packaging is not None:
+            refused = [t for t in packaging["titles"] if not t["honest"]]
+            if refused:
+                findings.append(
+                    f"{len(refused)} titre(s) refusé(s) : promesse non soutenue ou terme banni."
+                )
+            findings.append("Aucune prédiction de CTR : tester les meilleures candidates.")
         found = ctx.outputs.get("opportunities")
         if found is not None:
             real = [o for o in found["opportunities"] if o["status"] == "OPPORTUNITY"]
