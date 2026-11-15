@@ -38,6 +38,8 @@ def main(argv: list[str] | None = None) -> int:
     ep = sub.add_parser("episode")
     ep.add_argument("series_id", type=UUID)
     ep.add_argument("script_id", type=UUID)
+    ep.add_argument("--format-id", type=UUID)
+    ep.add_argument("--language", choices=["fr", "en"])
     sub.add_parser("package").add_argument("script_id", type=UUID)
     review = sub.add_parser("review")
     review.add_argument("script_id", type=UUID)
@@ -63,7 +65,11 @@ def main(argv: list[str] | None = None) -> int:
         fields = json.loads(args.file.read_text(encoding="utf-8"))
         out = {"series_id": str(svc.create_series(author=args.author, **fields))}
     elif args.command == "episode":
-        out = {"episode": svc.add_episode(args.series_id, args.script_id)}
+        out = {
+            "episode": svc.add_episode(
+                args.series_id, args.script_id, format_id=args.format_id, language=args.language
+            )
+        }
     elif args.command == "package":
         out = asyncio.run(svc.package(args.script_id))
     else:

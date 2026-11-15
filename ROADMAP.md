@@ -29,7 +29,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 18 | Packaging, marque, séries & franchises (coût nul) | TESTED (charte réelle : à fournir par le propriétaire) | 14, 15, 17 |
 | 19 | Content Performance Lab & validation finale (coût nul) | TESTED — validation réelle : 0/13 tant que les données réelles manquent | 14, 18 |
 | 20 | Marque et gouvernance (coût nul) | TESTED (piliers et charte réels : à approuver par le fondateur) | 18 |
-| 21 | Moteur d'émissions (shows, formats, cycle de vie) *(proposée)* | NOT IMPLEMENTED — en attente de validation | 20 |
+| 21 | Moteur d'émissions (shows, formats, cycle de vie) (coût nul) | TESTED | 20 |
 | 22 | Identité indépendante (voix, visuels, langues) *(proposée)* | NOT IMPLEMENTED — en attente de validation | 20, 21 |
 | 23 | Distribution et portefeuille *(proposée)* | NOT IMPLEMENTED — en attente de validation | 21 |
 | 24 | Droits, mémoire éditoriale, coûts *(proposée)* | NOT IMPLEMENTED — en attente de validation | 20 à 23 |
@@ -406,4 +406,18 @@ ADR-0027 · fiche : [docs/modules/governance.md](docs/modules/governance.md).
 | Annulation exacte (état antérieur mémorisé) | TESTED |
 | Charte : brouillon soumis, seule la version approuvée s'applique | TESTED |
 | API `/governance/*`, CLI `primestone-brand`, page `/governance` | TESTED |
+
+## Phase 21 — Moteur d'émissions (coût nul)
+
+ADR-0028 · fiche : [docs/modules/shows.md](docs/modules/shows.md).
+
+| Élément | Statut |
+|---|---|
+| Cycle de vie DRAFT/TESTING/ACTIVE/SUSPENDED/RETIRED, chaque transition décidée par le fondateur | TESTED |
+| Émission suspendue, retirée ou en brouillon : aucun nouvel épisode | TESTED |
+| Règles versionnées, approuvées, annulables (`show_guideline_version`) | TESTED |
+| Formats par plateforme et langue ; conformité des épisodes signalée | TESTED |
+| Validation finale d'épisode (script validé exigé), publication déclarée sans automatisme | TESTED |
+| Performance par émission, langue, format ; adéquation sujet → émissions et piliers | TESTED |
+| API `/shows/*`, CLI `primestone-shows`, page `/shows/[id]` | TESTED |
 

@@ -38,6 +38,14 @@ def register_handler(action: str, handler: Handler) -> None:
     _HANDLERS[action] = handler
 
 
+def _handler(action: str) -> Handler | None:
+    # Les modules métier enregistrent leurs gestionnaires à l'import ; chargement différé
+    # pour éviter les cycles (gouvernance ← émissions).
+    import primestone.shows  # noqa: F401
+
+    return _HANDLERS.get(action)
+
+
 def _json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, default=str)
 
@@ -383,7 +391,7 @@ class GovernanceService:
             decision = self._load(conn, decision_id, lock=True)
             if decision["status"] != "APPROVED":
                 raise GovernanceError("seule une décision approuvée peut être annulée")
-            handler = _HANDLERS.get(decision["action"])
+            handler = _handler(decision["action"])
             if handler is not None:
                 handler(conn, decision, False)
             self._close(conn, decision_id, "REVERTED", decided_by, reason)
@@ -398,7 +406,7 @@ class GovernanceService:
         if decision["status"] != "PROPOSED":
             raise GovernanceError(f"décision déjà {decision['status']}")
         decision["decided_by"] = decided_by
-        handler = _HANDLERS.get(decision["action"])
+        handler = _handler(decision["action"])
         previous = handler(conn, decision, True) if handler is not None else None
         if previous is not None:
             conn.execute(

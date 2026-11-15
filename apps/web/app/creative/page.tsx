@@ -37,7 +37,7 @@ export default async function CreativePage() {
         <ul className="mt-2 space-y-2 text-sm">
           {(series ?? []).map((s) => (
             <li key={s.id} className="rounded border border-zinc-200 p-2 dark:border-zinc-800">
-              <span className="font-medium">{s.name}</span>{" "}
+              <Link href={`/shows/${s.id}`} className="font-medium text-amber-700 hover:underline">{s.name}</Link>{" "}
               <span className="text-xs text-zinc-500">
                 {s.status} · {s.target_minutes} min · {s.episodes.length} épisode(s){s.average_score !== null ? ` · note moyenne ${s.average_score}` : ""}
               </span>

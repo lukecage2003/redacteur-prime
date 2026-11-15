@@ -74,6 +74,12 @@ def test_charter_series_packaging(db_engine: Engine) -> None:
         evolution="un Endless par épisode",
         author="moi",
     )
+    # Brouillon : aucun épisode tant que le fondateur n'a pas ouvert l'émission au test.
+    with pytest.raises(CreativeError, match="DRAFT"):
+        creative.add_episode(series_id, script_id)
+    [opening] = governance.decisions("PROPOSED")
+    assert opening["proposal"] == {"from": "DRAFT", "to": "TESTING"}
+    governance.approve(opening["id"], decided_by="moi", role=FOUNDER)
     assert creative.add_episode(series_id, script_id) == 1
     with pytest.raises(CreativeError, match="déjà"):
         creative.add_episode(series_id, script_id)

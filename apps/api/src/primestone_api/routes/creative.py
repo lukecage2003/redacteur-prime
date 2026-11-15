@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, status
@@ -39,11 +39,17 @@ class SeriesIn(BaseModel):
     evolution: Short
     segment_id: UUID | None = None
     author: Name = "propriétaire"
+    languages: Annotated[list[Literal["fr", "en"]], Field(min_length=1, max_length=2)] = ["fr"]
+    expertise_level: Literal["DISCOVERY", "EXPLORATION", "EXPERTISE"] | None = None
+    evidence_requirements: dict[str, Any] = {}
+    pillar_id: UUID | None = None
 
 
 class EpisodeIn(BaseModel):
     series_id: UUID
     script_id: UUID
+    format_id: UUID | None = None
+    language: Literal["fr", "en"] | None = None
 
 
 class PackagingIn(BaseModel):
@@ -83,7 +89,9 @@ def create_series(request: Request, body: SeriesIn) -> dict[str, str]:
 @router.post("/series/episodes", status_code=status.HTTP_201_CREATED)
 def add_episode(request: Request, body: EpisodeIn) -> dict[str, int]:
     try:
-        number = _svc(request).add_episode(body.series_id, body.script_id)
+        number = _svc(request).add_episode(
+            body.series_id, body.script_id, format_id=body.format_id, language=body.language
+        )
     except LookupError as exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc)) from None
     except CreativeError as exc:

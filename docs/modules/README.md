@@ -21,3 +21,4 @@ ajoutée ici au démarrage de la phase correspondante.
 | `performance` | 11 | chaîne Primestone, import Studio, boucle d'apprentissage ([fiche](performance.md)) | TESTED (coût nul) |
 | `voice` | 12 | STT/TTS locaux, 5 personnalités, réponses vérifiées ([fiche](voice.md)) | TESTED (banc réel BLOCKED) |
 | `governance` | 20 | marque, piliers, politiques, décisions du fondateur ([fiche](governance.md)) | TESTED (coût nul) |
+| `shows` | 21 | émissions gouvernées, formats, règles versionnées, épisodes ([fiche](shows.md)) | TESTED (coût nul) |

@@ -157,6 +157,17 @@ politique). `brand_charter` gagne `brand_id`, `language`, `status` (DRAFT/APPROV
 `approved_by`, `approved_at`. `brand_id` (nullable, RESTRICT) sur `series`, `script`,
 `content_item`, `mission`, `experiment`.
 
+## Émissions ✅ (phase 21, migration 0016)
+
+`series` = émission : statut DRAFT/TESTING/ACTIVE/SUSPENDED/RETIRED, `expertise_level`,
+`languages`, `evidence_requirements`, `pillar_id`, `guideline_version`.
+`show_guideline_version` (émission, version, règles proposées, décision, auteur).
+`show_format` (émission, nom, plateforme, langue, durées min/max, structure, règles, version,
+statut). `series_episode` gagne `format_id`, `language`, `status`
+(PROPOSED/IN_PRODUCTION/APPROVED/PUBLISHED), `content_id`, `guideline_version`.
+`show_id` sur `script`, `content_item`, `mission`, `experiment` ; `format_id` sur `script` ;
+`language` sur `experiment`.
+
 ## Voix 🔜 (phase 12)
 
 `voice_session`, `voice_turn` (transcription, réponse, latences), `pronunciation_lexicon`.
