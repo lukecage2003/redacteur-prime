@@ -32,6 +32,10 @@ class PerformanceService:
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
 
+    @property
+    def engine(self) -> Engine:
+        return self._engine
+
     def record(
         self,
         rows: Sequence[dict[str, Any]],

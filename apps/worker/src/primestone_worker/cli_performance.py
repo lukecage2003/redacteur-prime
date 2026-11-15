@@ -5,6 +5,16 @@ primestone-performance contents
 primestone-performance link CONTENT_ID SCRIPT_ID [--language fr|en]
 primestone-performance report [--min-items 5]
 primestone-performance review [--process]     (mission PERFORMANCE_REVIEW)
+primestone-performance authorize [--port 8765]   (OAuth de TA chaîne, lecture seule, gratuit)
+primestone-performance sync --from 2026-10-01 --to 2026-10-31 [--curves 10]
+primestone-performance objective CONTENT_ID --objective DISCOVERY [--format LONG]
+primestone-performance objectives | experiments
+primestone-performance experiment-create --title … --hypothesis … --variable TITLE --metric ctr
+primestone-performance experiment-variant EXP_ID --label A --description …
+                       (--exposures N --successes S | --share 0.55) [--source …]
+primestone-performance experiment-conclude EXP_ID [--conclusion …] [--next …]
+primestone-performance autopsy CONTENT_ID | hooks | drop-offs | returning | validation
+primestone-performance loop SCRIPT_ID
 """
 
 from __future__ import annotations
@@ -25,6 +35,7 @@ from primestone.db import create_db_engine
 from primestone.editorial import editorial_service_from_settings
 from primestone.performance import (
     AnalyticsClient,
+    PerformanceLab,
     PerformanceService,
     access_token_provider,
     consent_url,
@@ -133,6 +144,10 @@ def main(argv: list[str] | None = None) -> int:
     conclude.add_argument("experiment_id", type=UUID)
     conclude.add_argument("--conclusion")
     conclude.add_argument("--next", dest="next_experiment")
+    sub.add_parser("autopsy").add_argument("content_id", type=UUID)
+    for name in ("hooks", "drop-offs", "returning", "validation"):
+        sub.add_parser(name)
+    sub.add_parser("loop").add_argument("script_id", type=UUID)
     args = parser.parse_args(argv)
 
     settings = get_settings()
@@ -159,6 +174,14 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "objective":
         svc.set_objective(args.content_id, objective=args.objective, format_=args.format)
         out = {"content_id": str(args.content_id), "objective": args.objective}
+    elif args.command in ("autopsy", "hooks", "drop-offs", "returning", "validation", "loop"):
+        lab = PerformanceLab(engine)
+        if args.command == "autopsy":
+            out = lab.autopsy(args.content_id)
+        elif args.command == "loop":
+            out = lab.loop(args.script_id)
+        else:
+            out = getattr(lab, args.command.replace("-", "_"))()
     elif args.command == "objectives":
         out = svc.objective_report()
     elif args.command == "experiments":

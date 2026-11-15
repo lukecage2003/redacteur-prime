@@ -79,6 +79,7 @@ export const MISSION_LABELS: Record<string, string> = {
   AUDIENCE_BRIEF: "Note d'audience",
   OPPORTUNITY_BRIEF: "Opportunités éditoriales",
   PACKAGING_REVIEW: "Packaging",
+  VIDEO_AUTOPSY: "Autopsie de vidéo",
 };
 
 /** Livrables qu'on peut décliner pour les réseaux, une fois approuvés. */

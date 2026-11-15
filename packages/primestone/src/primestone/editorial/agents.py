@@ -18,7 +18,7 @@ from primestone.forensic import ForensicService, fold
 from primestone.knowledge import KnowledgeService
 from primestone.lab import TheoryLab
 from primestone.market import MarketService, OpportunityService
-from primestone.performance import PerformanceService
+from primestone.performance import PerformanceLab, PerformanceService
 from primestone.social import PLATFORMS, build_package, render
 
 if TYPE_CHECKING:  # imports circulaires : storytelling et creative utilisent le Fact Checker
@@ -260,7 +260,26 @@ async def performance_analyst(ctx: MissionContext, inputs: dict[str, Any]) -> di
     """Performances de la chaîne Primestone et signaux d'apprentissage (jamais de concurrent)."""
     if ctx.performance is None:
         raise RuntimeError("Performance Intelligence non configurée")
+    if inputs.get("content_id"):
+        return PerformanceLab(ctx.performance.engine).autopsy(UUID(inputs["content_id"]))
     return ctx.performance.report(min_items=int(inputs.get("min_items", 5)))
+
+
+def autopsy_template(ctx: MissionContext) -> str:
+    a = ctx.outputs["autopsy"]
+    lines = [
+        f"# Autopsie : {a['content']['title']}",
+        f"Note : objectif {a['content']['objective'] or 'non défini'}, script "
+        f"{a['content']['script'] or 'non relié'} ({a['method']}).",
+        "Note : niveaux de preuve : OBSERVED (mesuré), HYPOTHESIS, DEMONSTRATED.",
+        "## Constats",
+    ]
+    lines.extend(f"Note : [{f['evidence']}] {f['finding']}." for f in a["findings"])
+    if not a["findings"]:
+        lines.append("Note : aucun constat : données insuffisantes.")
+    if a["missing"]:
+        lines.append(f"Note : manquant pour un diagnostic complet : {', '.join(a['missing'])}.")
+    return "\n".join(lines)
 
 
 def performance_template(ctx: MissionContext) -> str:
@@ -856,6 +875,15 @@ def plan(mission_type: str, params: dict[str, Any]) -> list[PlannedTask]:
             PlannedTask("audience", "audience_analyst", True),
             PlannedTask("synthesis", "chief_editor_writer", True),
         ]
+    if mission_type == "VIDEO_AUTOPSY":
+        if not params.get("content_id"):
+            raise ValueError("le paramètre « content_id » est obligatoire")
+        return [
+            PlannedTask(
+                "autopsy", "performance_analyst", True, {"content_id": str(params["content_id"])}
+            ),
+            PlannedTask("synthesis", "chief_editor_writer", True),
+        ]
     if mission_type == "PERFORMANCE_REVIEW":
         return [
             PlannedTask(
@@ -919,6 +947,7 @@ MISSION_TYPES = (
     "AUDIENCE_BRIEF",
     "OPPORTUNITY_BRIEF",
     "PACKAGING_REVIEW",
+    "VIDEO_AUTOPSY",
 )
 # Livrables qu'on peut décliner pour les réseaux (ils citent des pages vérifiables).
 DECLINABLE = ("CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "THEORY_REVIEW", "RESEARCH_DOSSIER")
@@ -929,6 +958,7 @@ WITHOUT_DOCUMENTS = (
     "PERFORMANCE_REVIEW",
     "AUDIENCE_BRIEF",
     "OPPORTUNITY_BRIEF",
+    "VIDEO_AUTOPSY",
 )
 TEMPLATES.update(
     CHARACTER_DOSSIER=dossier_template,
@@ -942,4 +972,5 @@ TEMPLATES.update(
     AUDIENCE_BRIEF=audience_template,
     OPPORTUNITY_BRIEF=opportunity_template,
     PACKAGING_REVIEW=packaging_template,
+    VIDEO_AUTOPSY=autopsy_template,
 )

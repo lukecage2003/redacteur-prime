@@ -3,6 +3,7 @@ gratuit ou API Analytics OAuth), boucle d'apprentissage prudente — coût nul."
 
 from primestone.performance.experiments import decide, wilson
 from primestone.performance.importers import AnalyticsClient, ImportError_, parse_studio_csv
+from primestone.performance.lab import PerformanceLab, hook_type
 from primestone.performance.learning import METHOD, learn, spearman
 from primestone.performance.measurement import OBJECTIVE_KPIS, evaluate
 from primestone.performance.oauth import OAuthError, access_token_provider, consent_url
@@ -15,11 +16,13 @@ __all__ = [
     "ImportError_",
     "OAuthError",
     "PerformanceError",
+    "PerformanceLab",
     "PerformanceService",
     "access_token_provider",
     "consent_url",
     "decide",
     "evaluate",
+    "hook_type",
     "learn",
     "parse_studio_csv",
     "spearman",

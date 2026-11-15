@@ -30,5 +30,6 @@ on le remplace par un nouvel ADR (statut « Remplacé par ADR-XXXX »).
 | [0023](0023-opportunity-engine.md) | Content Opportunity Engine : critères mesurés seulement, demande FR observée exigée | Accepté |
 | [0024](0024-audience-bridge-creative.md) | Audience Bridge, architectures narratives, rétention du script, multi-plateforme | Accepté |
 | [0025](0025-creative-intelligence.md) | Creative Intelligence : packaging honnête, charte versionnée, séries | Accepté |
+| [0026](0026-performance-lab.md) | Content Performance Lab et critères de complétude | Accepté |
 
 Modèle : [template.md](template.md).

@@ -10,7 +10,12 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
-from primestone.performance import ImportError_, PerformanceError, PerformanceService
+from primestone.performance import (
+    ImportError_,
+    PerformanceError,
+    PerformanceLab,
+    PerformanceService,
+)
 
 router = APIRouter(prefix="/performance", tags=["performance"])
 
@@ -180,3 +185,47 @@ def conclude(request: Request, body: ConclusionIn) -> dict[str, Any]:
         next_experiment=body.next_experiment,
     )
     return result
+
+
+# --- Phase 19 : Content Performance Lab ------------------------------------------------------
+
+
+def _lab(request: Request) -> PerformanceLab:
+    return PerformanceLab(_svc(request).engine)
+
+
+@router.get("/lab/autopsy/{content_id}")
+def autopsy(request: Request, content_id: UUID) -> dict[str, Any]:
+    try:
+        return _lab(request).autopsy(content_id)
+    except LookupError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc)) from None
+
+
+@router.get("/lab/hooks")
+def hooks(request: Request) -> dict[str, Any]:
+    return _lab(request).hooks()
+
+
+@router.get("/lab/drop-offs")
+def drop_offs(request: Request) -> dict[str, Any]:
+    return _lab(request).drop_offs()
+
+
+@router.get("/lab/returning")
+def returning(request: Request) -> dict[str, Any]:
+    return _lab(request).returning()
+
+
+@router.get("/lab/loop/{script_id}")
+def loop(request: Request, script_id: UUID) -> dict[str, Any]:
+    try:
+        return _lab(request).loop(script_id)
+    except LookupError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc)) from None
+
+
+@router.get("/lab/validation")
+def validation(request: Request) -> dict[str, Any]:
+    """Les 13 critères de l'extension, démontrés ou non sur les données réelles."""
+    return _lab(request).validation()

@@ -143,7 +143,7 @@ class EditorialService:
             raise EditorialError("moteur d'opportunités non configuré")
         if mission_type == "AUDIENCE_BRIEF" and self._audience is None:
             raise EditorialError("Audience Intelligence non configurée")
-        if mission_type == "PERFORMANCE_REVIEW" and self._performance is None:
+        if mission_type in ("PERFORMANCE_REVIEW", "VIDEO_AUTOPSY") and self._performance is None:
             raise EditorialError("Performance Intelligence non configurée")
         script: dict[str, Any] | None = None
         if mission_type == "SCRIPT_REVIEW":
@@ -189,6 +189,7 @@ class EditorialService:
             "SOCIAL_PACKAGE": f"Déclinaisons sociales : {source['title'] if source else ''}",
             "SCRIPT_REVIEW": f"Critique du script : {script['title'] if script else ''}",
             "PERFORMANCE_REVIEW": "Bilan de performance de la chaîne",
+            "VIDEO_AUTOPSY": "Autopsie de vidéo",
             "AUDIENCE_BRIEF": "Note d'audience",
             "OPPORTUNITY_BRIEF": "Opportunités éditoriales",
             "PACKAGING_REVIEW": f"Packaging : {script['title'] if script else ''}",
@@ -461,6 +462,18 @@ class EditorialService:
                     f"{len(social['excluded_unverified'])} phrase(s) non vérifiée(s) du livrable "
                     "source écartée(s)."
                 )
+        autopsy = ctx.outputs.get("autopsy")
+        if autopsy is not None:
+            observed = [f for f in autopsy["findings"] if f["evidence"] != "HYPOTHESIS"]
+            return {
+                "recommendation": "VALIDER AVEC RÉSERVES" if observed else "NE PAS VALIDER",
+                "summary": f"Autopsie : {len(autopsy['findings'])} constat(s), "
+                f"dont {len(observed)} observé(s) ou démontré(s).",
+                "findings": [*findings, *(f"manquant : {m}" for m in autopsy["missing"])],
+                "deliverable": synthesis.get("text"),
+                "author": synthesis.get("author", "gabarit déterministe"),
+                "fact_check": {"verdict": "NOT_APPLICABLE", "counts": {}, "checks": []},
+            }
         packaging = ctx.outputs.get("packaging")
         if packaging is not None:
             refused = [t for t in packaging["titles"] if not t["honest"]]

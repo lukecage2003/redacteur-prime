@@ -67,3 +67,17 @@ uv run primestone-performance experiment-conclude EXP --conclusion "…" --next 
 
 Résultat « Tester et comparer » sans comptes : `--share 0.55 --source YOUTUBE_TEST_COMPARE`.
 Il est enregistré, mais n'est jamais déclaré démontré.
+
+## Phase 19 — Content Performance Lab (ADR-0026)
+
+```bash
+uv run primestone-performance autopsy CONTENT_ID   # constats OBSERVED / HYPOTHESIS / DEMONSTRATED
+uv run primestone-performance hooks                # accroches face à la rétention de début
+uv run primestone-performance drop-offs            # décrochages par section
+uv run primestone-performance returning            # spectateurs connus par objectif
+uv run primestone-performance loop SCRIPT_ID       # boucle RESEARCH → … → OPTIMIZE
+uv run primestone-performance validation           # les 13 critères de complétude
+```
+
+La page `/performance` affiche la validation : chaque critère est « démontré » ou montre ce
+qui manque. La complétude se constate sur des données réelles, elle ne se déclare pas.
