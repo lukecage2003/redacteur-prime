@@ -28,7 +28,7 @@ apprentissage à partir des performances réelles des contenus Primestone.
 | Phase 10 — Maximum Storytelling (scripts en 13 étapes, pré-notation sur 100, veto factuel) | TESTED |
 | Phase 11 — Performance Intelligence (chaîne Primestone, import Studio gratuit, signaux prudents) | TESTED |
 | Phase 12 — Adaptive Voice (voix locale gratuite, réponses vérifiées, interruption) | TESTED — banc réel BLOCKED |
-| Phase 13 | NOT IMPLEMENTED — voir [ROADMAP.md](ROADMAP.md) |
+| Phase 13 — Production (IAP vérifié, GCS sans clé, intégrations, en-têtes de sécurité) | IMPLEMENTED — déploiement BLOCKED (accord du propriétaire) | — voir [ROADMAP.md](ROADMAP.md) |
 | Infrastructure GCP | Non provisionnée (en attente d'autorisation explicite) |
 
 ## Démarrage rapide

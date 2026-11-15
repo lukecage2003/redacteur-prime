@@ -21,7 +21,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 10 | Maximum Storytelling (coût nul) | TESTED | 6, 7 |
 | 11 | Performance Intelligence (coût nul) | TESTED | 9, 10 |
 | 12 | Adaptive Voice (coût nul) | TESTED (banc réel BLOCKED) | 6 |
-| 13 | Intégration, sécurité, optimisation, production | NOT IMPLEMENTED | toutes |
+| 13 | Intégration, sécurité, optimisation, production | IMPLEMENTED (déploiement BLOCKED : accord du propriétaire) | toutes |
 
 ### Changements d'ordre (justifiés)
 
@@ -47,7 +47,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | Web Next.js (tableau des modules, `/api/health`) | TESTED (lint, types, tests, build) |
 | Images Docker api, worker, web | TESTED localement (non-root, sondes de santé OK) |
 | Workflows de déploiement staging/production (WIF) | IMPLEMENTED, inactifs (GCP non provisionné) |
-| Authentification utilisateur (Identity-Aware Proxy) | NOT IMPLEMENTED |
+| Authentification utilisateur (Identity-Aware Proxy) | TESTED côté application (vérification du jeton, phase 13) ; IAP lui-même à provisionner |
 | Journalisation JSON structurée, traçage | NOT IMPLEMENTED |
 | Adaptateurs réels de fournisseurs IA | NOT IMPLEMENTED (après benchmark, phase 3) |
 
@@ -282,5 +282,15 @@ Fiche : [docs/modules/voice.md](docs/modules/voice.md) · ADR-0019.
 
 ## Phase 13 — Production
 
-Revue de sécurité, test de charge, coûts réels vs estimés, restauration de sauvegarde testée,
-intégrations Panel Explorer et Motion Studio (API facultatives).
+ADR-0020 · checklist : [docs/operations/production-checklist.md](docs/operations/production-checklist.md).
+
+| Élément | Statut |
+|---|---|
+| Vérification IAP dans l'API (ES256, audience, expiration ; HTTP + WebSocket) | TESTED |
+| Stockage GCS sans clé (jeton du serveur de métadonnées), copies en flux | TESTED (API simulée) |
+| Configuration cloud stricte (bucket, audience IAP, fournisseurs réels obligatoires) | TESTED |
+| API d'intégration Panel Explorer / Motion Studio (contrat 1.0, scripts validés seulement) | TESTED |
+| En-têtes de sécurité web | TESTED (vérifiés sur le serveur) ; CSP à nonces : NOT IMPLEMENTED |
+| PDFium sérialisé (segfault de concurrence corrigé) | TESTED |
+| Workflows de déploiement : variables cloud exigées et transmises | IMPLEMENTED, inactifs |
+| Provisionnement GCP, test de charge, coûts réels, restauration de sauvegarde | **BLOCKED** — ressources payantes : accord explicite du propriétaire requis |

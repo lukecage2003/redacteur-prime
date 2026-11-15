@@ -74,8 +74,12 @@ class Settings(BaseSettings):
     whisper_cpp_url: str = "http://localhost:8080"
     piper_url: str = "http://localhost:5000"
 
-    # Stockage objet : "local" (développement) ou "gcs" (cloud, phase 13 — non implémenté).
+    # Stockage objet : "local" (développement) ou "gcs" (cloud : bucket privé).
     storage_backend: Literal["local", "gcs"] = "local"
+    gcs_bucket: str | None = None
+    # Authentification (phase 13) : en staging/production, l'API exige l'en-tête signé par
+    # Identity-Aware Proxy et vérifie son audience (numéro de projet + service de backend).
+    iap_audience: str | None = None
     storage_local_root: Path = Path("data/storage")
 
     # Comic Library (phase 2) — limites de sécurité et profil de rendu.
@@ -98,6 +102,10 @@ class Settings(BaseSettings):
                 raise ValueError("Le fournisseur vision 'fake' est interdit en staging/production")
             if self.storage_backend == "local":
                 raise ValueError("Le stockage local est interdit en staging/production (éphémère)")
+            if not self.iap_audience:
+                raise ValueError("PRIMESTONE_IAP_AUDIENCE est requis hors développement")
+        if self.storage_backend == "gcs" and not self.gcs_bucket:
+            raise ValueError("PRIMESTONE_GCS_BUCKET est requis pour le stockage gcs")
         return self
 
 

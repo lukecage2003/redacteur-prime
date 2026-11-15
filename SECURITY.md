@@ -42,6 +42,16 @@ jamais redistribués. Les contenus produits (scripts, analyses) citent leurs sou
   images géantes ; noms de fichiers client réduits à leur nom de base ; clés de stockage validées.
 - Les configurations staging/production refusent le fournisseur IA simulé et l'URL de base locale.
 
+## Authentification (phase 13)
+
+- Accès uniquement derrière un équilibreur de charge protégé par Identity-Aware Proxy.
+- L'API vérifie elle-même l'en-tête signé `x-goog-iap-jwt-assertion` sur chaque requête et
+  chaque WebSocket : signature ES256, émetteur, audience, expiration. 401 (ou fermeture 1008)
+  sinon ; seules les sondes de santé sont exemptées.
+- Stockage GCS : jeton du compte de service via le serveur de métadonnées, aucune clé JSON.
+- En-têtes web : X-Frame-Options DENY, nosniff, HSTS, COOP, Referrer-Policy,
+  Permissions-Policy.
+
 ## Fournisseurs IA et résidence des données
 
 L'infrastructure est en europe-west1 (UE). Les appels aux fournisseurs IA externes peuvent traiter
