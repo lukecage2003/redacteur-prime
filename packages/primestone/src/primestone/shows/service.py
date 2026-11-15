@@ -556,20 +556,6 @@ class ShowService:
         if not contents:
             return {"series_id": str(series_id), "contents": 0, "status": "NON FOURNI"}
 
-        def aggregate(subset: list[Any]) -> dict[str, Any]:
-            values: dict[str, list[float]] = {}
-            for r in subset:
-                if r["metric"] is not None:
-                    values.setdefault(r["metric"], []).append(float(r["value"]))
-            out: dict[str, Any] = {"contents": len({r["id"] for r in subset})}
-            for metric in ("views", "impressions", "watch_time_min", "subscribers_gained"):
-                if metric in values:
-                    out[metric] = round(sum(values[metric]), 2)
-            for metric in ("ctr", "avg_view_percentage", "avg_view_duration_s"):
-                if metric in values:
-                    out[f"{metric}_mean"] = round(sum(values[metric]) / len(values[metric]), 2)
-            return out
-
         by_language: dict[str, list[Any]] = {}
         by_format: dict[str, list[Any]] = {}
         for r in rows:
@@ -643,6 +629,22 @@ class ShowService:
             "pillars": pillar_fit,
             "rule": "Adéquation lexicale indicative ; le choix de l'émission revient au fondateur.",
         }
+
+
+def aggregate(subset: list[Any]) -> dict[str, Any]:
+    """Somme des volumes, moyenne des taux, sur la dernière mesure de chaque contenu."""
+    values: dict[str, list[float]] = {}
+    for r in subset:
+        if r["metric"] is not None:
+            values.setdefault(r["metric"], []).append(float(r["value"]))
+    out: dict[str, Any] = {"contents": len({r["id"] for r in subset})}
+    for metric in ("views", "impressions", "watch_time_min", "subscribers_gained"):
+        if metric in values:
+            out[metric] = round(sum(values[metric]), 2)
+    for metric in ("ctr", "avg_view_percentage", "avg_view_duration_s"):
+        if metric in values:
+            out[f"{metric}_mean"] = round(sum(values[metric]) / len(values[metric]), 2)
+    return out
 
 
 def conformance(content: str, fmt: dict[str, Any] | None) -> list[str]:

@@ -49,6 +49,7 @@ def register_reject_hook(action: str, hook: RejectHook) -> None:
 def _handler(action: str) -> Handler | None:
     # Les modules métier enregistrent leurs gestionnaires à l'import ; chargement différé
     # pour éviter les cycles (gouvernance ← émissions).
+    import primestone.distribution
     import primestone.identity
     import primestone.shows  # noqa: F401
 

@@ -12,6 +12,7 @@ from primestone.comic import library_service_from_settings
 from primestone.config import Settings, get_settings
 from primestone.creative import creative_service_from_settings
 from primestone.db import create_db_engine
+from primestone.distribution import DistributionService
 from primestone.editorial import editorial_service_from_settings
 from primestone.forensic import forensic_service
 from primestone.governance import GovernanceService
@@ -29,6 +30,7 @@ from primestone.voice.runtime import VoiceRuntime
 from primestone_api.routes import (
     audience,
     creative,
+    distribution,
     editorial,
     forensic,
     governance,
@@ -77,6 +79,7 @@ def create_app(
         app.state.governance = GovernanceService(app.state.engine)
         app.state.shows = ShowService(app.state.engine)
         app.state.identity = IdentityService(app.state.engine)
+        app.state.distribution = DistributionService(app.state.engine)
         app.state.voice = VoiceRuntime(settings, app.state.engine, app.state.knowledge)
         try:
             yield
@@ -108,6 +111,7 @@ def create_app(
     app.include_router(governance.router, prefix="/api/v1")
     app.include_router(shows.router, prefix="/api/v1")
     app.include_router(identity.router, prefix="/api/v1")
+    app.include_router(distribution.router, prefix="/api/v1")
     app.include_router(voice.router, prefix="/api/v1")
     app.include_router(integrations.router, prefix="/api/v1")
     return app

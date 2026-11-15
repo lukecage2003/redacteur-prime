@@ -31,7 +31,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 20 | Marque et gouvernance (coût nul) | TESTED (piliers et charte réels : à approuver par le fondateur) | 18 |
 | 21 | Moteur d'émissions (shows, formats, cycle de vie) (coût nul) | TESTED | 20 |
 | 22 | Identité indépendante (voix, visuels, langues) (coût nul) | TESTED (voix réelle : modèle Piper et licence à choisir par le fondateur) | 20, 21 |
-| 23 | Distribution et portefeuille *(proposée)* | NOT IMPLEMENTED — en attente de validation | 21 |
+| 23 | Distribution et portefeuille (coût nul) | TESTED | 21 |
 | 24 | Droits, mémoire éditoriale, coûts *(proposée)* | NOT IMPLEMENTED — en attente de validation | 20 à 23 |
 
 Décision stratégique « PRIMESTONE, média autonome » (le fondateur est directeur éditorial,
@@ -434,4 +434,17 @@ ADR-0029 · fiche : [docs/modules/identity.md](docs/modules/identity.md).
 | Plan de narration et synthèse locale sans voix ni visage du fondateur | TESTED (FakeTTS) ; Piper réel : à installer |
 | Mission éditoriale NARRATION | NOT IMPLEMENTED (service, API et CLI disponibles) |
 | API `/identity/*`, CLI `primestone-identity`, section web `/creative` | TESTED |
+
+## Phase 23 — Distribution et portefeuille (coût nul)
+
+ADR-0030 · fiche : [docs/modules/distribution.md](docs/modules/distribution.md).
+
+| Élément | Statut |
+|---|---|
+| Canaux par plateforme et langue, autorisation des statistiques | TESTED |
+| Plan de diffusion PROPOSED → APPROVED (fondateur, script validé) → PUBLISHED / CANCELLED | TESTED |
+| Aucun PUBLISHED sans déclaration humaine (URL, identifiant, déclarant) ; aucune publication automatique | TESTED |
+| Portefeuille équilibré (pilier, niveau, langue, émission), déséquilibres signalés | TESTED |
+| Performance par canal | TESTED |
+| API `/distribution/*`, CLI `primestone-distribution`, page `/distribution` | TESTED |
 
