@@ -26,6 +26,12 @@ export async function importStudio(form: FormData): Promise<void> {
   revalidatePath("/performance");
 }
 
+export async function setObjective(rawContentId: string, form: FormData): Promise<void> {
+  const objective = String(form.get("objective") ?? "");
+  await post("performance/objectives", { content_id: requireUuid(rawContentId), objective: objective || null });
+  revalidatePath("/performance");
+}
+
 export async function linkScript(rawContentId: string, form: FormData): Promise<void> {
   const scriptId = String(form.get("script_id") ?? "").trim();
   await post("performance/links", { content_id: requireUuid(rawContentId), script_id: requireUuid(scriptId) });

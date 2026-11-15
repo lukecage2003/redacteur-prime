@@ -902,7 +902,18 @@ PERFORMANCE_METRICS = (
     "likes",
     "comments",
     "subscribers_gained",
+    # Phase 14 : mesure élargie (uniquement si la plateforme les fournit, jamais estimées).
+    "subscribers_lost",
+    "shares",
+    "saves",
+    "returning_viewers",
+    "new_viewers",
+    "unique_viewers",
+    "engaged_views",
 )
+CONTENT_OBJECTIVES = ("DISCOVERY", "EXPLORATION", "EXPERTISE", "COMMUNITY")
+CONTENT_FORMATS = ("LONG", "SHORT", "REEL", "CAROUSEL", "POST", "PODCAST", "LIVE")
+METRIC_DIMENSIONS = ("traffic_source", "country", "age_group", "device", "subscribed_status")
 
 content_item = Table(
     "content_item",
@@ -915,9 +926,15 @@ content_item = Table(
     Column("language", Text),
     Column("published_at", DateTime(timezone=True)),
     Column("script_id", UUID(as_uuid=True), ForeignKey("script.id", ondelete="RESTRICT")),
+    Column("objective", Text),
+    Column("format", Text),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     UniqueConstraint("platform", "external_id"),
     CheckConstraint("language IS NULL OR language IN ('fr', 'en')", name="language"),
+    CheckConstraint(
+        "objective IS NULL OR " + _in(CONTENT_OBJECTIVES, "objective"), name="objective"
+    ),
+    CheckConstraint("format IS NULL OR " + _in(CONTENT_FORMATS, "format"), name="format"),
 )
 
 performance_metric = Table(
@@ -938,11 +955,94 @@ performance_metric = Table(
     Column("data_class", Text, nullable=False),
     Column("imported_by", Text, nullable=False),
     Column("observed_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    # Segment AGRÉGÉ fourni par la plateforme (ex. traffic_source = YT_SEARCH) ; NULL = total.
+    Column("dimension", Text),
+    Column("dimension_value", Text),
     CheckConstraint(_in(PERFORMANCE_METRICS, "metric"), name="metric"),
+    CheckConstraint(
+        "dimension IS NULL OR " + _in(METRIC_DIMENSIONS, "dimension"), name="dimension"
+    ),
     CheckConstraint(
         "source IN ('YOUTUBE_STUDIO_CSV', 'YOUTUBE_ANALYTICS_API', 'MANUAL')", name="source"
     ),
     CheckConstraint("data_class = 'PRIVATE_AUTHORIZED'", name="data_class"),
     CheckConstraint("value >= 0", name="value"),
     Index("ix_performance_metric_content_id", "content_id"),
+)
+
+
+retention_point = Table(
+    "retention_point",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "content_id",
+        UUID(as_uuid=True),
+        ForeignKey("content_item.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("elapsed_ratio", Numeric(6, 4), nullable=False),
+    Column("audience_watch_ratio", Numeric(8, 4), nullable=False),
+    Column("relative_performance", Numeric(8, 4)),
+    Column("source", Text, nullable=False),
+    Column("observed_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("content_id", "elapsed_ratio", "observed_at"),
+    CheckConstraint("elapsed_ratio >= 0 AND elapsed_ratio <= 1", name="elapsed_ratio"),
+    CheckConstraint("audience_watch_ratio >= 0", name="audience_watch_ratio"),
+)
+
+# --- Expérimentation (phase 14) -------------------------------------------------------------
+
+EXPERIMENT_VARIABLES = ("TITLE", "THUMBNAIL", "HOOK", "PROMISE", "FORMAT", "LENGTH", "OTHER")
+EXPERIMENT_STATUSES = ("PLANNED", "RUNNING", "CONCLUDED", "INCONCLUSIVE")
+
+experiment = Table(
+    "experiment",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("title", Text, nullable=False),
+    Column("hypothesis", Text, nullable=False),
+    Column("variable", Text, nullable=False),
+    Column("audience", Text),
+    Column("format", Text),
+    Column("metric", Text, nullable=False),
+    Column("content_ids", JSONB, nullable=False, server_default=text("'[]'::jsonb")),
+    Column("period_start", Date),
+    Column("period_end", Date),
+    Column("status", Text, nullable=False, server_default=text("'PLANNED'")),
+    Column("result", JSONB),
+    Column("conclusion", Text),
+    Column("next_experiment", Text),
+    Column("author", Text, nullable=False),
+    *_ts(),
+    CheckConstraint(_in(EXPERIMENT_VARIABLES, "variable"), name="variable"),
+    CheckConstraint(_in(EXPERIMENT_STATUSES), name="status"),
+)
+
+experiment_variant = Table(
+    "experiment_variant",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "experiment_id",
+        UUID(as_uuid=True),
+        ForeignKey("experiment.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("label", Text, nullable=False),
+    Column("description", Text, nullable=False),
+    Column("exposures", BigInteger),
+    Column("successes", BigInteger),
+    Column("reported_share", Numeric(6, 4)),
+    Column("source", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("experiment_id", "label"),
+    CheckConstraint(
+        "exposures IS NULL OR (exposures >= 0 AND successes >= 0 AND successes <= exposures)",
+        name="counts",
+    ),
+    CheckConstraint(
+        "reported_share IS NULL OR (reported_share >= 0 AND reported_share <= 1)",
+        name="reported_share",
+    ),
 )

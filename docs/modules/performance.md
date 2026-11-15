@@ -34,3 +34,36 @@ Code : `packages/primestone/src/primestone/performance/` · ADR-0018 · coût : 
 - `packages/primestone/tests/test_performance_learning.py`
 - `apps/worker/tests/test_performance_pipeline.py`
 - `apps/web/lib/performance.test.ts`
+
+## Phase 14 — Mesure par objectif et expériences (ADR-0021)
+
+### Brancher les statistiques complètes de ta chaîne (gratuit, lecture seule)
+
+1. Dans Google Cloud Console (projet gratuit, aucune facturation) :
+   - activer « YouTube Analytics API » et « YouTube Data API v3 » ;
+   - créer un identifiant OAuth de type **Application de bureau** ;
+   - mettre `PRIMESTONE_YOUTUBE_OAUTH_CLIENT_ID` et `PRIMESTONE_YOUTUBE_OAUTH_CLIENT_SECRET`
+     dans `.env`.
+2. `uv run primestone-performance authorize` : ouvrir l'adresse affichée, autoriser, puis
+   copier la ligne `PRIMESTONE_YOUTUBE_OAUTH_REFRESH_TOKEN=…` dans `.env`. Ne jamais la
+   partager.
+3. `uv run primestone-performance sync --from 2026-10-01 --to 2026-10-31` : statistiques par
+   vidéo et courbes de rétention.
+
+### Objectifs
+
+`primestone-performance objective CONTENT_ID --objective DISCOVERY --format LONG`, ou la
+colonne « Objectif » de `/performance`. Puis `primestone-performance objectives` affiche
+chaque vidéo comparée à ses pairs, sur les indicateurs de son objectif.
+
+### Expériences
+
+```bash
+uv run primestone-performance experiment-create --title "Miniature" --hypothesis "…" --variable THUMBNAIL --metric ctr
+uv run primestone-performance experiment-variant EXP --label A --description "visage" --exposures 30000 --successes 1800
+uv run primestone-performance experiment-variant EXP --label B --description "objet" --exposures 30000 --successes 1350
+uv run primestone-performance experiment-conclude EXP --conclusion "…" --next "…"
+```
+
+Résultat « Tester et comparer » sans comptes : `--share 0.55 --source YOUTUBE_TEST_COMPARE`.
+Il est enregistré, mais n'est jamais déclaré démontré.

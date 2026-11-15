@@ -25,5 +25,6 @@ on le remplace par un nouvel ADR (statut « Remplacé par ADR-XXXX »).
 | [0018](0018-performance.md) | Performance Intelligence : chaîne Primestone uniquement, import gratuit, signaux prudents | Accepté |
 | [0019](0019-adaptive-voice.md) | Adaptive Voice : fournisseurs locaux gratuits, réponses ancrées et vérifiées | Accepté |
 | [0020](0020-production-readiness.md) | Préparation à la production : IAP vérifié, GCS sans clé, intégrations, PDFium sérialisé | Accepté |
+| [0021](0021-measurement-experiments.md) | Mesure par objectif, expériences rigoureuses, OAuth de la chaîne | Accepté |
 
 Modèle : [template.md](template.md).

@@ -124,6 +124,12 @@ titre, langue, publication, `script_id`), `performance_metric` (9 métriques, va
 source STUDIO_CSV / ANALYTICS_API / MANUAL, `data_class = 'PRIVATE_AUTHORIZED'` imposé,
 auteur, `observed_at` ; append-only).
 
+Phase 14 (migration 0011) : `content_item.objective` (DISCOVERY / EXPLORATION / EXPERTISE /
+COMMUNITY) et `format` ; 7 métriques de plus ; `performance_metric.dimension` et
+`dimension_value` (segments agrégés) ; `retention_point` (courbe par instantané) ;
+`experiment` (hypothèse, variable, audience, format, métrique, période, statut, résultat,
+conclusion, prochaine expérience) ; `experiment_variant` (comptes ou part rapportée, source).
+
 ## Voix 🔜 (phase 12)
 
 `voice_session`, `voice_turn` (transcription, réponse, latences), `pronunciation_lexicon`.

@@ -39,6 +39,12 @@ _METRICS: dict[str, tuple[str, ...]] = {
     "likes": ("j'aime", "likes"),
     "comments": ("commentaires ajoutes", "comments added"),
     "subscribers_gained": ("abonnes gagnes", "subscribers gained", "abonnes", "subscribers"),
+    "subscribers_lost": ("abonnes perdus", "subscribers lost"),
+    "shares": ("partages", "shares"),
+    "returning_viewers": ("spectateurs connus", "returning viewers"),
+    "new_viewers": ("nouveaux spectateurs", "new viewers"),
+    "unique_viewers": ("spectateurs uniques", "unique viewers"),
+    "engaged_views": ("vues engagees", "engaged views"),
 }
 
 
@@ -123,6 +129,8 @@ _API_METRICS = {
     "likes": "likes",
     "comments": "comments",
     "subscribersGained": "subscribers_gained",
+    "subscribersLost": "subscribers_lost",
+    "shares": "shares",
 }
 
 
@@ -173,6 +181,35 @@ class AnalyticsClient:
                 }
             )
         return rows
+
+    def retention_curve(
+        self, video_id: str, start: date, end: date
+    ) -> list[dict[str, Decimal | None]]:
+        """Courbe de rétention d'une vidéo (rapport documenté de YouTube Analytics)."""
+        response = self._client.get(
+            ANALYTICS_API,
+            params={
+                "ids": "channel==MINE",
+                "startDate": start.isoformat(),
+                "endDate": end.isoformat(),
+                "metrics": "audienceWatchRatio,relativeRetentionPerformance",
+                "dimensions": "elapsedVideoTimeRatio",
+                "filters": f"video=={video_id}",
+            },
+            headers={"authorization": f"Bearer {self._token()}"},
+        )
+        if response.status_code != 200:
+            raise ImportError_(
+                f"YouTube Analytics a refusé la requête (HTTP {response.status_code})"
+            )
+        return [
+            {
+                "elapsed_ratio": Decimal(str(r[0])),
+                "audience_watch_ratio": Decimal(str(r[1])),
+                "relative_performance": Decimal(str(r[2])) if r[2] is not None else None,
+            }
+            for r in response.json().get("rows", [])
+        ]
 
     def close(self) -> None:
         self._client.close()

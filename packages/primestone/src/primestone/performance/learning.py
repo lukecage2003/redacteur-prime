@@ -77,7 +77,13 @@ def learn(contents: Sequence[dict[str, Any]], *, min_items: int = 5) -> dict[str
                 rho = spearman([p[0] for p in pairs], [p[1] for p in pairs])
                 if rho is not None:
                     signals.append(
-                        {"criterion": criterion, "target": target, "rho": rho, "n": len(pairs)}
+                        {
+                            "criterion": criterion,
+                            "target": target,
+                            "rho": rho,
+                            "n": len(pairs),
+                            "evidence": "HYPOTHESIS",  # corrélation : jamais une cause
+                        }
                     )
         signals.sort(key=lambda s: -abs(s["rho"]))
     recommendations = [
