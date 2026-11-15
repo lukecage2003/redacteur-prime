@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { fetchContents, fetchReport, METRIC_LABELS, signalStrength } from "@/lib/performance";
+import { experimentVerdict, fetchContents, fetchExperiments, fetchReport, METRIC_LABELS, OBJECTIVE_LABELS, signalStrength } from "@/lib/performance";
 import { fetchScripts } from "@/lib/scripts";
-import { importStudio, linkScript } from "./actions";
+import { importStudio, linkScript, setObjective } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,12 @@ const SHOWN = ["views", "ctr", "avg_view_percentage", "avg_view_duration_s"];
 const fmt = (v: number | undefined) => (v === undefined ? "—" : v.toLocaleString("fr-FR", { maximumFractionDigits: 1 }));
 
 export default async function PerformancePage() {
-  const [contents, report, scripts] = await Promise.all([fetchContents(api()), fetchReport(api()), fetchScripts(api())]);
+  const [contents, report, scripts, experiments] = await Promise.all([
+    fetchContents(api()),
+    fetchReport(api()),
+    fetchScripts(api()),
+    fetchExperiments(api()),
+  ]);
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <Link href="/" className="text-sm text-amber-700 hover:underline">
@@ -46,6 +51,18 @@ export default async function PerformancePage() {
         </section>
       )}
 
+      <section className="mt-6">
+        <h2 className="font-semibold">Expériences</h2>
+        <p className="text-xs text-zinc-500">Un gagnant n&apos;est déclaré qu&apos;avec assez de données et une différence significative (CLI : primestone-performance experiment-*).</p>
+        <ul className="mt-2 space-y-1 text-sm">
+          {(experiments ?? []).map((e) => (
+            <li key={e.id}>
+              <strong>{e.title}</strong> — {e.variable} / {e.metric} : {experimentVerdict(e)}
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <section className="mt-6 overflow-x-auto">
         <h2 className="font-semibold">Vidéos</h2>
         <table className="mt-2 w-full min-w-[40rem] text-left text-sm">
@@ -55,6 +72,7 @@ export default async function PerformancePage() {
               {SHOWN.map((m) => (
                 <th key={m}>{METRIC_LABELS[m]}</th>
               ))}
+              <th>Objectif</th>
               <th>Script</th>
             </tr>
           </thead>
@@ -65,6 +83,19 @@ export default async function PerformancePage() {
                 {SHOWN.map((m) => (
                   <td key={m}>{fmt(c.metrics[m])}</td>
                 ))}
+                <td>
+                  <form action={setObjective.bind(null, c.id)} className="flex gap-1">
+                    <select name="objective" defaultValue={c.objective ?? ""} className="rounded border border-zinc-300 text-xs dark:border-zinc-700 dark:bg-zinc-900">
+                      <option value="">—</option>
+                      {Object.entries(OBJECTIVE_LABELS).map(([k, v]) => (
+                        <option key={k} value={k}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                    <button className="rounded border border-zinc-300 px-1 text-xs dark:border-zinc-700">OK</button>
+                  </form>
+                </td>
                 <td>
                   {c.script_id ? (
                     <Link href={`/scripts/${c.script_id}`} className="text-amber-700 hover:underline">

@@ -76,6 +76,9 @@ En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payan
 | POST | `/api/v1/scripts/versions` · `/steps` · `/evaluations` · `/validations` · `/adaptations` | Nouvelle version ; changement d'étape ; Fact Checker + note sur 100 ; validation finale (refusée si veto ou < 70) ; adaptation FR/EN | 201, 404, 422 |
 | POST | `/api/v1/performance/imports` | Export CSV YouTube Studio (texte) ; colonnes inconnues signalées | 201, 422 |
 | POST | `/api/v1/performance/links` | Relie une vidéo à son script | 201, 404 |
+| POST | `/api/v1/performance/objectives` · GET `/objectives-report` | Objectif et format d'un contenu ; évaluation par objectif | 201, 404, 422 |
+| GET | `/api/v1/performance/contents/{id}/retention` | Dernière courbe de rétention | 200 |
+| GET · POST | `/api/v1/performance/experiments` · POST `/experiments/variants` · `/experiments/conclusions` | Expériences, variantes, verdict statistique | 200, 201, 404, 422 |
 | GET | `/api/v1/performance/contents` · `/report?min_items=` | Vidéos (dernières métriques, note du script) ; repères et signaux | 200 |
 | GET | `/api/v1/integrations/panel-explorer/documents/{id}/pages/{n}` | Panel Explorer (contrat 1.0) : cases, textes servis, URL de l'image | 200, 404 |
 | GET | `/api/v1/integrations/motion-studio/scripts/{id}` | Motion Studio (contrat 1.0) : script **validé** (sections horodatées, références) | 200, 404, 409 |

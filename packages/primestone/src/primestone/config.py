@@ -65,6 +65,10 @@ class Settings(BaseSettings):
     youtube_api_key: SecretStr | None = None
     youtube_daily_quota_units: int = Field(default=10_000, ge=0)
     market_http_timeout_seconds: float = Field(default=20.0, gt=0)
+    # Performance (phase 14) : OAuth « application installée » de la chaîne du propriétaire.
+    youtube_oauth_client_id: str | None = None
+    youtube_oauth_client_secret: SecretStr | None = None
+    youtube_oauth_refresh_token: SecretStr | None = None
 
     # Adaptive Voice (phase 12) : fournisseurs GRATUITS. "fake" (tests) ou serveurs LOCAUX :
     # whisper.cpp (`server`, STT) et Piper (`piper.http_server`, TTS) — modèles à installer

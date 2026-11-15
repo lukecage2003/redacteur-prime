@@ -22,14 +22,14 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 11 | Performance Intelligence (coût nul) | TESTED | 9, 10 |
 | 12 | Adaptive Voice (coût nul) | TESTED (banc réel BLOCKED) | 6 |
 | 13 | Intégration, sécurité, optimisation, production | IMPLEMENTED (déploiement BLOCKED : accord du propriétaire) | toutes |
-| 14 | Mesure par objectif & expérimentation scientifique *(proposée)* | NOT IMPLEMENTED — en attente de validation | 11 |
+| 14 | Mesure par objectif & expérimentation scientifique (coût nul) | TESTED (données réelles : OAuth du propriétaire) | 11 |
 | 15 | Audience Intelligence & communauté *(proposée)* | NOT IMPLEMENTED — en attente de validation | 5, 8, 11, 14 |
 | 16 | Content Opportunity Engine *(proposée)* | NOT IMPLEMENTED — en attente de validation | 7, 8, 15 |
 | 17 | Audience Bridge, architectures narratives, multi-plateforme FR/EN *(proposée)* | NOT IMPLEMENTED — en attente de validation | 9, 10, 15 |
 | 18 | Packaging, marque, séries & franchises *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 15, 17 |
 | 19 | Content Performance Lab & validation finale *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 18 |
 
-Extension « Audience, Growth & Creative Intelligence » : analyse des dépendances et
+Extension validée par le propriétaire le 2026-11-15 (« je valide tout »). Analyse des dépendances et
 justification de l'ordre dans [docs/audit/extension-audience-growth.md](docs/audit/extension-audience-growth.md).
 La plateforme n'est **complète** qu'une fois les 13 critères de validation de l'extension
 démontrés sur données réelles.
@@ -305,3 +305,17 @@ ADR-0020 · checklist : [docs/operations/production-checklist.md](docs/operation
 | PDFium sérialisé (segfault de concurrence corrigé) | TESTED |
 | Workflows de déploiement : variables cloud exigées et transmises | IMPLEMENTED, inactifs |
 | Provisionnement GCP, test de charge, coûts réels, restauration de sauvegarde | **BLOCKED** — ressources payantes : accord explicite du propriétaire requis |
+
+## Phase 14 — Mesure par objectif & expérimentation (coût nul)
+
+ADR-0021 · fiche : [docs/modules/performance.md](docs/modules/performance.md#phase-14--mesure-par-objectif-et-expériences-adr-0021).
+
+| Élément | Statut |
+|---|---|
+| Objectif et format par contenu ; évaluation par objectif face aux pairs (`objective-kpi@1`) | TESTED |
+| Métriques élargies et segments agrégés, jamais estimés | TESTED |
+| Courbes de rétention (YouTube Analytics) | TESTED (API simulée) |
+| Expériences : hypothèse → variantes → verdict statistique (`ab-proportion@1`), pas de gagnant sans échantillon suffisant | TESTED |
+| Niveaux de preuve OBSERVED / HYPOTHESIS / DEMONSTRATED | TESTED |
+| OAuth « application installée » (loopback), synchronisation de la chaîne | IMPLEMENTED — autorisation réelle : action du propriétaire |
+| API, CLI, page `/performance` (objectifs, expériences) | TESTED |

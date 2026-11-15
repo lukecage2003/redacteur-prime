@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from decimal import Decimal
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
@@ -61,3 +62,121 @@ def contents(request: Request) -> list[dict[str, Any]]:
 @router.get("/report")
 def report(request: Request, min_items: Annotated[int, Query(ge=3, le=1000)] = 5) -> dict[str, Any]:
     return _svc(request).report(min_items=min_items)
+
+
+# --- Phase 14 : objectifs, rétention, expériences, synchronisation autorisée -------------------
+
+Objective = Literal["DISCOVERY", "EXPLORATION", "EXPERTISE", "COMMUNITY"]
+Format = Literal["LONG", "SHORT", "REEL", "CAROUSEL", "POST", "PODCAST", "LIVE"]
+Variable = Literal["TITLE", "THUMBNAIL", "HOOK", "PROMISE", "FORMAT", "LENGTH", "OTHER"]
+Text_ = Annotated[str, Field(min_length=1, max_length=2000)]
+
+
+class ObjectiveIn(BaseModel):
+    content_id: UUID
+    objective: Objective | None = None
+    format: Format | None = None
+
+
+class ExperimentIn(BaseModel):
+    title: Annotated[str, Field(min_length=1, max_length=300)]
+    hypothesis: Text_
+    variable: Variable
+    metric: Annotated[str, Field(min_length=1, max_length=50)]
+    audience: Annotated[str, Field(max_length=300)] | None = None
+    format: Format | None = None
+    content_ids: Annotated[list[UUID], Field(max_length=50)] = []
+    period_start: date | None = None
+    period_end: date | None = None
+    author: Annotated[str, Field(min_length=1, max_length=100)] = "propriétaire"
+
+
+class VariantIn(BaseModel):
+    experiment_id: UUID
+    label: Annotated[str, Field(min_length=1, max_length=20)]
+    description: Text_
+    exposures: Annotated[int, Field(ge=0)] | None = None
+    successes: Annotated[int, Field(ge=0)] | None = None
+    reported_share: Annotated[Decimal, Field(ge=0, le=1)] | None = None
+    source: Literal["MANUAL", "YOUTUBE_TEST_COMPARE", "YOUTUBE_ANALYTICS_API"] = "MANUAL"
+
+
+class ConclusionIn(BaseModel):
+    experiment_id: UUID
+    conclusion: Annotated[str, Field(max_length=2000)] | None = None
+    next_experiment: Annotated[str, Field(max_length=2000)] | None = None
+
+
+def _guard(fn: Any, *args: Any, **kwargs: Any) -> Any:
+    try:
+        return fn(*args, **kwargs)
+    except LookupError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc)) from None
+    except PerformanceError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from None
+
+
+@router.post("/objectives", status_code=status.HTTP_201_CREATED)
+def set_objective(request: Request, body: ObjectiveIn) -> dict[str, str]:
+    _guard(
+        _svc(request).set_objective, body.content_id, objective=body.objective, format_=body.format
+    )
+    return {"status": "ok"}
+
+
+@router.get("/objectives-report")
+def objectives_report(request: Request) -> dict[str, Any]:
+    return _svc(request).objective_report()
+
+
+@router.get("/contents/{content_id}/retention")
+def retention(request: Request, content_id: UUID) -> list[dict[str, Any]]:
+    return _svc(request).retention(content_id)
+
+
+@router.get("/experiments")
+def experiments(request: Request) -> list[dict[str, Any]]:
+    return _svc(request).experiments()
+
+
+@router.post("/experiments", status_code=status.HTTP_201_CREATED)
+def create_experiment(request: Request, body: ExperimentIn) -> dict[str, str]:
+    experiment_id = _guard(
+        _svc(request).create_experiment,
+        title=body.title,
+        hypothesis=body.hypothesis,
+        variable=body.variable,
+        metric=body.metric,
+        author=body.author,
+        audience=body.audience,
+        format_=body.format,
+        content_ids=body.content_ids,
+        period=(body.period_start, body.period_end),
+    )
+    return {"experiment_id": str(experiment_id)}
+
+
+@router.post("/experiments/variants", status_code=status.HTTP_201_CREATED)
+def add_variant(request: Request, body: VariantIn) -> dict[str, str]:
+    _guard(
+        _svc(request).add_variant,
+        body.experiment_id,
+        label=body.label,
+        description=body.description,
+        exposures=body.exposures,
+        successes=body.successes,
+        reported_share=body.reported_share,
+        source=body.source,
+    )
+    return {"status": "ok"}
+
+
+@router.post("/experiments/conclusions", status_code=status.HTTP_201_CREATED)
+def conclude(request: Request, body: ConclusionIn) -> dict[str, Any]:
+    result: dict[str, Any] = _guard(
+        _svc(request).conclude,
+        body.experiment_id,
+        conclusion=body.conclusion,
+        next_experiment=body.next_experiment,
+    )
+    return result
