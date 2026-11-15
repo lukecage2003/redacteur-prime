@@ -20,11 +20,11 @@ from enum import StrEnum
 from pathlib import Path, PurePosixPath
 
 import pypdfium2 as pdfium
+from PIL import Image
 
 # PDFium n'est PAS thread-safe : toute utilisation passe par ce verrou de processus (le worker
 # exécute ses étapes dans des threads ; sans verrou, segmentation fault constatée en CI).
 PDFIUM_LOCK = threading.RLock()
-from PIL import Image
 
 IMAGE_SUFFIXES = frozenset({".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tif", ".tiff"})
 MAX_COMPRESSION_RATIO = 200  # au-delà : bombe zip probable
