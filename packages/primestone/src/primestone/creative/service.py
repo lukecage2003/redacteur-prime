@@ -13,7 +13,8 @@ from sqlalchemy import Engine, text
 from primestone.creative.brand import DEFAULT_CHARTER
 from primestone.creative.packaging import METHOD, build
 from primestone.forensic import fold
-from primestone.governance import GovernanceService
+from primestone.governance.service import GovernanceService
+from primestone.shows.service import ShowService
 
 TitleWriter = Callable[[str, str], Awaitable[list[str]]]
 
@@ -108,40 +109,49 @@ class CreativeService:
             series_id: UUID = conn.execute(
                 text(
                     "INSERT INTO series (name, promise, identity, segment_id, tone, structure, "
-                    "target_minutes, art_direction, distribution, evolution, author) VALUES "
+                    "target_minutes, art_direction, distribution, evolution, author, brand_id, "
+                    "expertise_level, languages, evidence_requirements, pillar_id) VALUES "
                     "(:name, :promise, :identity, :segment_id, :tone, CAST(:structure AS jsonb), "
                     ":target_minutes, :art_direction, CAST(:distribution AS jsonb), "
-                    ":evolution, :author) "
-                    "RETURNING id"
+                    ":evolution, :author, (SELECT id FROM media_brand WHERE slug = 'primestone'), "
+                    ":expertise_level, CAST(:languages AS jsonb), CAST(:evidence AS jsonb), "
+                    ":pillar_id) RETURNING id"
                 ),
                 {
-                    **{k: fields.get(k) for k in (*required, "segment_id", "target_minutes")},
+                    **{
+                        k: fields.get(k)
+                        for k in (
+                            *required,
+                            "segment_id",
+                            "target_minutes",
+                            "expertise_level",
+                            "pillar_id",
+                        )
+                    },
                     "structure": _json(list(fields["structure"])),
                     "distribution": _json(list(fields.get("distribution") or [])),
+                    "languages": _json(list(fields.get("languages") or ["fr"])),
+                    "evidence": _json(fields.get("evidence_requirements") or {}),
                 },
             ).scalar_one()
+            # Brouillon : le passage en test est une décision du fondateur (ADR-0028).
+            ShowService(self._engine).propose_creation(conn, series_id, fields["author"])
         return series_id
 
-    def add_episode(self, series_id: UUID, script_id: UUID) -> int:
-        with self._engine.begin() as conn:
-            if not conn.execute(
-                text("SELECT 1 FROM series WHERE id = :s FOR UPDATE"), {"s": series_id}
-            ).first():
-                raise LookupError("série introuvable")
-            if conn.execute(
-                text("SELECT 1 FROM series_episode WHERE script_id = :sc"), {"sc": script_id}
-            ).first():
-                raise CreativeError("ce script appartient déjà à une série")
-            number: int = conn.execute(
-                text(
-                    "INSERT INTO series_episode (series_id, script_id, number) VALUES (:s, :sc, "
-                    "(SELECT COALESCE(max(number), 0) + 1 FROM series_episode "
-                    "WHERE series_id = :s)) "
-                    "RETURNING number"
-                ),
-                {"s": series_id, "sc": script_id},
-            ).scalar_one()
-        return number
+    def add_episode(
+        self,
+        series_id: UUID,
+        script_id: UUID,
+        *,
+        format_id: UUID | None = None,
+        language: str | None = None,
+    ) -> int:
+        try:
+            return ShowService(self._engine).add_episode(
+                series_id, script_id, format_id=format_id, language=language
+            )
+        except ValueError as exc:
+            raise CreativeError(str(exc)) from None
 
     def series(self) -> list[dict[str, Any]]:
         """Séries et cohérence : durée des épisodes vs cible, structure suivie, notes."""

@@ -509,6 +509,7 @@ mission = Table(
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
     Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
+    Column("show_id", UUID(as_uuid=True), ForeignKey("series.id", ondelete="RESTRICT")),
     Column("type", Text, nullable=False),
     Column("title", Text, nullable=False),
     Column("status", Text, nullable=False, server_default=text("'PLANNED'")),
@@ -818,6 +819,8 @@ script = Table(
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
     Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
+    Column("show_id", UUID(as_uuid=True), ForeignKey("series.id", ondelete="RESTRICT")),
+    Column("format_id", UUID(as_uuid=True), ForeignKey("show_format.id", ondelete="RESTRICT")),
     Column("title", Text, nullable=False),
     Column("language", Text, nullable=False),
     Column("document_ids", JSONB, nullable=False, server_default=text("'[]'::jsonb")),
@@ -928,6 +931,7 @@ content_item = Table(
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
     Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
+    Column("show_id", UUID(as_uuid=True), ForeignKey("series.id", ondelete="RESTRICT")),
     Column("platform", Text, nullable=False),
     Column("external_id", Text, nullable=False),
     Column("title", Text, nullable=False),
@@ -1010,6 +1014,8 @@ experiment = Table(
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
     Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
+    Column("show_id", UUID(as_uuid=True), ForeignKey("series.id", ondelete="RESTRICT")),
+    Column("language", Text),
     Column("title", Text, nullable=False),
     Column("hypothesis", Text, nullable=False),
     Column("variable", Text, nullable=False),
@@ -1027,6 +1033,7 @@ experiment = Table(
     *_ts(),
     CheckConstraint(_in(EXPERIMENT_VARIABLES, "variable"), name="variable"),
     CheckConstraint(_in(EXPERIMENT_STATUSES), name="status"),
+    CheckConstraint("language IS NULL OR language IN ('fr', 'en')", name="language"),
 )
 
 experiment_variant = Table(
@@ -1184,6 +1191,9 @@ brand_charter = Table(
     CheckConstraint("language IS NULL OR language IN ('fr', 'en')", name="language"),
 )
 
+SHOW_STATUSES = ("DRAFT", "TESTING", "ACTIVE", "SUSPENDED", "RETIRED")
+EPISODE_STATUSES = ("PROPOSED", "IN_PRODUCTION", "APPROVED", "PUBLISHED")
+
 series = Table(
     "series",
     metadata,
@@ -1200,11 +1210,20 @@ series = Table(
     Column("art_direction", Text, nullable=False),
     Column("distribution", JSONB, nullable=False),
     Column("evolution", Text, nullable=False),
-    Column("status", Text, nullable=False, server_default=text("'ACTIVE'")),
+    Column("status", Text, nullable=False, server_default=text("'DRAFT'")),
     Column("author", Text, nullable=False),
     Column("brand_id", UUID(as_uuid=True), ForeignKey("media_brand.id", ondelete="RESTRICT")),
+    Column("expertise_level", Text),
+    Column("languages", JSONB, nullable=False, server_default=text("'[\"fr\"]'::jsonb")),
+    Column("evidence_requirements", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column("pillar_id", UUID(as_uuid=True), ForeignKey("editorial_pillar.id", ondelete="RESTRICT")),
+    Column("guideline_version", Integer, nullable=False, server_default=text("1")),
     *_ts(),
-    CheckConstraint("status IN ('ACTIVE', 'PAUSED', 'ENDED')", name="status"),
+    CheckConstraint(_in(SHOW_STATUSES, "status"), name="status"),
+    CheckConstraint(
+        "expertise_level IS NULL OR expertise_level IN ('DISCOVERY', 'EXPLORATION', 'EXPERTISE')",
+        name="expertise_level",
+    ),
     CheckConstraint("target_minutes > 0 AND target_minutes <= 240", name="target_minutes"),
 )
 
@@ -1226,8 +1245,64 @@ series_episode = Table(
     ),
     Column("number", Integer, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    Column("format_id", UUID(as_uuid=True), ForeignKey("show_format.id", ondelete="RESTRICT")),
+    Column("language", Text),
+    Column("status", Text, nullable=False, server_default=text("'PROPOSED'")),
+    Column("content_id", UUID(as_uuid=True), ForeignKey("content_item.id", ondelete="RESTRICT")),
+    Column("guideline_version", Integer),
     UniqueConstraint("series_id", "number"),
     UniqueConstraint("script_id"),
+    CheckConstraint("language IS NULL OR language IN ('fr', 'en')", name="language"),
+    CheckConstraint(_in(EPISODE_STATUSES, "status"), name="status"),
+)
+
+show_format = Table(
+    "show_format",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "series_id",
+        UUID(as_uuid=True),
+        ForeignKey("series.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("name", Text, nullable=False),
+    Column("platform", Text, nullable=False),
+    Column("language", Text, nullable=False),
+    Column("min_minutes", Numeric(6, 2), nullable=False),
+    Column("max_minutes", Numeric(6, 2), nullable=False),
+    Column("structure", JSONB, nullable=False),
+    Column("rules", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column("version", Integer, nullable=False, server_default=text("1")),
+    Column("status", Text, nullable=False, server_default=text("'ACTIVE'")),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("series_id", "name", "language"),
+    CheckConstraint("language IN ('fr', 'en')", name="language"),
+    CheckConstraint("min_minutes > 0 AND max_minutes >= min_minutes", name="minutes"),
+    CheckConstraint("status IN ('ACTIVE', 'RETIRED')", name="status"),
+)
+
+show_guideline_version = Table(
+    "show_guideline_version",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "series_id",
+        UUID(as_uuid=True),
+        ForeignKey("series.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("version", Integer, nullable=False),
+    Column("guidelines", JSONB, nullable=False),
+    Column(
+        "decision_id",
+        UUID(as_uuid=True),
+        ForeignKey("editorial_decision.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("author", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("series_id", "version"),
 )
 
 packaging_set = Table(

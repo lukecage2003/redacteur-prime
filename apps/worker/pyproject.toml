@@ -21,6 +21,7 @@ primestone-performance = "primestone_worker.cli_performance:main"
 primestone-audience = "primestone_worker.cli_audience:main"
 primestone-brand = "primestone_worker.cli_brand:main"
 primestone-creative = "primestone_worker.cli_creative:main"
+primestone-shows = "primestone_worker.cli_shows:main"
 
 [tool.uv.sources]
 primestone = { workspace = true }

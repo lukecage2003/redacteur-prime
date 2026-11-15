@@ -52,12 +52,17 @@ def migrated_engine(database_url: str) -> Iterator[Engine]:
 def db_engine(migrated_engine: Engine) -> Engine:
     """Moteur migré ; les tables de la file sont vidées avant chaque test (base de test)."""
     with migrated_engine.begin() as conn:
+        for table in ("script", "content_item", "mission", "experiment"):
+            conn.execute(text(f"UPDATE {table} SET show_id = NULL"))  # noqa: S608 - liste fixe
+        conn.execute(text("UPDATE script SET format_id = NULL"))
         for table in (
+            "show_guideline_version",
             "editorial_decision",
-            "editorial_pillar",
             "packaging_set",
             "series_episode",
+            "show_format",
             "series",
+            "editorial_pillar",
             "brand_charter",
             "community_comment",
             "audience_link",

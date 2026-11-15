@@ -91,6 +91,10 @@ En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payan
 | GET | `/api/v1/governance/brands` · `/policies` · `/pillars` | Marque, politiques, piliers | 200 |
 | POST | `/api/v1/governance/pillars` · `/policies` | Proposer un pilier ; proposer un changement de politique | 201, 422 |
 | GET | `/api/v1/governance/decisions?decision_status=` | Journal des décisions | 200, 422 |
+| GET | `/api/v1/shows/{id}` · `/{id}/guidelines` · `/{id}/performance` | Émission (formats, épisodes, conformité, décisions en attente) ; versions des règles ; performance agrégée | 200, 404 |
+| GET | `/api/v1/shows/fit?subject=&language=` | Adéquation d'un sujet aux émissions et piliers | 200, 422 |
+| POST | `/api/v1/shows/transitions` · `/guidelines` · `/formats` | Proposer une transition ; proposer des règles ; ajouter un format | 201, 404, 422 |
+| POST | `/api/v1/shows/episodes/steps` | Production, validation finale (proposée), publication déclarée | 200, 404, 422 |
 | POST | `/api/v1/governance/decide` | Approuver, rejeter (motif) ou annuler (motif) — rôle FOUNDER | 200, 422 |
 | GET · POST | `/api/v1/creative/series` · POST `/series/episodes` | Séries et cohérence ; ajout d'épisode | 200, 201, 404, 422 |
 | POST · GET | `/api/v1/creative/packaging` · `/packaging/{script_id}` | Packaging contrôlé d'un script évalué ; historique | 200, 201, 404, 422 |
