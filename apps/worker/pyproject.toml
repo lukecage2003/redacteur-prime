@@ -18,6 +18,7 @@ primestone-lab = "primestone_worker.cli_lab:main"
 primestone-market = "primestone_worker.cli_market:main"
 primestone-script = "primestone_worker.cli_script:main"
 primestone-performance = "primestone_worker.cli_performance:main"
+primestone-audience = "primestone_worker.cli_audience:main"
 
 [tool.uv.sources]
 primestone = { workspace = true }

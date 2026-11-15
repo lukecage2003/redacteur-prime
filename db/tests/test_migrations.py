@@ -27,6 +27,7 @@ def test_round_trip(database_url: str, migrated_engine: Engine) -> None:
     expected |= {"market_topic", "script", "script_version", "script_score", "script_event"}
     expected |= {"content_item", "performance_metric"}
     expected |= {"retention_point", "experiment", "experiment_variant"}
+    expected |= {"audience_segment", "audience_evidence", "audience_link", "community_comment"}
     assert expected <= tables
 
 

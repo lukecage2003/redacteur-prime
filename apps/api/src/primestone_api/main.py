@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from sqlalchemy import Engine
 
 from primestone import __version__
+from primestone.audience import AudienceService
 from primestone.comic import library_service_from_settings
 from primestone.config import Settings, get_settings
 from primestone.db import create_db_engine
@@ -22,6 +23,7 @@ from primestone.storytelling import storytelling_service
 from primestone.vision import vision_service_from_settings
 from primestone.voice.runtime import VoiceRuntime
 from primestone_api.routes import (
+    audience,
     editorial,
     forensic,
     health,
@@ -61,6 +63,7 @@ def create_app(
         app.state.market = market_service_from_settings(settings, app.state.engine)
         app.state.storytelling = storytelling_service(app.state.engine)
         app.state.performance = PerformanceService(app.state.engine)
+        app.state.audience = AudienceService(app.state.engine)
         app.state.voice = VoiceRuntime(settings, app.state.engine, app.state.knowledge)
         try:
             yield
@@ -87,6 +90,7 @@ def create_app(
     app.include_router(market.router, prefix="/api/v1")
     app.include_router(scripts.router, prefix="/api/v1")
     app.include_router(performance.router, prefix="/api/v1")
+    app.include_router(audience.router, prefix="/api/v1")
     app.include_router(voice.router, prefix="/api/v1")
     app.include_router(integrations.router, prefix="/api/v1")
     return app

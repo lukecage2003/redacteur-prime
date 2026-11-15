@@ -19,6 +19,7 @@ from uuid import UUID
 from sqlalchemy import Engine, text
 
 from primestone.ai_gateway import AIGateway, CompletionRequest, LLMProvider, Message
+from primestone.audience import AudienceService
 from primestone.editorial.agents import (
     AGENTS,
     DECLINABLE,
@@ -65,7 +66,9 @@ class EditorialService:
         market: MarketService | None = None,
         storytelling: StorytellingService | None = None,
         performance: PerformanceService | None = None,
+        audience: AudienceService | None = None,
     ) -> None:
+        self._audience = audience
         self._performance = performance
         self._storytelling = storytelling
         self._lab = lab
@@ -131,6 +134,8 @@ class EditorialService:
             document_ids = [UUID(d) for d in source["document_ids"]]
         if mission_type == "MARKET_BRIEF" and self._market is None:
             raise EditorialError("Market Intelligence non configurée")
+        if mission_type == "AUDIENCE_BRIEF" and self._audience is None:
+            raise EditorialError("Audience Intelligence non configurée")
         if mission_type == "PERFORMANCE_REVIEW" and self._performance is None:
             raise EditorialError("Performance Intelligence non configurée")
         script = None
@@ -169,6 +174,7 @@ class EditorialService:
             "SOCIAL_PACKAGE": f"Déclinaisons sociales : {source['title'] if source else ''}",
             "SCRIPT_REVIEW": f"Critique du script : {script['title'] if script else ''}",
             "PERFORMANCE_REVIEW": "Bilan de performance de la chaîne",
+            "AUDIENCE_BRIEF": "Note d'audience",
         }[mission_type]
         with self._engine.begin() as conn:
             mission_id: UUID = conn.execute(
@@ -265,6 +271,7 @@ class EditorialService:
             market=self._market,
             storytelling=self._storytelling,
             performance=self._performance,
+            audience=self._audience,
             source_mission=self.mission(UUID(mission["params"]["source_mission_id"]))
             if mission["params"].get("source_mission_id")
             else None,
@@ -435,6 +442,22 @@ class EditorialService:
                     f"{len(social['excluded_unverified'])} phrase(s) non vérifiée(s) du livrable "
                     "source écartée(s)."
                 )
+        audience = ctx.outputs.get("audience")
+        if audience is not None:
+            confirmed = [s for s in audience["segments"] if s["status"] == "CONFIRMED"]
+            findings.append(
+                f"{len(confirmed)} segment(s) confirmé(s) sur {len(audience['segments'])} ; "
+                "les autres restent des hypothèses."
+            )
+            return {
+                "recommendation": "VALIDER AVEC RÉSERVES" if confirmed else "NE PAS VALIDER",
+                "summary": f"Audience : {len(confirmed)} segment(s) confirmé(s), "
+                f"{audience['community']['comments']} commentaire(s) analysé(s).",
+                "findings": findings,
+                "deliverable": synthesis.get("text"),
+                "author": synthesis.get("author", "gabarit déterministe"),
+                "fact_check": {"verdict": "NOT_APPLICABLE", "counts": {}, "checks": []},
+            }
         performance = ctx.outputs.get("performance")
         if performance is not None:
             sufficient = performance["status"] == "OK"

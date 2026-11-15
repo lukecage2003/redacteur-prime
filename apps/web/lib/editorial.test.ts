@@ -29,6 +29,7 @@ describe("checkSeverity", () => {
       "SOCIAL_PACKAGE",
       "SCRIPT_REVIEW",
       "PERFORMANCE_REVIEW",
+      "AUDIENCE_BRIEF",
     ]);
   });
 });
