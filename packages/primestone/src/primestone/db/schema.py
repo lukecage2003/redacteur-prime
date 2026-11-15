@@ -1156,3 +1156,81 @@ community_comment = Table(
     UniqueConstraint("platform", "external_id"),
     CheckConstraint(_in(COMMENT_KINDS, "kind"), name="kind"),
 )
+
+
+# --- Creative Intelligence : marque, séries, packaging (phase 18) ---------------------------
+
+brand_charter = Table(
+    "brand_charter",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("version", Integer, nullable=False, unique=True),
+    Column("name", Text, nullable=False),
+    Column("rules", JSONB, nullable=False),
+    Column("author", Text, nullable=False),
+    Column("note", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)
+
+series = Table(
+    "series",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column("name", Text, nullable=False, unique=True),
+    Column("promise", Text, nullable=False),
+    Column("identity", Text, nullable=False),
+    Column(
+        "segment_id", UUID(as_uuid=True), ForeignKey("audience_segment.id", ondelete="RESTRICT")
+    ),
+    Column("tone", Text, nullable=False),
+    Column("structure", JSONB, nullable=False),
+    Column("target_minutes", Integer, nullable=False),
+    Column("art_direction", Text, nullable=False),
+    Column("distribution", JSONB, nullable=False),
+    Column("evolution", Text, nullable=False),
+    Column("status", Text, nullable=False, server_default=text("'ACTIVE'")),
+    Column("author", Text, nullable=False),
+    *_ts(),
+    CheckConstraint("status IN ('ACTIVE', 'PAUSED', 'ENDED')", name="status"),
+    CheckConstraint("target_minutes > 0 AND target_minutes <= 240", name="target_minutes"),
+)
+
+series_episode = Table(
+    "series_episode",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "series_id",
+        UUID(as_uuid=True),
+        ForeignKey("series.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column(
+        "script_id",
+        UUID(as_uuid=True),
+        ForeignKey("script.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("number", Integer, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("series_id", "number"),
+    UniqueConstraint("script_id"),
+)
+
+packaging_set = Table(
+    "packaging_set",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")),
+    Column(
+        "script_id",
+        UUID(as_uuid=True),
+        ForeignKey("script.id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("script_version", Integer, nullable=False),
+    Column("method", Text, nullable=False),
+    Column("charter_version", Integer),
+    Column("content", JSONB, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    Index("ix_packaging_set_script_id", "script_id"),
+)

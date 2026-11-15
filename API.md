@@ -87,6 +87,9 @@ En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payan
 | POST · GET | `/api/v1/audience/comments` · `/community` | Import de commentaires publics (sans auteur) ; récurrences et propositions | 200, 201, 422 |
 | GET | `/api/v1/market/opportunities?window_days=&min_items=` | Opportunités éditoriales expliquées (ESTIMATE ; HYPOTHESIS sans demande FR observée) | 200 |
 | POST | `/api/v1/scripts/variants` · `/architectures` · GET `/techniques` | Variante de niveau ; architectures narratives ; bibliothèque de techniques | 200, 201, 404, 422 |
+| GET · POST | `/api/v1/creative/charter` | Charte en vigueur ; nouvelle version (conservée) | 200, 201, 422 |
+| GET · POST | `/api/v1/creative/series` · POST `/series/episodes` | Séries et cohérence ; ajout d'épisode | 200, 201, 404, 422 |
+| POST · GET | `/api/v1/creative/packaging` · `/packaging/{script_id}` | Packaging contrôlé d'un script évalué ; historique | 200, 201, 404, 422 |
 | GET · POST | `/api/v1/market/sources` | Sources et leur fiche ; déclaration (clé, type, accès, quota, conditions) | 200, 201, 422 |
 | POST | `/api/v1/market/sources/verifications` | Validation humaine de la fiche (préalable à toute collecte) | 201, 404 |
 | POST | `/api/v1/market/imports` | Relevés publics manuels (champs inconnus, dont métriques privées, refusés) | 201, 404, 422 |

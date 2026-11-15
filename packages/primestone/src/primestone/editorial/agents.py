@@ -21,7 +21,8 @@ from primestone.market import MarketService, OpportunityService
 from primestone.performance import PerformanceService
 from primestone.social import PLATFORMS, build_package, render
 
-if TYPE_CHECKING:  # import circulaire : storytelling utilise le Fact Checker
+if TYPE_CHECKING:  # imports circulaires : storytelling et creative utilisent le Fact Checker
+    from primestone.creative import CreativeService
     from primestone.storytelling import StorytellingService
 
 
@@ -44,6 +45,7 @@ class MissionContext:
     performance: PerformanceService | None = None
     audience: AudienceService | None = None
     opportunities: OpportunityService | None = None
+    creative: CreativeService | None = None
 
     def corpus(self) -> Corpus:
         return Corpus(
@@ -309,6 +311,35 @@ def audience_template(ctx: MissionContext) -> str:
     lines.append("## Communauté (commentaires publics de la chaîne)")
     lines.append(f"Note : {community['comments']} commentaire(s) : {community['by_kind']}.")
     lines.extend(f"Note : proposition : {p}" for p in community["proposals"])
+    return "\n".join(lines)
+
+
+async def brand_editor(ctx: MissionContext, inputs: dict[str, Any]) -> dict[str, Any]:
+    """Packaging honnête et conforme à la charte, à partir des faits vérifiés du script."""
+    if ctx.creative is None:
+        raise RuntimeError("Creative Intelligence non configurée")
+    return await ctx.creative.package(UUID(inputs["script_id"]))
+
+
+def packaging_template(ctx: MissionContext) -> str:
+    p = ctx.outputs["packaging"]
+    lines = [f"# Packaging : {p['subject']}", f"Note : {p['rule']}", "## Titres"]
+    for t in p["titles"]:
+        status = "honnête" if t["honest"] else "REFUSÉ : " + "; ".join(t["issues"])
+        lines.append(
+            f"Note : {t['title']} — {status} ; {', '.join(t['readability'])} ; "
+            f"{', '.join(t['audience_fit'])}."
+        )
+    lines.append("## Miniatures")
+    for c in p["thumbnails"]:
+        brand = "; ".join(c["brand_issues"]) or "conforme à la charte"
+        lines.append(f"Note : {c['concept']} — {c['composition']} — {brand}.")
+    lines.append("## Promesses")
+    lines.extend(f"Note : {x}" for x in p["promises"])
+    lines.append("## Accroches (faits vérifiés)")
+    lines.extend(p["hooks"])
+    lines.append("## Tests proposés")
+    lines.extend(f"Note : {t['variable']} : {t['hypothesis']} ({t['how']})." for t in p["tests"])
     return "\n".join(lines)
 
 
@@ -731,6 +762,14 @@ AGENTS: dict[str, AgentSpec] = {
             editorial_critic,
         ),
         AgentSpec(
+            "brand_editor",
+            "Brand & Packaging Editor",
+            "titres, miniatures, promesses, accroches, conformité à la charte, tests proposés",
+            "aucune prédiction de CTR ; un titre non soutenu par le script est refusé",
+            18,
+            brand_editor,
+        ),
+        AgentSpec(
             "audience_analyst",
             "Audience Analyst",
             "segments prouvés ou hypothétiques, questions et demandes de la communauté",
@@ -796,6 +835,14 @@ def plan(mission_type: str, params: dict[str, Any]) -> list[PlannedTask]:
             PlannedTask(
                 "theory_research", "theory_researcher", True, {"theory_id": str(theory_id)}
             ),
+            PlannedTask("synthesis", "chief_editor_writer", True),
+            PlannedTask("fact_check", "fact_checker", True),
+        ]
+    if mission_type == "PACKAGING_REVIEW":
+        if not params.get("script_id"):
+            raise ValueError("le paramètre « script_id » est obligatoire")
+        return [
+            PlannedTask("packaging", "brand_editor", True, {"script_id": str(params["script_id"])}),
             PlannedTask("synthesis", "chief_editor_writer", True),
             PlannedTask("fact_check", "fact_checker", True),
         ]
@@ -871,6 +918,7 @@ MISSION_TYPES = (
     "PERFORMANCE_REVIEW",
     "AUDIENCE_BRIEF",
     "OPPORTUNITY_BRIEF",
+    "PACKAGING_REVIEW",
 )
 # Livrables qu'on peut décliner pour les réseaux (ils citent des pages vérifiables).
 DECLINABLE = ("CHARACTER_DOSSIER", "CONTINUITY_AUDIT", "THEORY_REVIEW", "RESEARCH_DOSSIER")
@@ -893,4 +941,5 @@ TEMPLATES.update(
     PERFORMANCE_REVIEW=performance_template,
     AUDIENCE_BRIEF=audience_template,
     OPPORTUNITY_BRIEF=opportunity_template,
+    PACKAGING_REVIEW=packaging_template,
 )

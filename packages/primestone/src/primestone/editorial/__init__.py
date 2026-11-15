@@ -16,6 +16,7 @@ from primestone.knowledge import knowledge_service_from_settings
 from primestone.lab import TheoryLab
 
 if TYPE_CHECKING:
+    from primestone.creative import CreativeService
     from primestone.storytelling import StorytellingService
 from primestone.audience import AudienceService
 from primestone.market import market_service_from_settings, opportunity_service_from_settings
@@ -35,6 +36,12 @@ __all__ = [
     "editorial_service_from_settings",
     "plan",
 ]
+
+
+def _creative(settings: Settings, engine: Engine) -> "CreativeService":
+    from primestone.creative import creative_service_from_settings  # import circulaire évité
+
+    return creative_service_from_settings(settings, engine)
 
 
 def _storytelling(engine: Engine, forensic: ForensicService) -> "StorytellingService":
@@ -68,4 +75,5 @@ def editorial_service_from_settings(settings: Settings, engine: Engine) -> Edito
         performance=PerformanceService(engine),
         audience=AudienceService(engine),
         opportunities=opportunity_service_from_settings(settings, engine),
+        creative=_creative(settings, engine),
     )

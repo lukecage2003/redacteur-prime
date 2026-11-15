@@ -25,7 +25,7 @@ export default async function EditorialPage() {
         <form action={createMission} className="space-y-3 rounded border border-zinc-200 p-4 dark:border-zinc-800">
           <h2 className="font-semibold">Nouvelle mission</h2>
           <select name="type" className={input} defaultValue="CHARACTER_DOSSIER">
-            {Object.entries(MISSION_LABELS).filter(([value]) => !["THEORY_REVIEW", "MARKET_BRIEF", "SOCIAL_PACKAGE", "SCRIPT_REVIEW"].includes(value)).map(([value, label]) => (
+            {Object.entries(MISSION_LABELS).filter(([value]) => !["THEORY_REVIEW", "MARKET_BRIEF", "SOCIAL_PACKAGE", "SCRIPT_REVIEW", "PACKAGING_REVIEW"].includes(value)).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>

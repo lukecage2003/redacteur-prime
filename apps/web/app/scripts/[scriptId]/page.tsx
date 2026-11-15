@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isUuid } from "@/lib/ids";
 import { CRITERIA_LABELS, fetchScript, verdict } from "@/lib/scripts";
-import { addVersion, evaluate, moveStep, validate } from "../actions";
+import { fetchPackagings, usableTitles } from "@/lib/creative";
+import { addVersion, evaluate, moveStep, packageScript, validate } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ export default async function ScriptPage({ params }: { params: Promise<{ scriptI
   const { scriptId } = await params;
   if (!isUuid(scriptId)) notFound();
   const script = await fetchScript(scriptId, process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL);
+  const packaging = (await fetchPackagings(scriptId, process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL))?.[0]?.content;
   if (!script) notFound();
   const versions = script.versions;
   const last = versions.at(-1);
@@ -110,6 +112,30 @@ export default async function ScriptPage({ params }: { params: Promise<{ scriptI
           )}
         </section>
       )}
+
+      <section className="mt-6">
+        <div className="flex items-center gap-2">
+          <h2 className="font-semibold">Packaging</h2>
+          {score && (
+            <form action={packageScript.bind(null, script.id)}>
+              <button className="rounded border border-amber-600 px-2 py-0.5 text-xs text-amber-700">Proposer titres et miniatures</button>
+            </form>
+          )}
+        </div>
+        {packaging && (
+          <div className="mt-2 text-sm">
+            <p className="text-xs text-zinc-500">{packaging.rule}</p>
+            <ul className="mt-1 list-disc pl-5">
+              {packaging.titles.map((t) => (
+                <li key={t.title} className={usableTitles(packaging).includes(t) ? "" : "text-zinc-400 line-through"}>
+                  {t.title} {t.issues.length > 0 && <span className="text-xs text-red-700">({t.issues.join(" ; ")})</span>}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-1 text-xs">Miniatures : {packaging.thumbnails.map((c) => c.concept).join(" · ")}</p>
+          </div>
+        )}
+      </section>
 
       {editable && (
         <form action={addVersion.bind(null, script.id)} className="mt-6 space-y-2">

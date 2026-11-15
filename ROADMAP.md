@@ -26,7 +26,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 15 | Audience Intelligence & communauté (coût nul) | TESTED (données réelles : clé et OAuth du propriétaire) | 5, 8, 11, 14 |
 | 16 | Content Opportunity Engine (coût nul) | TESTED | 7, 8, 15 |
 | 17 | Audience Bridge, architectures narratives, multi-plateforme FR/EN (coût nul) | TESTED | 9, 10, 15 |
-| 18 | Packaging, marque, séries & franchises *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 15, 17 |
+| 18 | Packaging, marque, séries & franchises (coût nul) | TESTED (charte réelle : à fournir par le propriétaire) | 14, 15, 17 |
 | 19 | Content Performance Lab & validation finale *(proposée)* | NOT IMPLEMENTED — en attente de validation | 14, 18 |
 
 Extension validée par le propriétaire le 2026-11-15 (« je valide tout »). Analyse des dépendances et
@@ -358,3 +358,17 @@ ADR-0024 · fiches : [storytelling](docs/modules/storytelling.md#phase-17--nivea
 | Motion Studio contrat 1.1 (intentions par section) | TESTED |
 | Shorts, publication communautaire, podcast, dossier écrit | TESTED |
 | Adaptation FR/EN culturelle (réécriture humaine reliée) | TESTED (phase 10) ; rédaction assistée : NOT IMPLEMENTED |
+
+## Phase 18 — Packaging, marque, séries & franchises (coût nul)
+
+ADR-0025 · fiche : [docs/modules/creative.md](docs/modules/creative.md).
+
+| Élément | Statut |
+|---|---|
+| 10 titres, 5 miniatures, 3 promesses, 3 accroches depuis les faits vérifiés | TESTED |
+| Honnêteté (promesse tenue, termes bannis), lisibilité, adéquation au niveau | TESTED |
+| Aucune prédiction de CTR ; tests proposés reliés aux expériences | TESTED |
+| Charte de marque versionnée, contrôles de miniatures | TESTED (charte par défaut à personnaliser) |
+| Séries et franchises : promesse, identité, structure, durée, cohérence des épisodes | TESTED |
+| Agent Brand & Packaging Editor, mission PACKAGING_REVIEW ; API, CLI, pages web | TESTED |
+| Titres proposés par modèle local | IMPLEMENTED (facultatif, mêmes contrôles) |

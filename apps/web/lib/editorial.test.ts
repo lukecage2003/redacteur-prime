@@ -31,6 +31,7 @@ describe("checkSeverity", () => {
       "PERFORMANCE_REVIEW",
       "AUDIENCE_BRIEF",
       "OPPORTUNITY_BRIEF",
+      "PACKAGING_REVIEW",
     ]);
   });
 });
