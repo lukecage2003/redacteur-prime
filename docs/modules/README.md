@@ -19,4 +19,4 @@ ajoutée ici au démarrage de la phase correspondante.
 | `social` | 9 | déclinaisons par plateforme depuis les faits vérifiés ([fiche](social.md)) | TESTED (coût nul) |
 | `storytelling` | 10 | scripts en 13 étapes, pré-notation, veto factuel ([fiche](storytelling.md)) | TESTED (coût nul) |
 | `performance` | 11 | chaîne Primestone, import Studio, boucle d'apprentissage ([fiche](performance.md)) | TESTED (coût nul) |
-| `voice` | 12 | streaming STT/TTS, personnalités | NOT IMPLEMENTED |
+| `voice` | 12 | STT/TTS locaux, 5 personnalités, réponses vérifiées ([fiche](voice.md)) | TESTED (banc réel BLOCKED) |

@@ -77,6 +77,7 @@ En mode zéro coût (défaut), `POST /vision/analyses` avec un fournisseur payan
 | POST | `/api/v1/performance/imports` | Export CSV YouTube Studio (texte) ; colonnes inconnues signalées | 201, 422 |
 | POST | `/api/v1/performance/links` | Relie une vidéo à son script | 201, 404 |
 | GET | `/api/v1/performance/contents` · `/report?min_items=` | Vidéos (dernières métriques, note du script) ; repères et signaux | 200 |
+| WS | `/api/v1/ws/voice` | Assistant vocal : `start`, `text`, `audio` (WAV base64), `interrupt` → `answer`, `sentence` (+ audio), `done`/`interrupted` | — |
 | GET · POST | `/api/v1/market/sources` | Sources et leur fiche ; déclaration (clé, type, accès, quota, conditions) | 200, 201, 422 |
 | POST | `/api/v1/market/sources/verifications` | Validation humaine de la fiche (préalable à toute collecte) | 201, 404 |
 | POST | `/api/v1/market/imports` | Relevés publics manuels (champs inconnus, dont métriques privées, refusés) | 201, 404, 422 |
@@ -97,5 +98,4 @@ GET /api/v1/health/ready
 |---|---|
 | 4–5 | `GET /observations`, `GET /entities`, `GET /entities/{id}/relations`, `GET /search?q=` (hybride) |
 | 6 | `POST /missions`, `GET /missions/{id}`, `POST /approvals/{id}` |
-| 12 | `WS /ws/voice` |
 | 13 | `GET /integrations/panel-explorer/...`, `GET /integrations/motion-studio/...` (facultatives) |

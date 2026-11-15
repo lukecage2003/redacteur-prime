@@ -61,6 +61,10 @@ class KnowledgeService:
         self._forensic = forensic
         self.embedder = embedder or HashingEmbedder()
 
+    @property
+    def forensic(self) -> ForensicService:
+        return self._forensic
+
     # --- Entités -----------------------------------------------------------------------------
 
     @staticmethod

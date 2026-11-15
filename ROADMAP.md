@@ -20,7 +20,7 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 9 | Social Intelligence (coût nul) | TESTED | 8 |
 | 10 | Maximum Storytelling (coût nul) | TESTED | 6, 7 |
 | 11 | Performance Intelligence (coût nul) | TESTED | 9, 10 |
-| 12 | Adaptive Voice | NOT IMPLEMENTED | 6 |
+| 12 | Adaptive Voice (coût nul) | TESTED (banc réel BLOCKED) | 6 |
 | 13 | Intégration, sécurité, optimisation, production | NOT IMPLEMENTED | toutes |
 
 ### Changements d'ordre (justifiés)
@@ -266,11 +266,19 @@ Fiche : [docs/modules/performance.md](docs/modules/performance.md) · ADR-0018.
 | API `/performance`, CLI `primestone-performance`, page web `/performance` | TESTED (web : lint, types, build) |
 | Validation sur la vraie chaîne | NOT IMPLEMENTED — exige un export Studio réel |
 
-## Phase 12 — Adaptive Voice
+## Phase 12 — Adaptive Voice (coût nul)
 
-Streaming, VAD, interruptions, cinq personnalités, lexique de prononciation, mode texte.
+Fiche : [docs/modules/voice.md](docs/modules/voice.md) · ADR-0019.
 
-**Critères** : latence au premier son mesurée (< 1 s visé) ; interruptions fiables ; mode texte.
+| Élément | Statut |
+|---|---|
+| Interfaces STT/TTS + fournisseurs simulés | TESTED |
+| Adaptateurs locaux gratuits whisper.cpp et Piper (HTTP) | IMPLEMENTED — testés avec serveurs simulés |
+| Réponses ancrées (recherche hybride), citées, vérifiées avant d'être dites ; refus sans source | TESTED |
+| 5 personnalités ; hypothèses seulement en Brainstorming, annoncées | TESTED |
+| WebSocket : texte ou WAV, phrases synthétisées une à une, interruption | TESTED |
+| Page web `/voice` : micro (WAV 16 kHz), lecture en file, interruption, mode texte | TESTED (mode texte en navigateur ; micro non testable en CI) |
+| Banc STT/TTS réel (latence, noms propres FR/EN) | **BLOCKED** — modèles locaux à installer par le propriétaire |
 
 ## Phase 13 — Production
 

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import io
 import re
+import threading
 import warnings
 import zipfile
 from dataclasses import dataclass
@@ -20,6 +21,10 @@ from pathlib import Path, PurePosixPath
 
 import pypdfium2 as pdfium
 from PIL import Image
+
+# PDFium n'est PAS thread-safe : toute utilisation passe par ce verrou de processus (le worker
+# exécute ses étapes dans des threads ; sans verrou, segmentation fault constatée en CI).
+PDFIUM_LOCK = threading.RLock()
 
 IMAGE_SUFFIXES = frozenset({".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tif", ".tiff"})
 MAX_COMPRESSION_RATIO = 200  # au-delà : bombe zip probable
@@ -106,16 +111,17 @@ def inspect_document(path: Path, limits: Limits) -> DocumentInfo:
         raise RejectedDocumentError(f"fichier trop volumineux ({size} octets)")
     fmt = detect_file_format(path)
     if fmt is DocumentFormat.PDF:
-        try:
-            pdf = pdfium.PdfDocument(path)
-        except pdfium.PdfiumError as exc:
-            raise RejectedDocumentError(
-                f"PDF illisible ou protégé par mot de passe ({exc})"
-            ) from exc
-        try:
-            count = len(pdf)
-        finally:
-            pdf.close()
+        with PDFIUM_LOCK:
+            try:
+                pdf = pdfium.PdfDocument(path)
+            except pdfium.PdfiumError as exc:
+                raise RejectedDocumentError(
+                    f"PDF illisible ou protégé par mot de passe ({exc})"
+                ) from exc
+            try:
+                count = len(pdf)
+            finally:
+                pdf.close()
     else:
         try:
             with zipfile.ZipFile(path) as archive:
@@ -138,6 +144,11 @@ def _encode_webp(image: Image.Image, quality: int) -> RenderedPage:
 
 
 def _render_pdf_page(path: Path, page_number: int, max_dimension: int) -> Image.Image:
+    with PDFIUM_LOCK:
+        return _render_pdf_page_locked(path, page_number, max_dimension)
+
+
+def _render_pdf_page_locked(path: Path, page_number: int, max_dimension: int) -> Image.Image:
     try:
         pdf = pdfium.PdfDocument(path)
     except pdfium.PdfiumError as exc:

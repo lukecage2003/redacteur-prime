@@ -33,6 +33,9 @@ export default function Home() {
         <Link href="/performance" className="ml-4 mt-4 inline-block text-sm font-medium text-amber-700 hover:underline">
           Performances →
         </Link>
+        <Link href="/voice" className="ml-4 mt-4 inline-block text-sm font-medium text-amber-700 hover:underline">
+          Voix →
+        </Link>
       </header>
       <ul className="grid gap-3 sm:grid-cols-2">
         {modules.map((m) => (
