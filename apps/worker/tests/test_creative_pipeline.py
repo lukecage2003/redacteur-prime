@@ -10,6 +10,7 @@ from sqlalchemy import Engine
 from primestone.creative import DEFAULT_CHARTER, CreativeError, CreativeService
 from primestone.editorial import EditorialService
 from primestone.forensic import forensic_service
+from primestone.governance import FOUNDER, GovernanceError, GovernanceService
 from primestone.jobs import PostgresJobQueue
 from primestone.knowledge import KnowledgeService
 from primestone.storytelling import StorytellingService
@@ -38,6 +39,16 @@ def test_charter_series_packaging(db_engine: Engine) -> None:
         creative.publish_charter(DEFAULT_CHARTER, name="Primestone v2", author="moi", note=None)
         == 2
     )
+    # Brouillons : rien ne s'applique sans le fondateur (ADR-0027).
+    assert creative.charter()["version"] == 0
+    governance = GovernanceService(db_engine)
+    pending = governance.decisions("PROPOSED")
+    assert [d["proposal"]["charter_version"] for d in pending] == [2, 1]
+    with pytest.raises(GovernanceError, match="fondateur"):
+        governance.approve(pending[0]["id"], decided_by="chief_editor", role="AGENT")
+    for decision in reversed(pending):
+        governance.approve(decision["id"], decided_by="moi", role=FOUNDER)
+    assert creative.charter()["version"] == 2
 
     stories = StorytellingService(db_engine, forensic_service(db_engine))
     script_id = stories.create(title="Despair", language="fr", content=SCRIPT, author="moi")

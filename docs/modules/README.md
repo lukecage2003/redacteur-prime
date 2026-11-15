@@ -20,3 +20,4 @@ ajoutée ici au démarrage de la phase correspondante.
 | `storytelling` | 10 | scripts en 13 étapes, pré-notation, veto factuel ([fiche](storytelling.md)) | TESTED (coût nul) |
 | `performance` | 11 | chaîne Primestone, import Studio, boucle d'apprentissage ([fiche](performance.md)) | TESTED (coût nul) |
 | `voice` | 12 | STT/TTS locaux, 5 personnalités, réponses vérifiées ([fiche](voice.md)) | TESTED (banc réel BLOCKED) |
+| `governance` | 20 | marque, piliers, politiques, décisions du fondateur ([fiche](governance.md)) | TESTED (coût nul) |
