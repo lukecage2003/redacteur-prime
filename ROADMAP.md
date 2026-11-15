@@ -28,6 +28,15 @@ verts) · **VALIDATED** (validé sur cas réels / corpus de référence) · **BL
 | 17 | Audience Bridge, architectures narratives, multi-plateforme FR/EN (coût nul) | TESTED | 9, 10, 15 |
 | 18 | Packaging, marque, séries & franchises (coût nul) | TESTED (charte réelle : à fournir par le propriétaire) | 14, 15, 17 |
 | 19 | Content Performance Lab & validation finale (coût nul) | TESTED — validation réelle : 0/13 tant que les données réelles manquent | 14, 18 |
+| 20 | Marque et gouvernance *(proposée)* | NOT IMPLEMENTED — en attente de validation | 18 |
+| 21 | Moteur d'émissions (shows, formats, cycle de vie) *(proposée)* | NOT IMPLEMENTED — en attente de validation | 20 |
+| 22 | Identité indépendante (voix, visuels, langues) *(proposée)* | NOT IMPLEMENTED — en attente de validation | 20, 21 |
+| 23 | Distribution et portefeuille *(proposée)* | NOT IMPLEMENTED — en attente de validation | 21 |
+| 24 | Droits, mémoire éditoriale, coûts *(proposée)* | NOT IMPLEMENTED — en attente de validation | 20 à 23 |
+
+Décision stratégique « PRIMESTONE, média autonome » (le fondateur est directeur éditorial,
+pas présentateur) : audit et architecture réconciliée dans
+[docs/audit/autonomous-media-brand.md](docs/audit/autonomous-media-brand.md).
 
 Extension validée par le propriétaire le 2026-11-15 (« je valide tout »). Analyse des dépendances et
 justification de l'ordre dans [docs/audit/extension-audience-growth.md](docs/audit/extension-audience-growth.md).
